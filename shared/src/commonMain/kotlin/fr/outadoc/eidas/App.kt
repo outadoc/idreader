@@ -22,65 +22,56 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import fr.outadoc.eidas.di.sharedModule
 import fr.outadoc.eidas.logging.LogEntry
 import fr.outadoc.eidas.logging.LogLevel
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcException
 import fr.outadoc.eidas.nfc.NfcTagReader
-import fr.outadoc.eidas.nfc.NoopNfcTagReader
-import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
-import org.koin.core.module.Module
-import org.koin.dsl.module
 
 private const val TAG = "App"
 
 @Composable
-fun App(platformModules: List<Module> = emptyList()) {
-    KoinApplication(application = {
-        modules(listOf(sharedModule) + platformModules)
-    }) {
-        MaterialTheme(
-            colorScheme = if (isSystemInDarkTheme()) {
-                darkColorScheme()
-            } else {
-                lightColorScheme()
-            }
-        ) {
-            val memoryLogger: MemoryLogger = koinInject()
-            val tagReader: NfcTagReader = koinInject()
+fun App() {
+    MaterialTheme(
+        colorScheme = if (isSystemInDarkTheme()) {
+            darkColorScheme()
+        } else {
+            lightColorScheme()
+        }
+    ) {
+        val memoryLogger: MemoryLogger = koinInject()
+        val tagReader: NfcTagReader = koinInject()
 
-            val entries by memoryLogger.entries.collectAsState()
+        val entries by memoryLogger.entries.collectAsState()
 
-            LaunchedEffect(tagReader) {
-                try {
-                    tagReader.detectedTags.collect { tag ->
-                        memoryLogger.i(
-                            TAG,
-                            "Tag detected: uid=${tag.id.toHexString()}\n${tag.description}"
-                        )
-                    }
-                } catch (e: NfcException) {
-                    memoryLogger.log(
-                        LogLevel.ERROR,
+        LaunchedEffect(tagReader) {
+            try {
+                tagReader.detectedTags.collect { tag ->
+                    memoryLogger.i(
                         TAG,
-                        e.message ?: "NFC error",
-                        e,
+                        "Tag detected: uid=${tag.id.toHexString()}\n${tag.description}"
                     )
                 }
-            }
-
-            Scaffold { insets ->
-                TerminalView(
-                    entries = entries,
-                    modifier = Modifier
-                        .padding(insets)
-                        .background(Color(0xFF0D0D0D))
-                        .fillMaxSize(),
+            } catch (e: NfcException) {
+                memoryLogger.log(
+                    LogLevel.ERROR,
+                    TAG,
+                    e.message ?: "NFC error",
+                    e,
                 )
             }
+        }
+
+        Scaffold { insets ->
+            TerminalView(
+                entries = entries,
+                modifier = Modifier
+                    .padding(insets)
+                    .background(Color(0xFF0D0D0D))
+                    .fillMaxSize(),
+            )
         }
     }
 }
@@ -132,11 +123,5 @@ private fun colorForLevel(level: LogLevel): Color = when (level) {
 @Composable
 @Preview
 fun AppPreview() {
-    App(
-        platformModules = listOf(
-            module {
-                single<NfcTagReader> { NoopNfcTagReader() }
-            },
-        ),
-    )
+    App()
 }

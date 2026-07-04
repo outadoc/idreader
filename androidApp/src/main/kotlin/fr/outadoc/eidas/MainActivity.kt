@@ -5,6 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import fr.outadoc.eidas.di.androidModule
+import fr.outadoc.eidas.di.sharedModule
+import org.koin.compose.KoinApplication
+import org.koin.dsl.koinConfiguration
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -12,7 +15,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            App(platformModules = listOf(androidModule(this@MainActivity)))
+            KoinApplication(
+                configuration = koinConfiguration {
+                    modules(
+                        sharedModule,
+                        androidModule(this@MainActivity)
+                    )
+                },
+                content = {
+                    App()
+                }
+            )
         }
     }
 }
