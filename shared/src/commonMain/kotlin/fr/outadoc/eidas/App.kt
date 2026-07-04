@@ -19,7 +19,8 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
-import fr.outadoc.eidas.nfc.Apdu
+import fr.outadoc.eidas.nfc.Aid
+import fr.outadoc.eidas.nfc.CApdu
 import fr.outadoc.eidas.nfc.NfcException
 import fr.outadoc.eidas.nfc.NfcTagReader
 import org.koin.compose.koinInject
@@ -50,7 +51,7 @@ fun App(
                     )
 
                     val selectResponse =
-                        tagReader.transceive(tag, Apdu.selectAidCommand(Apdu.AID_MRTD))
+                        tagReader.transceive(tag, CApdu.selectAid(Aid.MRTD))
 
                     logger.i(TAG, "SELECT AID response: ${selectResponse.toHexString()}")
                 }

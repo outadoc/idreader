@@ -7,12 +7,12 @@ import android.nfc.tech.IsoDep
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.e
-import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.withContext
+import java.io.IOException
 
 private const val TAG = "AndroidNfcTagReader"
 
@@ -66,8 +66,8 @@ class AndroidNfcTagReader(
             activity,
             callback,
             NfcAdapter.FLAG_READER_NFC_A
-                or NfcAdapter.FLAG_READER_NFC_B
-                or NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+                    or NfcAdapter.FLAG_READER_NFC_B
+                    or NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
             null,
         )
 
@@ -80,7 +80,7 @@ class AndroidNfcTagReader(
         }
     }
 
-    override suspend fun transceive(tag: NfcTag, command: ByteArray): ByteArray {
+    override suspend fun transceive(tag: NfcTag, command: CApdu): ByteArray {
         val isoDep = currentConnection
             ?.takeIf { (currentTag, _) -> currentTag == tag }
             ?.second
@@ -88,7 +88,7 @@ class AndroidNfcTagReader(
 
         return withContext(Dispatchers.IO) {
             try {
-                isoDep.transceive(command)
+                isoDep.transceive(command.serialize())
             } catch (e: TagLostException) {
                 throw NfcException("Tag was lost during communication", e)
             } catch (e: IOException) {

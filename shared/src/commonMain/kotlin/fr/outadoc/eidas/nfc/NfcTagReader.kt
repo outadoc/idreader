@@ -24,5 +24,5 @@ interface NfcTagReader {
      *
      * @throws NfcException if the tag has moved out of range or communication fails.
      */
-    suspend fun transceive(tag: NfcTag, command: ByteArray): ByteArray
+    suspend fun transceive(tag: NfcTag, command: CApdu): ByteArray
 }

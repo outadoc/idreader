@@ -2,15 +2,41 @@ package fr.outadoc.eidas.nfc
 
 import fr.outadoc.eidas.utils.parseHex
 
-object Apdu {
-    val AID_MRTD = "A0000002471001"
+class CApdu(
+    val cla: Byte,
+    val ins: Byte,
+    val p1: Byte,
+    val p2: Byte,
+    val data: ByteArray,
+    val le: Byte?,
+) {
+    companion object {
+        fun selectAid(aidHex: String): CApdu {
+            val aid = aidHex.parseHex()
+            return CApdu(
+                cla = 0x00,
+                ins = 0xA4.toByte(),
+                p1 = 0x04,
+                p2 = 0x00,
+                data = aid,
+                le = 0x00,
+            )
+        }
+    }
 
-    fun selectAidCommand(aidHex: String): ByteArray {
-        val aid = aidHex.parseHex()
+    fun serialize(): ByteArray {
         return byteArrayOf(
-            0x00, 0xA4.toByte(), 0x04, 0x00, aid.size.toByte(),
-            *aid,
-            0x00,
+            cla,
+            ins,
+            p1,
+            p2,
+            data.size.toByte(),
+            *data,
+            *if (le != null) {
+                byteArrayOf(le)
+            } else {
+                byteArrayOf()
+            },
         )
     }
 }
