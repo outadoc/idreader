@@ -23,6 +23,7 @@ import fr.outadoc.eidas.nfc.Aid
 import fr.outadoc.eidas.nfc.CApdu
 import fr.outadoc.eidas.nfc.NfcException
 import fr.outadoc.eidas.nfc.NfcTagReader
+import fr.outadoc.eidas.utils.toPrettyHex
 import org.koin.compose.koinInject
 
 private const val TAG = "App"
@@ -47,13 +48,12 @@ fun App(
                 tagReader.detectedTags.collect { tag ->
                     logger.i(
                         TAG,
-                        "Tag detected: uid=${tag.id.toHexString()}, ${tag.description}"
+                        "Tag detected: uid=${tag.id.toPrettyHex()}, ${tag.description}"
                     )
 
-                    val selectResponse =
-                        tagReader.transceive(tag, CApdu.selectAid(Aid.MRTD))
+                    val selectResponse = tagReader.transceive(tag, CApdu.selectAid(Aid.MRTD))
 
-                    logger.i(TAG, "SELECT AID response: ${selectResponse.toHexString()}")
+                    logger.i(TAG, "SELECT AID response: $selectResponse")
                 }
             } catch (e: NfcException) {
                 logger.e(TAG, "NFC error", e)

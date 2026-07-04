@@ -80,7 +80,7 @@ class AndroidNfcTagReader(
         }
     }
 
-    override suspend fun transceive(tag: NfcTag, command: CApdu): ByteArray {
+    override suspend fun transceive(tag: NfcTag, command: CApdu): RApdu {
         val isoDep = currentConnection
             ?.takeIf { (currentTag, _) -> currentTag == tag }
             ?.second
@@ -88,7 +88,8 @@ class AndroidNfcTagReader(
 
         return withContext(Dispatchers.IO) {
             try {
-                isoDep.transceive(command.serialize())
+                val response = isoDep.transceive(command.serialize())
+                RApdu.parse(response)
             } catch (e: TagLostException) {
                 throw NfcException("Tag was lost during communication", e)
             } catch (e: IOException) {

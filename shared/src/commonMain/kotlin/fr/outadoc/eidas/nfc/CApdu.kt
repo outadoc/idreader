@@ -2,7 +2,7 @@ package fr.outadoc.eidas.nfc
 
 import fr.outadoc.eidas.utils.parseHex
 
-class CApdu(
+class CApdu private constructor(
     val cla: Byte,
     val ins: Byte,
     val p1: Byte,
