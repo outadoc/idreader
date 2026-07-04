@@ -71,6 +71,8 @@ class AndroidNfcTagReader(
             null,
         )
 
+        logger.d(TAG, "Waiting for tags…")
+
         awaitClose {
             adapter.disableReaderMode(activity)
             currentConnection?.second?.closeQuietly()
