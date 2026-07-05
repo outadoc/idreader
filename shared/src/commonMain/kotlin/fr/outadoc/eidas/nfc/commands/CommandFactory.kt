@@ -21,7 +21,10 @@ class CommandFactory {
             le = 0x00u,
         )
 
-    fun paceSetAt(): CApdu =
+    fun paceSetAt(
+        algorithm: UByteArray,
+        keyReference: UByte,
+    ): CApdu =
         CApdu(
             cla = 0x00u,
             ins = 0x22u,
@@ -29,14 +32,8 @@ class CommandFactory {
             p2 = 0xA4u,
             data =
                 tlvList {
-                    tlv(
-                        Iso7816.Tags.CryptographicMechanismReference,
-                        Iso7816.AlgorithmOID.PACE_AES256_GM_ECDH_BRAINPOOLP256R1.bytes,
-                    )
-                    tlv(
-                        Iso7816.Tags.ReferenceOfAPublicKeySecretKey,
-                        Iso7816.KeyRef.CAN,
-                    )
+                    tlv(Iso7816.Tags.CryptographicMechanismReference, algorithm)
+                    tlv(Iso7816.Tags.ReferenceOfAPublicKeySecretKey, keyReference)
                 },
             le = null,
         )

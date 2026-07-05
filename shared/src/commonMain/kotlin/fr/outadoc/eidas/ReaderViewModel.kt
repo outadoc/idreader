@@ -65,8 +65,16 @@ class ReaderViewModel(
                     logger.i(TAG, "MSE:Set AT")
 
                     tagReader
-                        .transceive(tag, commandFactory.paceSetAt())
-                        .assertSuccess()
+                        .transceive(
+                            tag,
+                            commandFactory.paceSetAt(
+                                algorithm =
+                                    Iso7816.AlgorithmOID.PACE_AES256_GM_ECDH_BRAINPOOLP256R1
+                                        .bytes
+                                        .toUByteArray(),
+                                keyReference = Iso7816.KeyRef.CAN,
+                            ),
+                        ).assertSuccess()
 
                     logger.i(TAG, "GENERAL AUTHENTICATE")
 

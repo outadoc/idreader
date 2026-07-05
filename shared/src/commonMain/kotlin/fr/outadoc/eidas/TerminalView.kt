@@ -2,7 +2,8 @@ package fr.outadoc.eidas
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -23,6 +24,7 @@ import fr.outadoc.eidas.logging.LogLevel
 fun TerminalView(
     entries: List<LogEntry>,
     modifier: Modifier = Modifier,
+    insets: PaddingValues = PaddingValues(),
 ) {
     val listState = rememberLazyListState()
 
@@ -33,12 +35,17 @@ fun TerminalView(
     }
 
     LazyColumn(
+        modifier = modifier,
         state = listState,
-        modifier = modifier.padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = insets + PaddingValues(16.dp),
     ) {
         items(entries) { entry ->
-            val color = colorForLevel(entry.level, MaterialTheme.extendedColorScheme)
+            val color =
+                colorForLevel(
+                    entry.level,
+                    MaterialTheme.extendedColorScheme,
+                )
             Column {
                 Text(
                     text = formatHeader(entry),
@@ -69,35 +76,36 @@ private fun TerminalViewPreview() {
                 LogEntry(
                     level = LogLevel.DEBUG,
                     tag = "LoremIpsum",
-                    message = "Lorem ipsum dolor sit amet."
+                    message = "Lorem ipsum dolor sit amet.",
                 ),
                 LogEntry(
                     level = LogLevel.INFO,
                     tag = "LoremIpsum",
-                    message = "Lorem ipsum dolor sit amet."
+                    message = "Lorem ipsum dolor sit amet.",
                 ),
                 LogEntry(
                     level = LogLevel.WARN,
                     tag = "LoremIpsum",
-                    message = "Lorem ipsum dolor sit amet."
+                    message = "Lorem ipsum dolor sit amet.",
                 ),
                 LogEntry(
                     level = LogLevel.ERROR,
                     tag = "LoremIpsum",
-                    message = "Lorem ipsum dolor sit amet."
+                    message = "Lorem ipsum dolor sit amet.",
                 ),
-            )
+            ),
         )
     }
 }
 
 private fun formatHeader(entry: LogEntry): String {
-    val level = when (entry.level) {
-        LogLevel.DEBUG -> "D"
-        LogLevel.INFO -> "I"
-        LogLevel.WARN -> "W"
-        LogLevel.ERROR -> "E"
-    }
+    val level =
+        when (entry.level) {
+            LogLevel.DEBUG -> "D"
+            LogLevel.INFO -> "I"
+            LogLevel.WARN -> "W"
+            LogLevel.ERROR -> "E"
+        }
     return "[$level/${entry.tag}]"
 }
 
@@ -110,9 +118,13 @@ private fun formatEntry(entry: LogEntry): String {
     }
 }
 
-private fun colorForLevel(level: LogLevel, colors: ExtendedColorScheme): Color = when (level) {
-    LogLevel.DEBUG -> colors.logDebug
-    LogLevel.INFO -> colors.logInfo
-    LogLevel.WARN -> colors.logWarn
-    LogLevel.ERROR -> colors.logError
-}
+private fun colorForLevel(
+    level: LogLevel,
+    colors: ExtendedColorScheme,
+): Color =
+    when (level) {
+        LogLevel.DEBUG -> colors.logDebug
+        LogLevel.INFO -> colors.logInfo
+        LogLevel.WARN -> colors.logWarn
+        LogLevel.ERROR -> colors.logError
+    }
