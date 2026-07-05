@@ -106,7 +106,7 @@ class AndroidNfcTagReader(
     private fun IsoDep.closeQuietly() {
         try {
             close()
-        } catch (_: IOException) {
+        } catch (_: Exception) {
         }
     }
 }
