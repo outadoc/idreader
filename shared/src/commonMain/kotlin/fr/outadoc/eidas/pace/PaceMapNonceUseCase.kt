@@ -3,6 +3,7 @@ package fr.outadoc.eidas.pace
 import fr.outadoc.eidas.crypto.Algorithm
 import fr.outadoc.eidas.crypto.CryptoEngine
 import fr.outadoc.eidas.crypto.EcPoint
+import fr.outadoc.eidas.crypto.KeyGenerator
 import fr.outadoc.eidas.crypto.deserializedUncompressedEcPoint
 import fr.outadoc.eidas.crypto.serializeUncompressed
 import fr.outadoc.eidas.logging.Logger
@@ -22,6 +23,7 @@ class PaceMapNonceUseCase(
     private val tagReader: NfcTagReader,
     private val commandFactory: CommandFactory,
     private val cryptoEngine: CryptoEngine,
+    private val keyGenerator: KeyGenerator,
     private val logger: Logger,
 ) {
     suspend operator fun invoke(
@@ -29,7 +31,7 @@ class PaceMapNonceUseCase(
         algorithm: Algorithm,
         nonce: UByteArray,
     ): EcPoint {
-        val mappingKeyPair = cryptoEngine.generateKeyPair(algorithm)
+        val mappingKeyPair = keyGenerator.generateKeyPair(algorithm)
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 2: generic mapping)")
 
@@ -42,7 +44,10 @@ class PaceMapNonceUseCase(
                             tlv(
                                 Iso7816.Tags.DynamicAuthenticationData,
                                 tlvList {
-                                    tlv(Iso7816.Tags.MappingData, mappingKeyPair.publicKey.uncompressedPublicPoint)
+                                    tlv(
+                                        Iso7816.Tags.MappingData,
+                                        mappingKeyPair.publicKey.uncompressedPublicPoint,
+                                    )
                                 },
                             )
                         },
@@ -52,9 +57,11 @@ class PaceMapNonceUseCase(
         val dynAuth = response.parseDynamicAuthData()
 
         val chipMappingData =
-            checkNotNull(
-                (dynAuth.find(Iso7816.Tags.ChipMappingData.toInt())?.value as? ByteArray)?.toUByteArray(),
-            ) { "Could not find mapping data in dynamic auth data" }
+            (dynAuth.find(Iso7816.Tags.ChipMappingData.toInt())?.value as? ByteArray)?.toUByteArray()
+
+        checkNotNull(chipMappingData) {
+            "Could not find mapping data in dynamic auth data"
+        }
 
         logger.d(TAG, "Chip mapping point: ${chipMappingData.toPrettyHex()}")
 
@@ -66,7 +73,10 @@ class PaceMapNonceUseCase(
                 decryptedNonce = nonce,
             )
 
-        logger.d(TAG, "Mapped generator G': ${mappedGenerator.serializeUncompressed().toPrettyHex()}")
+        logger.d(
+            TAG,
+            "Mapped generator G': ${mappedGenerator.serializeUncompressed().toPrettyHex()}",
+        )
         return mappedGenerator
     }
 }

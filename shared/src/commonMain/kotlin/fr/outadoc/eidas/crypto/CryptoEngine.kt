@@ -1,10 +1,6 @@
 package fr.outadoc.eidas.crypto
 
 interface CryptoEngine {
-    fun generateKeyPair(algorithm: Algorithm): KeyPair
-
-    fun generateKeyPairOnGenerator(algorithm: Algorithm, generator: EcPoint): KeyPair
-
     fun computeMappedGenerator(
         algorithm: Algorithm,
         mappingPrivateKey: PrivateKey,

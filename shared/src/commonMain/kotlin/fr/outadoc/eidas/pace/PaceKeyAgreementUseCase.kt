@@ -3,6 +3,7 @@ package fr.outadoc.eidas.pace
 import fr.outadoc.eidas.crypto.Algorithm
 import fr.outadoc.eidas.crypto.CryptoEngine
 import fr.outadoc.eidas.crypto.EcPoint
+import fr.outadoc.eidas.crypto.KeyGenerator
 import fr.outadoc.eidas.crypto.deserializedUncompressedEcPoint
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
@@ -29,6 +30,7 @@ class PaceKeyAgreementUseCase(
     private val tagReader: NfcTagReader,
     private val commandFactory: CommandFactory,
     private val cryptoEngine: CryptoEngine,
+    private val keyGenerator: KeyGenerator,
     private val logger: Logger,
 ) {
     suspend operator fun invoke(
@@ -36,7 +38,7 @@ class PaceKeyAgreementUseCase(
         algorithm: Algorithm,
         mappedGenerator: EcPoint,
     ): PaceKeyAgreementResult {
-        val finalKeyPair = cryptoEngine.generateKeyPairOnGenerator(algorithm, mappedGenerator)
+        val finalKeyPair = keyGenerator.generateKeyPairOnGenerator(algorithm, mappedGenerator)
         val terminalFinalPub = finalKeyPair.publicKey.uncompressedPublicPoint
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 3: final key exchange)")
@@ -49,7 +51,9 @@ class PaceKeyAgreementUseCase(
                         tlvList {
                             tlv(
                                 Iso7816.Tags.DynamicAuthenticationData,
-                                tlvList { tlv(Iso7816.Tags.EphemeralPublicKey, terminalFinalPub) },
+                                tlvList {
+                                    tlv(Iso7816.Tags.EphemeralPublicKey, terminalFinalPub)
+                                },
                             )
                         },
                     ),
@@ -60,9 +64,12 @@ class PaceKeyAgreementUseCase(
         val dynAuth = response.parseDynamicAuthData()
 
         val chipFinalPub =
-            checkNotNull(
-                (dynAuth.find(Iso7816.Tags.ChipPublicKey.toInt())?.value as? ByteArray)?.toUByteArray(),
-            ) { "Could not find chip final public key in dynamic auth data" }
+            (dynAuth.find(Iso7816.Tags.ChipPublicKey.toInt())?.value as? ByteArray)
+                ?.toUByteArray()
+
+        checkNotNull(chipFinalPub) {
+            "Could not find chip final public key in dynamic auth data"
+        }
 
         logger.d(TAG, "Terminal final pub: ${terminalFinalPub.toPrettyHex()}")
         logger.d(TAG, "Chip final pub: ${chipFinalPub.toPrettyHex()}")
@@ -76,8 +83,21 @@ class PaceKeyAgreementUseCase(
 
         logger.d(TAG, "Shared secret K: ${sharedSecret.toPrettyHex()}")
 
-        val kEnc = cryptoEngine.deriveKeyFromSecret(algorithm, sharedSecret, ubyteArrayOf(), 1)
-        val kMac = cryptoEngine.deriveKeyFromSecret(algorithm, sharedSecret, ubyteArrayOf(), 2)
+        val kEnc =
+            cryptoEngine.deriveKeyFromSecret(
+                algorithm = algorithm,
+                secret = sharedSecret,
+                nonce = ubyteArrayOf(),
+                counter = 1,
+            )
+
+        val kMac =
+            cryptoEngine.deriveKeyFromSecret(
+                algorithm = algorithm,
+                secret = sharedSecret,
+                nonce = ubyteArrayOf(),
+                counter = 2,
+            )
 
         logger.d(TAG, "K_enc: ${kEnc.toPrettyHex()}")
         logger.d(TAG, "K_mac: ${kMac.toPrettyHex()}")

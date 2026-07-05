@@ -5,7 +5,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import fr.outadoc.eidas.crypto.AndroidCryptoEngine
+import fr.outadoc.eidas.crypto.AndroidKeyGenerator
 import fr.outadoc.eidas.crypto.CryptoEngine
+import fr.outadoc.eidas.crypto.KeyGenerator
 import fr.outadoc.eidas.logging.AndroidLogger
 import fr.outadoc.eidas.logging.Logger
 import okio.Path.Companion.toPath
@@ -16,6 +18,7 @@ val androidModule =
     module {
         single<Logger>(named("platformLogger")) { AndroidLogger() }
         single<CryptoEngine> { AndroidCryptoEngine() }
+        single<KeyGenerator> { AndroidKeyGenerator() }
         single<DataStore<Preferences>> {
             PreferenceDataStoreFactory.createWithPath(
                 produceFile = {
