@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import fr.outadoc.eidas.crypto.Algorithm
 import fr.outadoc.eidas.crypto.CryptoEngine
 import fr.outadoc.eidas.logging.Logger
+import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
@@ -127,7 +128,7 @@ class ReaderViewModel(
                         "Could not find nonce in dynamic auth data"
                     }
 
-                    logger.i(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
+                    logger.d(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
 
                     // Read the CAN from preferences and encode it to bytes
                     val canBytes: UByteArray =
@@ -153,9 +154,15 @@ class ReaderViewModel(
                             data = encryptedNonce,
                         )
 
-                    logger.i(TAG, "Decrypted nonce: ${decryptedNonce.toPrettyHex()}")
+                    logger.d(TAG, "Decrypted nonce: ${decryptedNonce.toPrettyHex()}")
 
                     val ephemeralKeyPair = cryptoEngine.generateKeyPair(algorithm)
+
+                    val publicPoint = ephemeralKeyPair.publicKey.uncompressedPublicPoint
+
+                    logger.d(TAG, "Sending public key point: ${publicPoint.toPrettyHex()}")
+
+                    logger.i(TAG, "GENERAL AUTHENTICATE")
 
                     val mappingData =
                         tagReader
@@ -169,7 +176,7 @@ class ReaderViewModel(
                                                 tlvList {
                                                     tlv(
                                                         Iso7816.Tags.MappingData,
-                                                        ephemeralKeyPair.publicKey.uncompressedPublicPoint,
+                                                        publicPoint,
                                                     )
                                                 },
                                             )

@@ -1,43 +1,29 @@
 package fr.outadoc.eidas.crypto
 
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
 import org.bouncycastle.crypto.engines.AESEngine
 import org.bouncycastle.crypto.modes.CBCBlockCipher
 import org.bouncycastle.crypto.params.KeyParameter
 import org.bouncycastle.crypto.params.ParametersWithIV
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.security.KeyPairGenerator
 import java.security.MessageDigest
 import java.security.spec.ECGenParameterSpec
-import kotlin.uuid.Uuid
 
 class AndroidCryptoEngine : CryptoEngine {
     override fun generateKeyPair(algorithm: Algorithm): KeyPair {
-        val alias = Uuid.random()
-
-        val parameterSpec: KeyGenParameterSpec =
-            KeyGenParameterSpec
-                .Builder(
-                    alias.toHexDashString(),
-                    KeyProperties.PURPOSE_AGREE_KEY,
-                ).setAlgorithmParameterSpec(
-                    ECGenParameterSpec(algorithm.getEcdhFunctionName()),
-                ).build()
-
-        val kpg: KeyPairGenerator =
-            KeyPairGenerator.getInstance(
-                KeyProperties.KEY_ALGORITHM_EC,
-                "AndroidKeyStore",
-            )
-
-        kpg.initialize(parameterSpec)
-
-        val kp = kpg.generateKeyPair()
+        val kp =
+            KeyPairGenerator
+                .getInstance("EC", BouncyCastleProvider())
+                .apply { initialize(ECGenParameterSpec(algorithm.getEcdhFunctionName())) }
+                .generateKeyPair()
 
         return KeyPair(
-            alias = alias,
+            privateKey =
+                AndroidPrivateKey(
+                    privateKey = kp.private,
+                ),
             publicKey =
                 AndroidPublicKey(
                     publicKey = kp.public,
