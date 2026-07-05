@@ -1,19 +1,13 @@
 package fr.outadoc.eidas
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
@@ -34,13 +28,7 @@ fun App(
     logger: Logger = koinInject(),
     tagReader: NfcTagReader = koinInject(),
 ) {
-    MaterialTheme(
-        colorScheme = if (isSystemInDarkTheme()) {
-            darkColorScheme()
-        } else {
-            lightColorScheme()
-        }
-    ) {
+    AppTheme {
         val entries by memoryLogger.entries.collectAsState()
 
         LaunchedEffect(tagReader) {
@@ -65,7 +53,6 @@ fun App(
                 entries = entries,
                 modifier = Modifier
                     .padding(insets)
-                    .background(Color(0xFF0D0D0D))
                     .fillMaxSize(),
             )
         }

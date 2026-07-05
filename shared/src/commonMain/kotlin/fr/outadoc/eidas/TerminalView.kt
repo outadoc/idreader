@@ -13,14 +13,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.outadoc.eidas.logging.LogEntry
 import fr.outadoc.eidas.logging.LogLevel
 
 @Composable
-fun TerminalView(entries: List<LogEntry>, modifier: Modifier = Modifier) {
+fun TerminalView(
+    entries: List<LogEntry>,
+    modifier: Modifier = Modifier,
+) {
     val listState = rememberLazyListState()
 
     LaunchedEffect(entries.size) {
@@ -35,10 +38,11 @@ fun TerminalView(entries: List<LogEntry>, modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(entries) { entry ->
+            val color = colorForLevel(entry.level, MaterialTheme.extendedColorScheme)
             Column {
                 Text(
                     text = formatHeader(entry),
-                    color = colorForLevel(entry.level),
+                    color = color,
                     fontFamily = FontFamily.Monospace,
                     fontSize = 12.sp,
                     lineHeight = 16.sp,
@@ -46,7 +50,7 @@ fun TerminalView(entries: List<LogEntry>, modifier: Modifier = Modifier) {
 
                 Text(
                     text = formatEntry(entry),
-                    color = colorForLevel(entry.level),
+                    color = color,
                     fontFamily = FontFamily.Monospace,
                     fontSize = 12.sp,
                     lineHeight = 16.sp,
@@ -56,17 +60,32 @@ fun TerminalView(entries: List<LogEntry>, modifier: Modifier = Modifier) {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TerminalViewPreview() {
-    MaterialTheme {
+    AppTheme {
         TerminalView(
             listOf(
+                LogEntry(
+                    level = LogLevel.DEBUG,
+                    tag = "LoremIpsum",
+                    message = "Lorem ipsum dolor sit amet."
+                ),
+                LogEntry(
+                    level = LogLevel.INFO,
+                    tag = "LoremIpsum",
+                    message = "Lorem ipsum dolor sit amet."
+                ),
+                LogEntry(
+                    level = LogLevel.WARN,
+                    tag = "LoremIpsum",
+                    message = "Lorem ipsum dolor sit amet."
+                ),
                 LogEntry(
                     level = LogLevel.ERROR,
                     tag = "LoremIpsum",
                     message = "Lorem ipsum dolor sit amet."
-                )
+                ),
             )
         )
     }
@@ -91,9 +110,9 @@ private fun formatEntry(entry: LogEntry): String {
     }
 }
 
-private fun colorForLevel(level: LogLevel): Color = when (level) {
-    LogLevel.DEBUG -> Color(0xFF888888)
-    LogLevel.INFO -> Color(0xFFEEEEEE)
-    LogLevel.WARN -> Color(0xFFFFCC00)
-    LogLevel.ERROR -> Color(0xFFFF4444)
+private fun colorForLevel(level: LogLevel, colors: ExtendedColorScheme): Color = when (level) {
+    LogLevel.DEBUG -> colors.logDebug
+    LogLevel.INFO -> colors.logInfo
+    LogLevel.WARN -> colors.logWarn
+    LogLevel.ERROR -> colors.logError
 }
