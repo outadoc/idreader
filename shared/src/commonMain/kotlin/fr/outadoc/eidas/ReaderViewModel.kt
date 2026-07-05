@@ -60,7 +60,13 @@ class ReaderViewModel(
                         logger.i(TAG, "$info")
                     }
 
-                    check(infos.any { info -> info.protocol == Iso7816.OID.PACE_AES256_GM_ECDH_BRAINPOOLP256R1 }) {
+                    check(
+                        infos.any { info ->
+                            info is SecurityInfo.Pace &&
+                                info.protocol == Iso7816.AlgorithmOID.PACE_AES256_GM_ECDH_BRAINPOOLP256R1 &&
+                                info.parameterId == Iso7816.ParameterId.BRAINPOOL_P256R1
+                        },
+                    ) {
                         "Chip does not support expected PACE algorithm."
                     }
 

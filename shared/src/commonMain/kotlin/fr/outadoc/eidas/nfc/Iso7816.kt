@@ -12,9 +12,13 @@ object Iso7816 {
         const val MRTD = "A0000002471001"
     }
 
-    object OID {
+    object AlgorithmOID {
         val PACE_AES256_GM_ECDH_BRAINPOOLP256R1 =
             ObjectIdentifier("0.4.0.127.0.7.2.2.4.2.4")
+    }
+
+    object ParameterId {
+        val BRAINPOOL_P256R1 = 13
     }
 
     object File {
