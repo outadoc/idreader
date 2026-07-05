@@ -19,8 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import at.asitplus.signum.indispensable.asn1.Asn1Element
-import at.asitplus.signum.indispensable.asn1.encoding.parseAll
 import fr.outadoc.eidas.icons.AppIcons
 import fr.outadoc.eidas.icons.settings
 import fr.outadoc.eidas.logging.Logger
@@ -30,6 +28,7 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.commands.MseSetAtCommand
+import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
 import fr.outadoc.eidas.nfc.commands.ReadBinaryCommand
 import fr.outadoc.eidas.nfc.commands.SelectCommand
 import fr.outadoc.eidas.nfc.commands.SelectFileCommand
@@ -78,12 +77,10 @@ fun App(
 
                     securityInfos.assertSuccess()
 
-                    val parsed = Asn1Element.parseAll(securityInfos.data.toByteArray())
+                    val infos = SecurityInfosParser().parse(securityInfos.data.toByteArray())
 
-                    parsed.forEach { element ->
-                        logger.i(TAG, "$element")
-
-                        // TODO decode this properly
+                    infos.forEach { info ->
+                        logger.i(TAG, "$info")
                     }
                 }
             } catch (e: Exception) {
