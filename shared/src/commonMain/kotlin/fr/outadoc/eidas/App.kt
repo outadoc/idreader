@@ -2,13 +2,19 @@ package fr.outadoc.eidas
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import fr.outadoc.eidas.icons.AppIcons
+import fr.outadoc.eidas.icons.settings
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.logging.e
@@ -36,16 +42,30 @@ fun App(
                 tagReader.detectedTags.collect { tag ->
                     logger.i(TAG, "Tag detected: ${tag.description}")
 
-                    val paceSetAtResponse = tagReader.transceive(tag, mseSetAtUseCase.paceSetAt())
-
-                    paceSetAtResponse.assertSuccess()
+                    tagReader.transceive(tag, mseSetAtUseCase.paceSetAt()).assertSuccess()
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)
             }
         }
 
-        Scaffold { insets ->
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("eIDAS Reader") },
+                    actions = {
+                        IconButton(
+                            onClick = {},
+                        ) {
+                            Icon(
+                                imageVector = AppIcons.settings,
+                                contentDescription = "Open settings",
+                            )
+                        }
+                    },
+                )
+            },
+        ) { insets ->
             TerminalView(
                 entries = entries,
                 modifier =
