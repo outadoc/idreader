@@ -164,7 +164,7 @@ class ReaderViewModel(
 
                     logger.i(TAG, "GENERAL AUTHENTICATE")
 
-                    val mappingData =
+                    val generalAuthResponse2 =
                         tagReader
                             .transceive(
                                 tag,
@@ -183,6 +183,30 @@ class ReaderViewModel(
                                         },
                                     ),
                             ).getDataOrThrow()
+
+                    val dynamicAuthData2: TLVList? =
+                        TLVList
+                            .fromTlvListBuffer(generalAuthResponse2.toByteArray())
+                            .find(Iso7816.Tags.DynamicAuthenticationData.toInt())
+                            ?.value as? TLVList
+
+                    checkNotNull(dynamicAuthData2) {
+                        "Could not find dynamic auth data in reponse"
+                    }
+
+                    val chipMappingData: UByteArray? =
+                        (
+                            dynamicAuthData2
+                                .find(Iso7816.Tags.ChipMappingData.toInt())
+                                ?.value
+                                as? ByteArray
+                        )?.toUByteArray()
+
+                    checkNotNull(chipMappingData) {
+                        "Could not find mapping data in dynamic auth data"
+                    }
+
+                    logger.d(TAG, "mapping data: ${chipMappingData.toPrettyHex()}")
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)

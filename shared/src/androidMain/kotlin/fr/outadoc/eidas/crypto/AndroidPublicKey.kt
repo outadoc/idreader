@@ -1,5 +1,7 @@
 package fr.outadoc.eidas.crypto
 
+import org.bouncycastle.util.Arrays
+import java.math.BigInteger
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECPoint
 
@@ -18,11 +20,16 @@ class AndroidPublicKey(
     private fun ECPoint.serializeUncompressed(): UByteArray =
         ubyteArrayOf(
             0x04u,
-            *affineX
-                .toByteArray()
-                .toUByteArray(),
-            *affineY
-                .toByteArray()
-                .toUByteArray(),
+            *affineX.toUByteArray(),
+            *affineY.toUByteArray(),
         )
+
+    private fun BigInteger.toUByteArray(): UByteArray {
+        val array = toByteArray()
+        return if (array.first() == 0.toByte()) {
+            Arrays.copyOfRange(array, 1, array.size).toUByteArray()
+        } else {
+            array.toUByteArray()
+        }
+    }
 }

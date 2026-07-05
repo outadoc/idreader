@@ -55,5 +55,6 @@ object Iso7816 {
 
         val Nonce: UByte = 0x80u
         val MappingData: UByte = 0x81u
+        val ChipMappingData: UByte = 0x82u
     }
 }
