@@ -2,6 +2,7 @@ package fr.outadoc.eidas
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import fr.outadoc.eidas.crypto.Algorithm
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
@@ -62,8 +63,8 @@ class ReaderViewModel(
                     check(
                         infos.any { info ->
                             info is SecurityInfo.Pace &&
-                                info.protocol == Iso7816.AlgorithmOID.PACE_AES256_GM_ECDH_BRAINPOOLP256R1 &&
-                                info.parameterId == Iso7816.ParameterId.BRAINPOOL_P256R1
+                                info.protocol == Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1.oid &&
+                                info.parameterId == Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1.parameterId
                         },
                     ) {
                         "Chip does not support expected PACE algorithm."
@@ -76,7 +77,7 @@ class ReaderViewModel(
                             tag,
                             commandFactory.paceSetAt(
                                 algorithm =
-                                    Iso7816.AlgorithmOID.PACE_AES256_GM_ECDH_BRAINPOOLP256R1
+                                    Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1.oid
                                         .bytes
                                         .toUByteArray(),
                                 keyReference = Iso7816.KeyRef.CAN,

@@ -1,7 +1,5 @@
 package fr.outadoc.eidas.nfc
 
-import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
-
 object Iso7816 {
     object Aid {
         /**
@@ -10,15 +8,6 @@ object Iso7816 {
          * Issuer stored data application (The last three digits of the PIX shall be used to denote future version levels.)
          */
         const val MRTD = "A0000002471001"
-    }
-
-    object AlgorithmOID {
-        val PACE_AES256_GM_ECDH_BRAINPOOLP256R1 =
-            ObjectIdentifier("0.4.0.127.0.7.2.2.4.2.4")
-    }
-
-    object ParameterId {
-        val BRAINPOOL_P256R1 = 13
     }
 
     object File {
