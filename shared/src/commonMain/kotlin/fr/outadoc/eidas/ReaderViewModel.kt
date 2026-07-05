@@ -10,9 +10,13 @@ import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.asn1.SecurityInfo
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.settings.AppSettings
+import fr.outadoc.eidas.settings.SettingsRepository
 import fr.outadoc.eidas.utils.toPrettyHex
 import io.github.rafaelrabeloit.bertlv.TLVList
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import okio.ByteString.Companion.encode
 
 private const val TAG = "ReaderViewModel"
 
@@ -21,11 +25,14 @@ class ReaderViewModel(
     private val tagReader: NfcTagReader,
     private val commandFactory: CommandFactory,
     private val securityInfosParser: SecurityInfosParser,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
     fun startListening() {
         viewModelScope.launch {
             try {
                 tagReader.detectedTags.collect { tag ->
+                    val settings: AppSettings = settingsRepository.settings.first()
+
                     logger.i(TAG, "Tag detected: ${tag.description}")
 
                     logger.i(TAG, "SELECT FILE EF.CardAccess")
@@ -106,6 +113,12 @@ class ReaderViewModel(
                     }
 
                     logger.i(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
+
+                    val canBytes: UByteArray =
+                        settings.can
+                            .encode(Charsets.US_ASCII)
+                            .toByteArray()
+                            .toUByteArray()
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)

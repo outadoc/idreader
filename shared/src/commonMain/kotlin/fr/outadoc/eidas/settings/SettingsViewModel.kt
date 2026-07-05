@@ -27,10 +27,14 @@ class SettingsViewModel(
     }
 
     fun onCanChanged(can: String) {
-        _state.update { it.copy(can = can) }
+        val sanitizedCan = can.trim().uppercase()
+
+        _state.update {
+            it.copy(can = sanitizedCan)
+        }
 
         viewModelScope.launch {
-            repository.updateCan(can)
+            repository.updateCan(sanitizedCan)
         }
     }
 }
