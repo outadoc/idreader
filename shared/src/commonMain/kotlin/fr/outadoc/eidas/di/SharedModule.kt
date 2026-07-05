@@ -29,6 +29,8 @@ val sharedModule =
                 get(),
                 get(),
                 get(),
+                get(),
+                get(),
             )
         }
     }

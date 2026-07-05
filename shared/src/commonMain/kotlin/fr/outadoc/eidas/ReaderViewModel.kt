@@ -3,6 +3,7 @@ package fr.outadoc.eidas
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.outadoc.eidas.crypto.Algorithm
+import fr.outadoc.eidas.crypto.CryptoEngine
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
@@ -23,11 +24,14 @@ private const val TAG = "ReaderViewModel"
 
 class ReaderViewModel(
     private val logger: Logger,
+    private val cryptoEngine: CryptoEngine,
     private val tagReader: NfcTagReader,
     private val commandFactory: CommandFactory,
     private val securityInfosParser: SecurityInfosParser,
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
+    private val algorithm: Algorithm = Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1
+
     fun startListening() {
         viewModelScope.launch {
             try {
@@ -63,8 +67,8 @@ class ReaderViewModel(
                     check(
                         infos.any { info ->
                             info is SecurityInfo.Pace &&
-                                info.protocol == Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1.oid &&
-                                info.parameterId == Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1.parameterId
+                                info.protocol == algorithm.oid &&
+                                info.parameterId == algorithm.parameterId
                         },
                     ) {
                         "Chip does not support expected PACE algorithm."
@@ -77,7 +81,7 @@ class ReaderViewModel(
                             tag,
                             commandFactory.paceSetAt(
                                 algorithm =
-                                    Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1.oid
+                                    algorithm.oid
                                         .bytes
                                         .toUByteArray(),
                                 keyReference = Iso7816.KeyRef.CAN,
@@ -115,11 +119,31 @@ class ReaderViewModel(
 
                     logger.i(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
 
+                    // Read the CAN from preferences and encode it to bytes
                     val canBytes: UByteArray =
                         settings.can
                             .encode(Charsets.US_ASCII)
                             .toByteArray()
                             .toUByteArray()
+
+                    // Derive the key to decrypt the nonce from the CAN
+                    val kPi: UByteArray =
+                        cryptoEngine.kdf(
+                            algorithm = algorithm,
+                            secret = canBytes,
+                            nonce = ubyteArrayOf(),
+                            counter = 3,
+                        )
+
+                    // Decrypt the nonce with the key derived from the CAN
+                    val decryptedNonce: UByteArray =
+                        cryptoEngine.decryptSymmetric(
+                            algorithm = algorithm,
+                            key = kPi,
+                            data = encryptedNonce,
+                        )
+
+                    logger.i(TAG, "Decrypted nonce: ${decryptedNonce.toPrettyHex()}")
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)
