@@ -1,15 +1,17 @@
 package fr.outadoc.eidas.utils
 
-fun String.parseHex(): ByteArray =
-    chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+fun String.parseHex(): UByteArray =
+    chunked(2)
+        .map { it.toInt(16).toByte() }
+        .toByteArray()
+        .toUByteArray()
 
-fun ByteArray.toPrettyHex(): String {
-    return toHexString(
+fun UByteArray.toPrettyHex(): String =
+    toHexString(
         HexFormat {
             upperCase = true
             bytes {
                 byteSeparator = " "
             }
-        }
+        },
     )
-}

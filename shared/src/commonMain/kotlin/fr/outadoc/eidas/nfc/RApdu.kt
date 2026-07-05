@@ -4,10 +4,10 @@ import fr.outadoc.eidas.utils.toPrettyHex
 
 @JvmInline
 value class RApdu private constructor(
-    val data: ByteArray,
+    val data: UByteArray,
 ) {
     companion object {
-        fun parse(data: ByteArray): RApdu {
+        fun parse(data: UByteArray): RApdu {
             check(data.size >= 2) {
                 "R-APDU must be at least 2 bytes long, was: ${data.toHexString()}"
             }
@@ -16,11 +16,11 @@ value class RApdu private constructor(
         }
     }
 
-    val sw1: Byte get() = data[data.size - 2]
-    val sw2: Byte get() = data[data.size - 1]
+    val sw1: UByte get() = data[data.size - 2]
+    val sw2: UByte get() = data[data.size - 1]
 
     val isSuccess: Boolean
-        get() = sw1 == 0x90.toByte() && sw2 == 0x00.toByte()
+        get() = sw1 == 0x90u.toUByte() && sw2 == 0x00u.toUByte()
 
     fun assertSuccess() {
         check(isSuccess) { "Command failure: $this" }

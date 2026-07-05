@@ -28,71 +28,80 @@ class AndroidNfcTagReader(
     private val activity: Activity,
     private val logger: Logger,
 ) : NfcTagReader {
-
     private var currentConnection: Pair<NfcTag, IsoDep>? = null
 
-    override val detectedTags: Flow<NfcTag> = callbackFlow {
-        val adapter = NfcAdapter.getDefaultAdapter(activity)
-            ?: throw NfcException("NFC is not available on this device")
+    override val detectedTags: Flow<NfcTag> =
+        callbackFlow {
+            val adapter =
+                NfcAdapter.getDefaultAdapter(activity)
+                    ?: throw NfcException("NFC is not available on this device")
 
-        val callback = NfcAdapter.ReaderCallback { tag ->
-            val isoDep = IsoDep.get(tag)
-                ?: return@ReaderCallback
+            val callback =
+                NfcAdapter.ReaderCallback { tag ->
+                    val isoDep =
+                        IsoDep.get(tag)
+                            ?: return@ReaderCallback
 
-            try {
-                isoDep.connect()
-            } catch (e: IOException) {
-                logger.e(TAG, "Failed to connect to tag", e)
-                return@ReaderCallback
-            }
-
-            val nfcTag = NfcTag(
-                id = tag.id,
-                description = buildString {
-                    append("Tech: ${tag.techList.joinToString()}")
-                    isoDep.historicalBytes?.let { bytes ->
-                        append("\nHistorical bytes: ${bytes.toHexString()}")
+                    try {
+                        isoDep.connect()
+                    } catch (e: IOException) {
+                        logger.e(TAG, "Failed to connect to tag", e)
+                        return@ReaderCallback
                     }
-                    append("\nMax transceive length: ${isoDep.maxTransceiveLength}")
-                },
-            )
 
-            currentConnection?.second?.closeQuietly()
-            currentConnection = nfcTag to isoDep
+                    val nfcTag =
+                        NfcTag(
+                            id = tag.id,
+                            description =
+                                buildString {
+                                    append("Tech: ${tag.techList.joinToString()}")
+                                    isoDep.historicalBytes?.let { bytes ->
+                                        append("\nHistorical bytes: ${bytes.toHexString()}")
+                                    }
+                                    append("\nMax transceive length: ${isoDep.maxTransceiveLength}")
+                                },
+                        )
 
-            logger.d(TAG, "Tag detected: uid=${nfcTag.id.toHexString()}")
-            trySend(nfcTag)
-        }
+                    currentConnection?.second?.closeQuietly()
+                    currentConnection = nfcTag to isoDep
 
-        adapter.enableReaderMode(
-            activity,
-            callback,
-            NfcAdapter.FLAG_READER_NFC_A
+                    logger.d(TAG, "Tag detected: uid=${nfcTag.id.toHexString()}")
+                    trySend(nfcTag)
+                }
+
+            adapter.enableReaderMode(
+                activity,
+                callback,
+                NfcAdapter.FLAG_READER_NFC_A
                     or NfcAdapter.FLAG_READER_NFC_B
                     or NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
-            null,
-        )
+                null,
+            )
 
-        logger.d(TAG, "Waiting for tags…")
+            logger.d(TAG, "Waiting for tags…")
 
-        awaitClose {
-            adapter.disableReaderMode(activity)
-            currentConnection?.second?.closeQuietly()
-            currentConnection = null
+            awaitClose {
+                adapter.disableReaderMode(activity)
+                currentConnection?.second?.closeQuietly()
+                currentConnection = null
+            }
         }
-    }
 
-    override suspend fun transceive(tag: NfcTag, command: CApdu): RApdu {
-        val isoDep = currentConnection
-            ?.takeIf { (currentTag, _) -> currentTag == tag }
-            ?.second
-            ?: throw NfcException("Tag is no longer available")
+    override suspend fun transceive(
+        tag: NfcTag,
+        command: CApdu,
+    ): RApdu {
+        val isoDep =
+            currentConnection
+                ?.takeIf { (currentTag, _) -> currentTag == tag }
+                ?.second
+                ?: throw NfcException("Tag is no longer available")
 
         return withContext(Dispatchers.IO) {
             try {
                 val commandBytes = command.serialize()
                 logger.i(TAG, "SEND > ${commandBytes.toPrettyHex()}")
-                val response = isoDep.transceive(commandBytes)
+                val response = isoDep.transceive(commandBytes.toByteArray()).toUByteArray()
                 logger.i(TAG, "RECV < ${response.toPrettyHex()}")
                 RApdu.parse(response)
             } catch (e: TagLostException) {

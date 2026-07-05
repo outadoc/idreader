@@ -1,42 +1,25 @@
 package fr.outadoc.eidas.nfc
 
-import fr.outadoc.eidas.utils.parseHex
-
-class CApdu private constructor(
-    val cla: Byte,
-    val ins: Byte,
-    val p1: Byte,
-    val p2: Byte,
-    val data: ByteArray,
-    val le: Byte?,
+class CApdu(
+    val cla: UByte,
+    val ins: UByte,
+    val p1: UByte,
+    val p2: UByte,
+    val data: UByteArray,
+    val le: UByte?,
 ) {
-    companion object {
-        fun selectAid(aidHex: String): CApdu {
-            val aid = aidHex.parseHex()
-            return CApdu(
-                cla = 0x00,
-                ins = 0xA4.toByte(),
-                p1 = 0x04,
-                p2 = 0x00,
-                data = aid,
-                le = 0x00,
-            )
-        }
-    }
-
-    fun serialize(): ByteArray {
-        return byteArrayOf(
+    fun serialize(): UByteArray =
+        ubyteArrayOf(
             cla,
             ins,
             p1,
             p2,
-            data.size.toByte(),
+            data.size.toUByte(),
             *data,
             *if (le != null) {
-                byteArrayOf(le)
+                ubyteArrayOf(le)
             } else {
-                byteArrayOf()
+                ubyteArrayOf()
             },
         )
-    }
 }

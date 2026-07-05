@@ -16,7 +16,8 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Aid
 import fr.outadoc.eidas.nfc.CApdu
 import fr.outadoc.eidas.nfc.NfcTagReader
-import fr.outadoc.eidas.utils.toPrettyHex
+import fr.outadoc.eidas.nfc.commands.MseSetAtUseCase
+import fr.outadoc.eidas.nfc.commands.SelectUseCase
 import org.koin.compose.koinInject
 
 private const val TAG = "App"
@@ -26,6 +27,8 @@ fun App(
     memoryLogger: MemoryLogger = koinInject(),
     logger: Logger = koinInject(),
     tagReader: NfcTagReader = koinInject(),
+    mseSetAtUseCase: MseSetAtUseCase = koinInject(),
+    selectUseCase: SelectUseCase = koinInject(),
 ) {
     AppTheme {
         val entries by memoryLogger.entries.collectAsState()
@@ -33,9 +36,9 @@ fun App(
         LaunchedEffect(tagReader) {
             try {
                 tagReader.detectedTags.collect { tag ->
-                    logger.i(TAG, "Tag detected: uid=${tag.id.toPrettyHex()}, ${tag.description}")
+                    logger.i(TAG, "Tag detected: ${tag.description}")
 
-                    val selectResponse = tagReader.transceive(tag, CApdu.selectAid(Aid.MRTD))
+                    val selectResponse = tagReader.transceive(tag, selectUseCase.selectAid(Aid.MRTD))
 
                     selectResponse.assertSuccess()
 
@@ -49,14 +52,14 @@ fun App(
         Scaffold { insets ->
             TerminalView(
                 entries = entries,
-                modifier = Modifier
-                    .padding(insets)
-                    .fillMaxSize(),
+                modifier =
+                    Modifier
+                        .padding(insets)
+                        .fillMaxSize(),
             )
         }
     }
 }
-
 
 @Composable
 @Preview
