@@ -4,6 +4,7 @@ import fr.outadoc.eidas.ReaderViewModel
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
+import fr.outadoc.eidas.nfc.commands.GeneralAuthenticateCommand
 import fr.outadoc.eidas.nfc.commands.MseSetAtCommand
 import fr.outadoc.eidas.nfc.commands.ReadBinaryCommand
 import fr.outadoc.eidas.nfc.commands.SelectCommand
@@ -20,16 +21,19 @@ val sharedModule =
         single { MemoryLogger(getOrNull(named("platformLogger"))) }
         single<Logger> { get<MemoryLogger>() }
 
+        factory { SecurityInfosParser() }
+
         factory { SelectCommand() }
         factory { MseSetAtCommand() }
         factory { ReadBinaryCommand() }
         factory { SelectFileCommand() }
-        factory { SecurityInfosParser() }
+        factory { GeneralAuthenticateCommand() }
 
         single<SettingsRepository> { DataStoreSettingsRepository(get()) }
 
         viewModel {
             ReaderViewModel(
+                get(),
                 get(),
                 get(),
                 get(),

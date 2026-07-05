@@ -56,5 +56,12 @@ object Iso7816 {
          * the terminal by its ISO 8859-1 encoded name.
          */
         val ReferenceOfAPublicKeySecretKey: UByte = 0x83u
+
+        /**
+         * Dynamic Authentication Data
+         *
+         * Protocol specific data objects.
+         */
+        val DynamicAuthenticationData: UByte = 0x7Cu
     }
 }

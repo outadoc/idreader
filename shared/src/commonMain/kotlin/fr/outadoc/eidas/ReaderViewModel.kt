@@ -9,6 +9,7 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.asn1.SecurityInfo
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
+import fr.outadoc.eidas.nfc.commands.GeneralAuthenticateCommand
 import fr.outadoc.eidas.nfc.commands.MseSetAtCommand
 import fr.outadoc.eidas.nfc.commands.ReadBinaryCommand
 import fr.outadoc.eidas.nfc.commands.SelectCommand
@@ -21,6 +22,7 @@ class ReaderViewModel(
     private val logger: Logger,
     private val tagReader: NfcTagReader,
     private val selectCommand: SelectCommand,
+    private val generalAuthenticateCommand: GeneralAuthenticateCommand,
     private val mseSetAtCommand: MseSetAtCommand,
     private val selectFileCommand: SelectFileCommand,
     private val readBinaryCommand: ReadBinaryCommand,
@@ -32,6 +34,8 @@ class ReaderViewModel(
                 tagReader.detectedTags.collect { tag ->
                     logger.i(TAG, "Tag detected: ${tag.description}")
 
+                    logger.i(TAG, "SELECT FILE EF.CardAccess")
+
                     tagReader
                         .transceive(
                             tag,
@@ -40,12 +44,10 @@ class ReaderViewModel(
                             ),
                         ).assertSuccess()
 
+                    logger.i(TAG, "READ BINARY EF.CardAccess")
+
                     val securityInfos =
-                        tagReader
-                            .transceive(
-                                tag,
-                                readBinaryCommand.readBinary(),
-                            )
+                        tagReader.transceive(tag, readBinaryCommand.readBinary())
 
                     securityInfos.assertSuccess()
 
@@ -53,8 +55,6 @@ class ReaderViewModel(
                         securityInfosParser.parse(
                             securityInfos.data.toByteArray(),
                         )
-
-                    logger.i(TAG, "Available protocols:")
 
                     infos.forEach { info ->
                         logger.i(TAG, "$info")
@@ -70,7 +70,17 @@ class ReaderViewModel(
                         "Chip does not support expected PACE algorithm."
                     }
 
-                    tagReader.transceive(tag, mseSetAtCommand.paceSetAt()).assertSuccess()
+                    logger.i(TAG, "MSE:Set AT")
+
+                    tagReader
+                        .transceive(tag, mseSetAtCommand.paceSetAt())
+                        .assertSuccess()
+
+                    logger.i(TAG, "GENERAL AUTHENTICATE")
+
+                    tagReader
+                        .transceive(tag, generalAuthenticateCommand.generalAuthenticate())
+                        .assertSuccess()
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)
