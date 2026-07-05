@@ -12,6 +12,7 @@ import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.asn1.SecurityInfo
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.settings.AppSettings
 import fr.outadoc.eidas.settings.SettingsRepository
 import fr.outadoc.eidas.utils.toPrettyHex
@@ -92,8 +93,17 @@ class ReaderViewModel(
 
                     val generalAuthResponse =
                         tagReader
-                            .transceive(tag, commandFactory.generalAuthenticate())
-                            .getDataOrThrow()
+                            .transceive(
+                                tag,
+                                commandFactory.generalAuthenticate(
+                                    tlvList {
+                                        tlv(
+                                            Iso7816.Tags.DynamicAuthenticationData,
+                                            ubyteArrayOf(),
+                                        )
+                                    },
+                                ),
+                            ).getDataOrThrow()
 
                     val dynamicAuthData: TLVList? =
                         TLVList
@@ -144,6 +154,28 @@ class ReaderViewModel(
                         )
 
                     logger.i(TAG, "Decrypted nonce: ${decryptedNonce.toPrettyHex()}")
+
+                    val ephemeralKeyPair = cryptoEngine.generateKeyPair(algorithm)
+
+                    val mappingData =
+                        tagReader
+                            .transceive(
+                                tag,
+                                commandFactory
+                                    .generalAuthenticate(
+                                        tlvList {
+                                            tlv(
+                                                Iso7816.Tags.DynamicAuthenticationData,
+                                                tlvList {
+                                                    tlv(
+                                                        Iso7816.Tags.MappingData,
+                                                        ephemeralKeyPair.publicKey.uncompressedPublicPoint,
+                                                    )
+                                                },
+                                            )
+                                        },
+                                    ),
+                            ).getDataOrThrow()
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)

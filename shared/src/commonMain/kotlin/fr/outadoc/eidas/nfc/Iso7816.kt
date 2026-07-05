@@ -54,5 +54,6 @@ object Iso7816 {
         val DynamicAuthenticationData: UByte = 0x7Cu
 
         val Nonce: UByte = 0x80u
+        val MappingData: UByte = 0x81u
     }
 }

@@ -5,19 +5,13 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.tlvList
 
 class CommandFactory {
-    fun generalAuthenticate(): CApdu =
+    fun generalAuthenticate(data: UByteArray): CApdu =
         CApdu(
             cla = 0x10u,
             ins = 0x86u,
             p1 = 0x00u,
             p2 = 0x00u,
-            data =
-                tlvList {
-                    tlv(
-                        Iso7816.Tags.DynamicAuthenticationData,
-                        ubyteArrayOf(),
-                    )
-                },
+            data = data,
             le = 0x00u,
         )
 

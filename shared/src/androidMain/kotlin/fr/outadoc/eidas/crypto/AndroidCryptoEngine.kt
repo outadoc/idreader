@@ -22,8 +22,7 @@ class AndroidCryptoEngine : CryptoEngine {
                 .Builder(
                     alias.toHexDashString(),
                     KeyProperties.PURPOSE_AGREE_KEY,
-                ).setIsStrongBoxBacked(true)
-                .setAlgorithmParameterSpec(
+                ).setAlgorithmParameterSpec(
                     ECGenParameterSpec(algorithm.getEcdhFunctionName()),
                 ).build()
 
