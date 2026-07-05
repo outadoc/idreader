@@ -1,8 +1,7 @@
 package fr.outadoc.eidas.nfc.commands
 
 import fr.outadoc.eidas.nfc.CApdu
-import io.github.rafaelrabeloit.bertlv.TLV
-import io.github.rafaelrabeloit.bertlv.TLVList
+import fr.outadoc.eidas.nfc.tlvList
 
 /**
  * The command MSE:Set AT is used to select and initialize the following protocols: PACE, Chip
@@ -63,20 +62,10 @@ class MseSetAtUseCase {
             p1 = 0xC1u,
             p2 = 0xA4u,
             data =
-                TLVList
-                    .fromTlvs(
-                        listOf(
-                            TLV.fromTagAndBinaryValue(
-                                Tags.CryptographicMechanismReference.toInt(),
-                                OID.PACE_AES256_GM_ECDH_BRAINPOOLP256R1.toByteArray(),
-                            ),
-                            TLV.fromTagAndBinaryValue(
-                                Tags.ReferenceOfAPublicKeySecretKey.toInt(),
-                                byteArrayOf(KeyRef.CAN.toByte()),
-                            ),
-                        ),
-                    ).bytes
-                    .toUByteArray(),
+                tlvList {
+                    tlv(Tags.CryptographicMechanismReference, OID.PACE_AES256_GM_ECDH_BRAINPOOLP256R1)
+                    tlv(Tags.ReferenceOfAPublicKeySecretKey, KeyRef.CAN)
+                },
             le = null,
         )
 }
