@@ -100,9 +100,9 @@ class AndroidNfcTagReader(
         return withContext(Dispatchers.IO) {
             try {
                 val commandBytes = command.serialize()
-                logger.i(TAG, "SEND > ${commandBytes.toPrettyHex()}")
+                logger.d(TAG, "SEND > ${commandBytes.toPrettyHex()}")
                 val response = isoDep.transceive(commandBytes.toByteArray()).toUByteArray()
-                logger.i(TAG, "RECV < ${response.toPrettyHex()}")
+                logger.d(TAG, "RECV < ${response.toPrettyHex()}")
                 RApdu.parse(response)
             } catch (e: TagLostException) {
                 throw NfcException("Tag was lost during communication", e)

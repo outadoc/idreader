@@ -11,7 +11,6 @@ import at.asitplus.signum.indispensable.asn1.encoding.parseFirst
 import at.asitplus.signum.indispensable.asn1.readOid
 
 class SecurityInfosParser {
-
     fun parse(bytes: ByteArray): List<SecurityInfo> {
         val set = Asn1Element.parseFirst(bytes).first as Asn1Set
         return set.children.mapNotNull { element ->
@@ -24,46 +23,85 @@ class SecurityInfosParser {
         val protocol = (children[0] as Asn1Primitive).readOid()
         val rest = children.drop(1)
         return when {
-            protocol.hasPrefix(ID_PACE) -> when (val next = rest[0]) {
-                is Asn1Primitive -> SecurityInfo.Pace(
-                    protocol,
-                    next.decodeToInt(),
-                    rest.getOrNull(1)?.let { (it as Asn1Primitive).decodeToInt() },
-                )
-                is Asn1Sequence -> SecurityInfo.PaceDomainParameter(
-                    protocol,
-                    next,
-                    rest.getOrNull(1)?.let { (it as Asn1Primitive).decodeToInt() },
-                )
-                else -> SecurityInfo.Unknown(protocol)
+            protocol.hasPrefix(ID_PACE) -> {
+                when (val next = rest[0]) {
+                    is Asn1Primitive -> {
+                        SecurityInfo.Pace(
+                            protocol = protocol,
+                            version = next.decodeToInt(),
+                            parameterId =
+                                rest
+                                    .getOrNull(1)
+                                    ?.let { (it as Asn1Primitive).decodeToInt() },
+                        )
+                    }
+
+                    is Asn1Sequence -> {
+                        SecurityInfo.PaceDomainParameter(
+                            protocol = protocol,
+                            domainParameter = next,
+                            parameterId =
+                                rest
+                                    .getOrNull(1)
+                                    ?.let { (it as Asn1Primitive).decodeToInt() },
+                        )
+                    }
+
+                    else -> {
+                        SecurityInfo.Unknown(protocol)
+                    }
+                }
             }
-            protocol.hasPrefix(ID_CA) -> when (val next = rest[0]) {
-                is Asn1Primitive -> SecurityInfo.ChipAuthentication(
-                    protocol,
-                    next.decodeToInt(),
-                    rest.getOrNull(1)?.let { (it as Asn1Primitive).decodeToInt() },
-                )
-                is Asn1Sequence -> SecurityInfo.ChipAuthenticationDomainParameter(
-                    protocol,
-                    next,
-                    rest.getOrNull(1)?.let { (it as Asn1Primitive).decodeToInt() },
-                )
-                else -> SecurityInfo.Unknown(protocol)
+
+            protocol.hasPrefix(ID_CA) -> {
+                when (val next = rest[0]) {
+                    is Asn1Primitive -> {
+                        SecurityInfo.ChipAuthentication(
+                            protocol = protocol,
+                            version = next.decodeToInt(),
+                            keyId = rest.getOrNull(1)?.let { (it as Asn1Primitive).decodeToInt() },
+                        )
+                    }
+
+                    is Asn1Sequence -> {
+                        SecurityInfo.ChipAuthenticationDomainParameter(
+                            protocol = protocol,
+                            domainParameter = next,
+                            keyId = rest.getOrNull(1)?.let { (it as Asn1Primitive).decodeToInt() },
+                        )
+                    }
+
+                    else -> {
+                        SecurityInfo.Unknown(protocol)
+                    }
+                }
             }
-            protocol.hasPrefix(ID_PK) -> SecurityInfo.ChipAuthenticationPublicKey(
-                protocol,
-                rest[0] as Asn1Sequence,
-                rest.getOrNull(1)?.let { (it as Asn1Primitive).decodeToInt() },
-            )
-            protocol.hasPrefix(ID_TA) -> SecurityInfo.TerminalAuthentication(
-                protocol,
-                (rest[0] as Asn1Primitive).decodeToInt(),
-            )
-            protocol == ID_CI -> SecurityInfo.CardInfo(
-                protocol,
-                (rest[0] as Asn1Primitive).decodeToIa5String().value,
-            )
-            else -> SecurityInfo.Unknown(protocol)
+
+            protocol.hasPrefix(ID_PK) -> {
+                SecurityInfo.ChipAuthenticationPublicKey(
+                    protocol = protocol,
+                    publicKey = rest[0] as Asn1Sequence,
+                    keyId = rest.getOrNull(1)?.let { (it as Asn1Primitive).decodeToInt() },
+                )
+            }
+
+            protocol.hasPrefix(ID_TA) -> {
+                SecurityInfo.TerminalAuthentication(
+                    protocol = protocol,
+                    version = (rest[0] as Asn1Primitive).decodeToInt(),
+                )
+            }
+
+            protocol == ID_CI -> {
+                SecurityInfo.CardInfo(
+                    protocol = protocol,
+                    url = (rest[0] as Asn1Primitive).decodeToIa5String().value,
+                )
+            }
+
+            else -> {
+                SecurityInfo.Unknown(protocol)
+            }
         }
     }
 
@@ -73,11 +111,10 @@ class SecurityInfosParser {
 
     @OptIn(ExperimentalUnsignedTypes::class)
     companion object {
-        // bsi-de = 0.4.0.127.0.7 (itu-t(0) identified-organization(4) etsi(0) reserved(127) etsi-identified-organization(0) 7)
-        private val ID_PACE = ObjectIdentifier(0u, 4u, 0u, 127u, 0u, 7u, 2u, 2u, 4u)
-        private val ID_CA   = ObjectIdentifier(0u, 4u, 0u, 127u, 0u, 7u, 2u, 2u, 3u)
-        private val ID_PK   = ObjectIdentifier(0u, 4u, 0u, 127u, 0u, 7u, 2u, 2u, 1u)
-        private val ID_TA   = ObjectIdentifier(0u, 4u, 0u, 127u, 0u, 7u, 2u, 2u, 2u)
-        private val ID_CI   = ObjectIdentifier(0u, 4u, 0u, 127u, 0u, 7u, 2u, 2u, 6u)
+        private val ID_PACE = ObjectIdentifier("0.4.0.127.0.7.2.2.4")
+        private val ID_CA = ObjectIdentifier("0.4.0.127.0.7.2.2.3")
+        private val ID_PK = ObjectIdentifier("0.4.0.127.0.7.2.2.1")
+        private val ID_TA = ObjectIdentifier("0.4.0.127.0.7.2.2.2")
+        private val ID_CI = ObjectIdentifier("0.4.0.127.0.7.2.2.6")
     }
 }

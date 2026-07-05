@@ -2,6 +2,7 @@ package fr.outadoc.eidas.di
 
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
+import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
 import fr.outadoc.eidas.nfc.commands.MseSetAtCommand
 import fr.outadoc.eidas.nfc.commands.ReadBinaryCommand
 import fr.outadoc.eidas.nfc.commands.SelectCommand
@@ -23,4 +24,5 @@ val sharedModule =
         factory { SelectFileCommand() }
         viewModel { SettingsViewModel(get()) }
         single<SettingsRepository> { DataStoreSettingsRepository(get()) }
+        factory { SecurityInfosParser() }
     }

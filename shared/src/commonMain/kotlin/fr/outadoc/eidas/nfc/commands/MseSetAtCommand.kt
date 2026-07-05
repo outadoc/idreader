@@ -25,7 +25,7 @@ class MseSetAtCommand {
                 tlvList {
                     tlv(
                         Iso7816.Tags.CryptographicMechanismReference,
-                        Iso7816.OID.PACE_AES256_GM_ECDH_BRAINPOOLP256R1,
+                        Iso7816.OID.PACE_AES256_GM_ECDH_BRAINPOOLP256R1.bytes,
                     )
                     tlv(
                         Iso7816.Tags.ReferenceOfAPublicKeySecretKey,

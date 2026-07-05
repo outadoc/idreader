@@ -27,8 +27,9 @@ import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcTagReader
-import fr.outadoc.eidas.nfc.commands.MseSetAtCommand
+import fr.outadoc.eidas.nfc.asn1.SecurityInfo
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
+import fr.outadoc.eidas.nfc.commands.MseSetAtCommand
 import fr.outadoc.eidas.nfc.commands.ReadBinaryCommand
 import fr.outadoc.eidas.nfc.commands.SelectCommand
 import fr.outadoc.eidas.nfc.commands.SelectFileCommand
@@ -47,6 +48,7 @@ fun App(
     mseSetAtCommand: MseSetAtCommand = koinInject(),
     selectFileCommand: SelectFileCommand = koinInject(),
     readBinaryCommand: ReadBinaryCommand = koinInject(),
+    securityInfosParser: SecurityInfosParser = koinInject(),
 ) {
     AppTheme {
         val entries by memoryLogger.entries.collectAsState()
@@ -57,8 +59,6 @@ fun App(
             try {
                 tagReader.detectedTags.collect { tag ->
                     logger.i(TAG, "Tag detected: ${tag.description}")
-
-                    // tagReader.transceive(tag, mseSetAtCommand.paceSetAt()).assertSuccess()
 
                     tagReader
                         .transceive(
@@ -77,11 +77,18 @@ fun App(
 
                     securityInfos.assertSuccess()
 
-                    val infos = SecurityInfosParser().parse(securityInfos.data.toByteArray())
+                    val infos: List<SecurityInfo> =
+                        securityInfosParser.parse(
+                            securityInfos.data.toByteArray(),
+                        )
+
+                    logger.i(TAG, "Available protocols:")
 
                     infos.forEach { info ->
                         logger.i(TAG, "$info")
                     }
+
+                    tagReader.transceive(tag, mseSetAtCommand.paceSetAt()).assertSuccess()
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)

@@ -1,5 +1,7 @@
 package fr.outadoc.eidas.nfc
 
+import at.asitplus.signum.indispensable.asn1.ObjectIdentifier
+
 object Iso7816 {
     object Aid {
         /**
@@ -12,7 +14,7 @@ object Iso7816 {
 
     object OID {
         val PACE_AES256_GM_ECDH_BRAINPOOLP256R1 =
-            "04007F00070202040204".hexToUByteArray()
+            ObjectIdentifier("0.4.0.127.0.7.2.2.4.2.4")
     }
 
     object File {

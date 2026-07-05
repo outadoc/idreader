@@ -17,6 +17,13 @@ class TlvListBuilder {
 
     fun tlv(
         tag: UByte,
+        value: ByteArray,
+    ) {
+        tlvs += TLV.fromTagAndBinaryValue(tag.toInt(), value)
+    }
+
+    fun tlv(
+        tag: UByte,
         value: UByte,
     ) {
         tlvs += TLV.fromTagAndBinaryValue(tag.toInt(), byteArrayOf(value.toByte()))
