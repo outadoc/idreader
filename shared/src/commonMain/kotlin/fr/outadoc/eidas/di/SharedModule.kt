@@ -17,6 +17,6 @@ val sharedModule =
         single<Logger> { get<MemoryLogger>() }
         factory { SelectUseCase() }
         factory { MseSetAtUseCase() }
-        viewModel { SettingsViewModel(get()) }
+        viewModel { SettingsViewModel(get(), get()) }
         single<SettingsRepository> { DataStoreSettingsRepository(get()) }
     }

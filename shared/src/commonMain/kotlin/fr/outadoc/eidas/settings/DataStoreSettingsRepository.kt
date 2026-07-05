@@ -12,9 +12,10 @@ class DataStoreSettingsRepository(
 ) : SettingsRepository {
     private val KEY_CAN = stringPreferencesKey("can")
 
-    override val can: Flow<String> = dataStore.data.map { it[KEY_CAN] ?: "" }
+    override val settings: Flow<AppSettings> =
+        dataStore.data.map { AppSettings(can = it[KEY_CAN] ?: "") }
 
-    override suspend fun setCan(value: String) {
+    override suspend fun updateCan(value: String) {
         dataStore.edit { it[KEY_CAN] = value }
     }
 }
