@@ -3,8 +3,8 @@ package fr.outadoc.eidas.crypto
 import org.bouncycastle.util.Arrays
 import java.math.BigInteger
 import java.security.interfaces.ECPublicKey
-import java.security.spec.ECPoint
 
+@OptIn(ExperimentalUnsignedTypes::class)
 class AndroidPublicKey(
     private val publicKey: java.security.PublicKey,
 ) : PublicKey {
@@ -14,15 +14,14 @@ class AndroidPublicKey(
     override val uncompressedPublicPoint: UByteArray
         get() {
             val pk = publicKey as ECPublicKey
-            return pk.w.serializeUncompressed()
-        }
+            val pk2 =
+                EcPoint(
+                    x = pk.w.affineX.toUByteArray(),
+                    y = pk.w.affineY.toUByteArray(),
+                )
 
-    private fun ECPoint.serializeUncompressed(): UByteArray =
-        ubyteArrayOf(
-            0x04u,
-            *affineX.toUByteArray(),
-            *affineY.toUByteArray(),
-        )
+            return pk2.serializeUncompressed()
+        }
 
     private fun BigInteger.toUByteArray(): UByteArray {
         val array = toByteArray()

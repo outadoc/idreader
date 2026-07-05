@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.outadoc.eidas.crypto.Algorithm
 import fr.outadoc.eidas.crypto.CryptoEngine
+import fr.outadoc.eidas.crypto.deserializedUncompressedEcPoint
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.e
@@ -24,6 +25,7 @@ import okio.ByteString.Companion.encode
 
 private const val TAG = "ReaderViewModel"
 
+@OptIn(ExperimentalUnsignedTypes::class)
 class ReaderViewModel(
     private val logger: Logger,
     private val cryptoEngine: CryptoEngine,
@@ -206,7 +208,9 @@ class ReaderViewModel(
                         "Could not find mapping data in dynamic auth data"
                     }
 
-                    logger.d(TAG, "mapping data: ${chipMappingData.toPrettyHex()}")
+                    val pointFromChip = deserializedUncompressedEcPoint(chipMappingData)
+
+                    logger.d(TAG, "mapping data: $pointFromChip")
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)

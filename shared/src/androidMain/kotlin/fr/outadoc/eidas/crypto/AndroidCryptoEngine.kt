@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package fr.outadoc.eidas.crypto
 
 import org.bouncycastle.crypto.engines.AESEngine
@@ -100,7 +102,7 @@ class AndroidCryptoEngine : CryptoEngine {
         return output
     }
 
-    fun Int.toByteArrayBe(): UByteArray {
+    private fun Int.toByteArrayBe(): UByteArray {
         val bb = ByteBuffer.allocate(4)
         bb.order(ByteOrder.BIG_ENDIAN)
         bb.putInt(this)
