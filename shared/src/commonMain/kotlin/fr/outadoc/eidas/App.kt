@@ -21,82 +21,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import fr.outadoc.eidas.icons.AppIcons
 import fr.outadoc.eidas.icons.settings
-import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
-import fr.outadoc.eidas.logging.e
-import fr.outadoc.eidas.logging.i
-import fr.outadoc.eidas.nfc.Iso7816
-import fr.outadoc.eidas.nfc.NfcTagReader
-import fr.outadoc.eidas.nfc.asn1.SecurityInfo
-import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
-import fr.outadoc.eidas.nfc.commands.MseSetAtCommand
-import fr.outadoc.eidas.nfc.commands.ReadBinaryCommand
-import fr.outadoc.eidas.nfc.commands.SelectCommand
-import fr.outadoc.eidas.nfc.commands.SelectFileCommand
 import fr.outadoc.eidas.settings.SettingsScreen
 import org.koin.compose.koinInject
-
-private const val TAG = "App"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(
     memoryLogger: MemoryLogger = koinInject(),
-    logger: Logger = koinInject(),
-    tagReader: NfcTagReader = koinInject(),
-    selectCommand: SelectCommand = koinInject(),
-    mseSetAtCommand: MseSetAtCommand = koinInject(),
-    selectFileCommand: SelectFileCommand = koinInject(),
-    readBinaryCommand: ReadBinaryCommand = koinInject(),
-    securityInfosParser: SecurityInfosParser = koinInject(),
+    viewModel: ReaderViewModel = koinInject(),
 ) {
     AppTheme {
         val entries by memoryLogger.entries.collectAsState()
         var showSettings by remember { mutableStateOf(false) }
         val sheetState = rememberModalBottomSheetState()
 
-        LaunchedEffect(tagReader) {
-            try {
-                tagReader.detectedTags.collect { tag ->
-                    logger.i(TAG, "Tag detected: ${tag.description}")
-
-                    tagReader
-                        .transceive(
-                            tag,
-                            selectFileCommand.selectFile(
-                                Iso7816.File.CardAccess.FILE_ID,
-                            ),
-                        ).assertSuccess()
-
-                    val securityInfos =
-                        tagReader
-                            .transceive(
-                                tag,
-                                readBinaryCommand.readBinary(),
-                            )
-
-                    securityInfos.assertSuccess()
-
-                    val infos: List<SecurityInfo> =
-                        securityInfosParser.parse(
-                            securityInfos.data.toByteArray(),
-                        )
-
-                    logger.i(TAG, "Available protocols:")
-
-                    infos.forEach { info ->
-                        logger.i(TAG, "$info")
-                    }
-
-                    check(infos.any { info -> info.protocol == Iso7816.OID.PACE_AES256_GM_ECDH_BRAINPOOLP256R1 }) {
-                        "Chip does not support expected PACE algorithm."
-                    }
-
-                    tagReader.transceive(tag, mseSetAtCommand.paceSetAt()).assertSuccess()
-                }
-            } catch (e: Exception) {
-                logger.e(TAG, "Error", e)
-            }
+        LaunchedEffect(viewModel) {
+            viewModel.startListening()
         }
 
         Scaffold(
