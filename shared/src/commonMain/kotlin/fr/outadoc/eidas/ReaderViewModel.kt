@@ -10,6 +10,8 @@ import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.asn1.SecurityInfo
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.utils.toPrettyHex
+import io.github.rafaelrabeloit.bertlv.TLVList
 import kotlinx.coroutines.launch
 
 private const val TAG = "ReaderViewModel"
@@ -76,9 +78,34 @@ class ReaderViewModel(
 
                     logger.i(TAG, "GENERAL AUTHENTICATE")
 
-                    tagReader
-                        .transceive(tag, commandFactory.generalAuthenticate())
-                        .getDataOrThrow()
+                    val generalAuthResponse =
+                        tagReader
+                            .transceive(tag, commandFactory.generalAuthenticate())
+                            .getDataOrThrow()
+
+                    val dynamicAuthData: TLVList? =
+                        TLVList
+                            .fromTlvListBuffer(generalAuthResponse.toByteArray())
+                            .find(Iso7816.Tags.DynamicAuthenticationData.toInt())
+                            ?.value as? TLVList
+
+                    checkNotNull(dynamicAuthData) {
+                        "Could not find dynamic auth data in reponse"
+                    }
+
+                    val encryptedNonce: UByteArray? =
+                        (
+                            dynamicAuthData
+                                .find(Iso7816.Tags.Nonce.toInt())
+                                ?.value
+                                as? ByteArray
+                        )?.toUByteArray()
+
+                    checkNotNull(encryptedNonce) {
+                        "Could not find nonce in dynamic auth data"
+                    }
+
+                    logger.i(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)

@@ -63,5 +63,7 @@ object Iso7816 {
          * Protocol specific data objects.
          */
         val DynamicAuthenticationData: UByte = 0x7Cu
+
+        val Nonce: UByte = 0x80u
     }
 }
