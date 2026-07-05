@@ -22,5 +22,9 @@ value class RApdu private constructor(
     val isSuccess: Boolean
         get() = sw1 == 0x90.toByte() && sw2 == 0x00.toByte()
 
+    fun assertSuccess() {
+        check(isSuccess) { "Command failure: $this" }
+    }
+
     override fun toString(): String = data.toPrettyHex()
 }
