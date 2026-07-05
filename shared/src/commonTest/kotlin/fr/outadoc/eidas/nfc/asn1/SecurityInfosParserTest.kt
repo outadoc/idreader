@@ -34,13 +34,13 @@ class SecurityInfosParserTest {
 
     @Test
     fun parsesExactlyTwoEntries() {
-        val result = parser.parse(derBytes)
+        val result = parser.parse(derBytes.toUByteArray())
         assertEquals(2, result.size)
     }
 
     @Test
     fun parsesFirstPaceInfo() {
-        val pace = parser.parse(derBytes)[0] as SecurityInfo.Pace
+        val pace = parser.parse(derBytes.toUByteArray())[0] as SecurityInfo.Pace
         assertEquals(ObjectIdentifier("0.4.0.127.0.7.2.2.4.2.4"), pace.protocol)
         assertEquals(2, pace.version)
         assertEquals(13, pace.parameterId)
@@ -48,7 +48,7 @@ class SecurityInfosParserTest {
 
     @Test
     fun parsesSecondPaceInfo() {
-        val pace = parser.parse(derBytes)[1] as SecurityInfo.Pace
+        val pace = parser.parse(derBytes.toUByteArray())[1] as SecurityInfo.Pace
         assertEquals(ObjectIdentifier("0.4.0.127.0.7.2.2.4.4.4"), pace.protocol)
         assertEquals(2, pace.version)
         assertEquals(13, pace.parameterId)
@@ -57,7 +57,7 @@ class SecurityInfosParserTest {
     @Test
     fun ignoresTrailingPaddingBytes() {
         // Padding must not produce extra entries
-        val result = parser.parse(derBytes)
+        val result = parser.parse(derBytes.toUByteArray())
         assertEquals(2, result.size)
     }
 
@@ -77,7 +77,7 @@ class SecurityInfosParserTest {
                     0x02, 0x01, 0x02,
                     0x02, 0x01, 0x0D,
         )
-        val result = parser.parse(derWithoutParamId)
+        val result = parser.parse(derWithoutParamId.toUByteArray())
         val first = result[0] as SecurityInfo.Pace
         assertNull(first.parameterId)
         val second = result[1] as SecurityInfo.Pace
