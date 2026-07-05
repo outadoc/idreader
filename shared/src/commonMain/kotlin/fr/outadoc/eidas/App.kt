@@ -88,6 +88,10 @@ fun App(
                         logger.i(TAG, "$info")
                     }
 
+                    check(infos.any { info -> info.protocol == Iso7816.OID.PACE_AES256_GM_ECDH_BRAINPOOLP256R1 }) {
+                        "Chip does not support expected PACE algorithm."
+                    }
+
                     tagReader.transceive(tag, mseSetAtCommand.paceSetAt()).assertSuccess()
                 }
             } catch (e: Exception) {
