@@ -7,5 +7,5 @@ import org.koin.dsl.module
 
 fun activityScopedModule(activity: Activity) =
     module {
-        factory<NfcTagReader> { AndroidNfcTagReader(activity, get()) }
+        single<NfcTagReader> { AndroidNfcTagReader(activity, get()) }
     }

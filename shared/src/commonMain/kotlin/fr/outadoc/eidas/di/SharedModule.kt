@@ -5,6 +5,12 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
+import fr.outadoc.eidas.pace.PaceGetNonceUseCase
+import fr.outadoc.eidas.pace.PaceKeyAgreementUseCase
+import fr.outadoc.eidas.pace.PaceMapNonceUseCase
+import fr.outadoc.eidas.pace.PaceMutualAuthUseCase
+import fr.outadoc.eidas.pace.ReadCardAccessUseCase
 import fr.outadoc.eidas.settings.DataStoreSettingsRepository
 import fr.outadoc.eidas.settings.SettingsRepository
 import fr.outadoc.eidas.settings.SettingsViewModel
@@ -22,15 +28,13 @@ val sharedModule =
 
         single<SettingsRepository> { DataStoreSettingsRepository(get()) }
 
+        factory { ReadCardAccessUseCase(get(), get(), get(), get()) }
+        factory { PaceGetNonceUseCase(get(), get(), get(), get()) }
+        factory { PaceMapNonceUseCase(get(), get(), get(), get()) }
+        factory { PaceKeyAgreementUseCase(get(), get(), get(), get()) }
+        factory { PaceMutualAuthUseCase(get(), get(), get(), get()) }
+        factory { PaceAuthenticateUseCase(get(), get(), get(), get(), get(), get()) }
+
         viewModel { SettingsViewModel(get()) }
-        viewModel {
-            ReaderViewModel(
-                get(),
-                get(),
-                get(),
-                get(),
-                get(),
-                get(),
-            )
-        }
+        viewModel { ReaderViewModel(get(), get(), get(), get()) }
     }
