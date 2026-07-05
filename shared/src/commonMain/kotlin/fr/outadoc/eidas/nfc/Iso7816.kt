@@ -56,5 +56,9 @@ object Iso7816 {
         val Nonce: UByte = 0x80u
         val MappingData: UByte = 0x81u
         val ChipMappingData: UByte = 0x82u
+        val EphemeralPublicKey: UByte = 0x83u
+        val ChipPublicKey: UByte = 0x84u
+        val AuthenticationToken: UByte = 0x85u
+        val ChipAuthenticationToken: UByte = 0x86u
     }
 }

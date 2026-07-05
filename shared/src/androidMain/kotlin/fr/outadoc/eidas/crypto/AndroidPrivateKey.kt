@@ -1,8 +1,9 @@
 package fr.outadoc.eidas.crypto
 
-class AndroidPrivateKey(
-    private val privateKey: java.security.PrivateKey,
-) : PrivateKey {
+import java.math.BigInteger
+
+@OptIn(ExperimentalUnsignedTypes::class)
+class AndroidPrivateKey(internal val scalar: BigInteger) : PrivateKey {
     override val encoded: UByteArray
-        get() = privateKey.encoded.toUByteArray()
+        get() = scalar.toByteArray().toUByteArray()
 }

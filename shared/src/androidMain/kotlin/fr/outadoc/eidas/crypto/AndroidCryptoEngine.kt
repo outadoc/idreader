@@ -2,15 +2,22 @@
 
 package fr.outadoc.eidas.crypto
 
+import org.bouncycastle.asn1.x9.ECNamedCurveTable
+import org.bouncycastle.asn1.x9.X9ECParameters
 import org.bouncycastle.crypto.engines.AESEngine
+import org.bouncycastle.crypto.macs.CMac
 import org.bouncycastle.crypto.modes.CBCBlockCipher
 import org.bouncycastle.crypto.params.KeyParameter
 import org.bouncycastle.crypto.params.ParametersWithIV
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.security.KeyPairGenerator
 import java.security.MessageDigest
+import java.security.SecureRandom
+import java.security.interfaces.ECPrivateKey
+import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
 
 class AndroidCryptoEngine : CryptoEngine {
@@ -21,47 +28,114 @@ class AndroidCryptoEngine : CryptoEngine {
                 .apply { initialize(ECGenParameterSpec(algorithm.getEcdhFunctionName())) }
                 .generateKeyPair()
 
+        val ecPub = kp.public as ECPublicKey
         return KeyPair(
-            privateKey =
-                AndroidPrivateKey(
-                    privateKey = kp.private,
-                ),
+            privateKey = AndroidPrivateKey((kp.private as ECPrivateKey).s),
             publicKey =
                 AndroidPublicKey(
-                    publicKey = kp.public,
+                    EcPoint(
+                        x = ecPub.w.affineX.toUByteArrayStripped(),
+                        y = ecPub.w.affineY.toUByteArrayStripped(),
+                    ),
                 ),
         )
     }
 
-    /**
-     * Generic key derivation function.
-     *
-     * See section A.2.3
-     *
-     * @param secret The shared secret value K
-     * @param nonce A nonce (optional)
-     * @param counter An integer counter
-     */
+    override fun generateKeyPairOnGenerator(
+        algorithm: Algorithm,
+        generator: EcPoint,
+    ): KeyPair {
+        val params = algorithm.ecParams()
+        val d =
+            BigInteger(params.n.bitLength(), SecureRandom())
+                .mod(params.n - BigInteger.ONE) + BigInteger.ONE
+
+        val gPrime =
+            params.curve.createPoint(
+                BigInteger(1, generator.x.toByteArray()),
+                BigInteger(1, generator.y.toByteArray()),
+            )
+
+        val pub = gPrime.multiply(d).normalize()
+
+        return KeyPair(
+            privateKey = AndroidPrivateKey(d),
+            publicKey =
+                AndroidPublicKey(
+                    EcPoint(
+                        x = pub.xCoord.encoded.toUByteArray(),
+                        y = pub.yCoord.encoded.toUByteArray(),
+                    ),
+                ),
+        )
+    }
+
+    override fun computeMappedGenerator(
+        algorithm: Algorithm,
+        mappingPrivateKey: PrivateKey,
+        chipMappingPublicPoint: EcPoint,
+        decryptedNonce: UByteArray,
+    ): EcPoint {
+        val params = algorithm.ecParams()
+        val d = (mappingPrivateKey as AndroidPrivateKey).scalar
+        val chipPub =
+            params.curve.createPoint(
+                BigInteger(1, chipMappingPublicPoint.x.toByteArray()),
+                BigInteger(1, chipMappingPublicPoint.y.toByteArray()),
+            )
+
+        val h = chipPub.multiply(d).normalize()
+        val s = BigInteger(1, decryptedNonce.toByteArray()).mod(params.n)
+        val gPrime = h.add(params.g.multiply(s)).normalize()
+
+        return EcPoint(
+            x = gPrime.xCoord.encoded.toUByteArray(),
+            y = gPrime.yCoord.encoded.toUByteArray(),
+        )
+    }
+
+    override fun computeSharedSecret(
+        algorithm: Algorithm,
+        privateKey: PrivateKey,
+        chipPublicPoint: EcPoint,
+    ): UByteArray {
+        val params = algorithm.ecParams()
+        val d = (privateKey as AndroidPrivateKey).scalar
+        val chipPub =
+            params.curve.createPoint(
+                BigInteger(1, chipPublicPoint.x.toByteArray()),
+                BigInteger(1, chipPublicPoint.y.toByteArray()),
+            )
+
+        val shared = chipPub.multiply(d).normalize()
+        return shared.xCoord.encoded.toUByteArray()
+    }
+
+    override fun computeCmac(
+        algorithm: Algorithm,
+        key: UByteArray,
+        data: UByteArray,
+    ): UByteArray {
+        val mac = CMac(AESEngine.newInstance())
+        mac.init(KeyParameter(key.toByteArray()))
+        mac.update(data.toByteArray(), 0, data.size)
+        val out = ByteArray(mac.macSize)
+        mac.doFinal(out, 0)
+        return out.toUByteArray()
+    }
+
     override fun deriveKeyFromSecret(
         algorithm: Algorithm,
         secret: UByteArray,
         nonce: UByteArray,
         counter: Int,
     ): UByteArray {
-        val message =
-            ubyteArrayOf(
-                *secret,
-                *nonce,
-                *counter.toByteArrayBe(),
-            )
-
-        val digest =
-            MessageDigest
-                .getInstance(algorithm.getHashFunctionName())
-                .apply { update(message.toByteArray()) }
-                .digest()
-
-        return digest.toUByteArray()
+        val message = ubyteArrayOf(*secret, *nonce, *counter.toByteArrayBe())
+        return MessageDigest
+            .getInstance(algorithm.getHashFunctionName())
+            .apply { update(message.toByteArray()) }
+            .digest()
+            .toUByteArray()
     }
 
     override fun decryptSymmetric(
@@ -71,10 +145,7 @@ class AndroidCryptoEngine : CryptoEngine {
     ): UByteArray =
         when (algorithm) {
             Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1 -> {
-                decryptAesCbc(
-                    key = key.toByteArray(),
-                    data = data.toByteArray(),
-                ).toUByteArray()
+                decryptAesCbc(key.toByteArray(), data.toByteArray()).toUByteArray()
             }
         }
 
@@ -82,23 +153,19 @@ class AndroidCryptoEngine : CryptoEngine {
         key: ByteArray,
         data: ByteArray,
     ): ByteArray {
-        val cipher = AESEngine.newInstance()
-        val cbc = CBCBlockCipher.newInstance(cipher)
-
-        val params =
+        val cbc = CBCBlockCipher.newInstance(AESEngine.newInstance())
+        cbc.init(
+            false,
             ParametersWithIV(
                 KeyParameter(key),
                 ByteArray(cbc.blockSize),
-            )
-
-        cbc.init(false, params)
-
+            ),
+        )
         val output = ByteArray(data.size)
         var offset = 0
         while (offset < data.size) {
             offset += cbc.processBlock(data, offset, output, offset)
         }
-
         return output
     }
 
@@ -109,11 +176,20 @@ class AndroidCryptoEngine : CryptoEngine {
         return bb.array().toUByteArray()
     }
 
+    private fun BigInteger.toUByteArrayStripped(): UByteArray {
+        val bytes = toByteArray()
+        return if (bytes.isNotEmpty() && bytes[0] == 0.toByte()) {
+            bytes.copyOfRange(1, bytes.size).toUByteArray()
+        } else {
+            bytes.toUByteArray()
+        }
+    }
+
+    private fun Algorithm.ecParams(): X9ECParameters = ECNamedCurveTable.getByName(getEcdhFunctionName())
+
     private fun Algorithm.getEcdhFunctionName(): String =
         when (this) {
-            Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1 -> {
-                "brainpoolP256r1"
-            }
+            Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1 -> "brainpoolP256r1"
         }
 
     private fun Algorithm.getHashFunctionName(): String =

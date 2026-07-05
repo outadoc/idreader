@@ -12,7 +12,7 @@ fun deserializedUncompressedEcPoint(data: UByteArray): EcPoint {
     val coordSize: Int = (data.size - 1) / 2
 
     return EcPoint(
-        x = data.copyOfRange(1, coordSize),
-        y = data.copyOfRange(coordSize + 1, coordSize * 2 + 1),
+        x = data.copyOfRange(1, 1 + coordSize),
+        y = data.copyOfRange(1 + coordSize, 1 + coordSize * 2),
     )
 }
