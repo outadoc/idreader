@@ -24,8 +24,9 @@ class RApdu private constructor(
     val isSuccess: Boolean
         get() = sw1 == 0x90u.toUByte() && sw2 == 0x00u.toUByte()
 
-    fun assertSuccess() {
+    fun getDataOrThrow(): UByteArray {
         check(isSuccess) { "Command failure: $this" }
+        return data
     }
 
     override fun toString(): String = data.toPrettyHex()

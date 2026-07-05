@@ -11,8 +11,8 @@ import at.asitplus.signum.indispensable.asn1.encoding.parseFirst
 import at.asitplus.signum.indispensable.asn1.readOid
 
 class SecurityInfosParser {
-    fun parse(bytes: ByteArray): List<SecurityInfo> {
-        val set = Asn1Element.parseFirst(bytes).first as Asn1Set
+    fun parse(bytes: UByteArray): List<SecurityInfo> {
+        val set = Asn1Element.parseFirst(bytes.toByteArray()).first as Asn1Set
         return set.children.mapNotNull { element ->
             runCatching { parseSecurityInfo(element as Asn1Sequence) }.getOrNull()
         }

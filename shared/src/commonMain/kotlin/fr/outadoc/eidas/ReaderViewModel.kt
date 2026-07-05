@@ -34,19 +34,17 @@ class ReaderViewModel(
                             commandFactory.selectFile(
                                 Iso7816.File.CardAccess.FILE_ID,
                             ),
-                        ).assertSuccess()
+                        ).getDataOrThrow()
 
                     logger.i(TAG, "READ BINARY EF.CardAccess")
 
                     val securityInfos =
-                        tagReader.transceive(tag, commandFactory.readBinary())
-
-                    securityInfos.assertSuccess()
+                        tagReader
+                            .transceive(tag, commandFactory.readBinary())
+                            .getDataOrThrow()
 
                     val infos: List<SecurityInfo> =
-                        securityInfosParser.parse(
-                            securityInfos.data.toByteArray(),
-                        )
+                        securityInfosParser.parse(securityInfos)
 
                     infos.forEach { info ->
                         logger.i(TAG, "$info")
@@ -74,13 +72,13 @@ class ReaderViewModel(
                                         .toUByteArray(),
                                 keyReference = Iso7816.KeyRef.CAN,
                             ),
-                        ).assertSuccess()
+                        ).getDataOrThrow()
 
                     logger.i(TAG, "GENERAL AUTHENTICATE")
 
                     tagReader
                         .transceive(tag, commandFactory.generalAuthenticate())
-                        .assertSuccess()
+                        .getDataOrThrow()
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)
