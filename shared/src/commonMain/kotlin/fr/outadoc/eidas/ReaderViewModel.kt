@@ -9,11 +9,7 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.asn1.SecurityInfo
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
-import fr.outadoc.eidas.nfc.commands.GeneralAuthenticateCommand
-import fr.outadoc.eidas.nfc.commands.MseSetAtCommand
-import fr.outadoc.eidas.nfc.commands.ReadBinaryCommand
-import fr.outadoc.eidas.nfc.commands.SelectCommand
-import fr.outadoc.eidas.nfc.commands.SelectFileCommand
+import fr.outadoc.eidas.nfc.commands.CommandFactory
 import kotlinx.coroutines.launch
 
 private const val TAG = "ReaderViewModel"
@@ -21,11 +17,7 @@ private const val TAG = "ReaderViewModel"
 class ReaderViewModel(
     private val logger: Logger,
     private val tagReader: NfcTagReader,
-    private val selectCommand: SelectCommand,
-    private val generalAuthenticateCommand: GeneralAuthenticateCommand,
-    private val mseSetAtCommand: MseSetAtCommand,
-    private val selectFileCommand: SelectFileCommand,
-    private val readBinaryCommand: ReadBinaryCommand,
+    private val commandFactory: CommandFactory,
     private val securityInfosParser: SecurityInfosParser,
 ) : ViewModel() {
     fun startListening() {
@@ -39,7 +31,7 @@ class ReaderViewModel(
                     tagReader
                         .transceive(
                             tag,
-                            selectFileCommand.selectFile(
+                            commandFactory.selectFile(
                                 Iso7816.File.CardAccess.FILE_ID,
                             ),
                         ).assertSuccess()
@@ -47,7 +39,7 @@ class ReaderViewModel(
                     logger.i(TAG, "READ BINARY EF.CardAccess")
 
                     val securityInfos =
-                        tagReader.transceive(tag, readBinaryCommand.readBinary())
+                        tagReader.transceive(tag, commandFactory.readBinary())
 
                     securityInfos.assertSuccess()
 
@@ -73,13 +65,13 @@ class ReaderViewModel(
                     logger.i(TAG, "MSE:Set AT")
 
                     tagReader
-                        .transceive(tag, mseSetAtCommand.paceSetAt())
+                        .transceive(tag, commandFactory.paceSetAt())
                         .assertSuccess()
 
                     logger.i(TAG, "GENERAL AUTHENTICATE")
 
                     tagReader
-                        .transceive(tag, generalAuthenticateCommand.generalAuthenticate())
+                        .transceive(tag, commandFactory.generalAuthenticate())
                         .assertSuccess()
                 }
             } catch (e: Exception) {
