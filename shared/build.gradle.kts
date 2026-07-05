@@ -52,6 +52,7 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.annotations)
+            implementation(libs.signum.indispensable)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

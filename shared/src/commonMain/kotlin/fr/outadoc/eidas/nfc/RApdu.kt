@@ -2,9 +2,10 @@ package fr.outadoc.eidas.nfc
 
 import fr.outadoc.eidas.utils.toPrettyHex
 
-@JvmInline
-value class RApdu private constructor(
+class RApdu private constructor(
     val data: UByteArray,
+    val sw1: UByte,
+    val sw2: UByte,
 ) {
     companion object {
         fun parse(data: UByteArray): RApdu {
@@ -12,12 +13,13 @@ value class RApdu private constructor(
                 "R-APDU must be at least 2 bytes long, was: ${data.toHexString()}"
             }
 
-            return RApdu(data)
+            return RApdu(
+                data = data.copyOf(data.size - 2),
+                sw1 = data[data.size - 2],
+                sw2 = data[data.size - 1],
+            )
         }
     }
-
-    val sw1: UByte get() = data[data.size - 2]
-    val sw2: UByte get() = data[data.size - 1]
 
     val isSuccess: Boolean
         get() = sw1 == 0x90u.toUByte() && sw2 == 0x00u.toUByte()

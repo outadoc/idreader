@@ -19,6 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import at.asitplus.signum.indispensable.asn1.Asn1Element
+import at.asitplus.signum.indispensable.asn1.encoding.parseAll
 import fr.outadoc.eidas.icons.AppIcons
 import fr.outadoc.eidas.icons.settings
 import fr.outadoc.eidas.logging.Logger
@@ -67,11 +69,22 @@ fun App(
                             ),
                         ).assertSuccess()
 
-                    tagReader
-                        .transceive(
-                            tag,
-                            readBinaryCommand.readBinary(),
-                        ).assertSuccess()
+                    val securityInfos =
+                        tagReader
+                            .transceive(
+                                tag,
+                                readBinaryCommand.readBinary(),
+                            )
+
+                    securityInfos.assertSuccess()
+
+                    val parsed = Asn1Element.parseAll(securityInfos.data.toByteArray())
+
+                    parsed.forEach { element ->
+                        logger.i(TAG, "$element")
+
+                        // TODO decode this properly
+                    }
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)
