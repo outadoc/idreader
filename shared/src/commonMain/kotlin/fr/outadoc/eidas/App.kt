@@ -13,8 +13,6 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
-import fr.outadoc.eidas.nfc.Aid
-import fr.outadoc.eidas.nfc.CApdu
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.commands.MseSetAtUseCase
 import fr.outadoc.eidas.nfc.commands.SelectUseCase
@@ -38,11 +36,9 @@ fun App(
                 tagReader.detectedTags.collect { tag ->
                     logger.i(TAG, "Tag detected: ${tag.description}")
 
-                    val selectResponse = tagReader.transceive(tag, selectUseCase.selectAid(Aid.MRTD))
+                    val paceSetAtResponse = tagReader.transceive(tag, mseSetAtUseCase.paceSetAt())
 
-                    selectResponse.assertSuccess()
-
-                    logger.i(TAG, "SELECT AID response: $selectResponse")
+                    paceSetAtResponse.assertSuccess()
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)
