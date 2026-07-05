@@ -1,0 +1,21 @@
+package fr.outadoc.eidas.settings
+
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+
+class AndroidSettingsRepository(
+    private val dataStore: DataStore<Preferences>,
+) : SettingsRepository {
+
+    private val KEY_CAN = stringPreferencesKey("can")
+
+    override val can: Flow<String> = dataStore.data.map { it[KEY_CAN] ?: "" }
+
+    override suspend fun setCan(value: String) {
+        dataStore.edit { it[KEY_CAN] = value }
+    }
+}
