@@ -15,6 +15,13 @@ object Iso7816 {
             "04007F00070202040204".hexToUByteArray()
     }
 
+    object File {
+        object CardAccess {
+            val FILE_ID = ubyteArrayOf(0x01u, 0x1Cu)
+            val SHORT_FILE_ID: UByte = 0x1Cu
+        }
+    }
+
     object KeyRef {
         val MRZ: UByte = 0x01u
         val CAN: UByte = 0x02u

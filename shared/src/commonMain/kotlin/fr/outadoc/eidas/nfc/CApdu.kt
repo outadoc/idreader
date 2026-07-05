@@ -5,7 +5,7 @@ class CApdu(
     val ins: UByte,
     val p1: UByte,
     val p2: UByte,
-    val data: UByteArray,
+    val data: UByteArray? = null,
     val le: UByte?,
 ) {
     fun serialize(): UByteArray =
@@ -14,8 +14,12 @@ class CApdu(
             ins,
             p1,
             p2,
-            data.size.toUByte(),
-            *data,
+            *if (data != null) {
+                ubyteArrayOf(data.size.toUByte())
+            } else {
+                ubyteArrayOf()
+            },
+            *(data ?: ubyteArrayOf()),
             *if (le != null) {
                 ubyteArrayOf(le)
             } else {

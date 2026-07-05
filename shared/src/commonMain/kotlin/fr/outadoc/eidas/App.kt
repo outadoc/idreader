@@ -25,8 +25,12 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
+import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.commands.MseSetAtCommand
+import fr.outadoc.eidas.nfc.commands.ReadBinaryCommand
+import fr.outadoc.eidas.nfc.commands.SelectCommand
+import fr.outadoc.eidas.nfc.commands.SelectFileCommand
 import fr.outadoc.eidas.settings.SettingsScreen
 import org.koin.compose.koinInject
 
@@ -38,7 +42,10 @@ fun App(
     memoryLogger: MemoryLogger = koinInject(),
     logger: Logger = koinInject(),
     tagReader: NfcTagReader = koinInject(),
+    selectCommand: SelectCommand = koinInject(),
     mseSetAtCommand: MseSetAtCommand = koinInject(),
+    selectFileCommand: SelectFileCommand = koinInject(),
+    readBinaryCommand: ReadBinaryCommand = koinInject(),
 ) {
     AppTheme {
         val entries by memoryLogger.entries.collectAsState()
@@ -50,7 +57,21 @@ fun App(
                 tagReader.detectedTags.collect { tag ->
                     logger.i(TAG, "Tag detected: ${tag.description}")
 
-                    tagReader.transceive(tag, mseSetAtCommand.paceSetAt()).assertSuccess()
+                    // tagReader.transceive(tag, mseSetAtCommand.paceSetAt()).assertSuccess()
+
+                    tagReader
+                        .transceive(
+                            tag,
+                            selectFileCommand.selectFile(
+                                Iso7816.File.CardAccess.FILE_ID,
+                            ),
+                        ).assertSuccess()
+
+                    tagReader
+                        .transceive(
+                            tag,
+                            readBinaryCommand.readBinary(),
+                        ).assertSuccess()
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)
