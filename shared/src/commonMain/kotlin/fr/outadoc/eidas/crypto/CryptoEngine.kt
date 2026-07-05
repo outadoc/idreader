@@ -3,7 +3,7 @@ package fr.outadoc.eidas.crypto
 interface CryptoEngine {
     fun generateKeyPair(algorithm: Algorithm): KeyPair
 
-    fun kdf(
+    fun deriveKeyFromSecret(
         algorithm: Algorithm,
         secret: UByteArray,
         nonce: UByteArray,

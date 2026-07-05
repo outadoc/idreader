@@ -55,7 +55,7 @@ class AndroidCryptoEngine : CryptoEngine {
      * @param nonce A nonce (optional)
      * @param counter An integer counter
      */
-    override fun kdf(
+    override fun deriveKeyFromSecret(
         algorithm: Algorithm,
         secret: UByteArray,
         nonce: UByteArray,
@@ -98,12 +98,12 @@ class AndroidCryptoEngine : CryptoEngine {
         val cipher = AESEngine.newInstance()
         val cbc = CBCBlockCipher.newInstance(cipher)
 
-        val iv = ByteArray(cbc.blockSize)
         val params =
             ParametersWithIV(
                 KeyParameter(key),
-                iv,
+                ByteArray(cbc.blockSize),
             )
+
         cbc.init(false, params)
 
         val output = ByteArray(data.size)

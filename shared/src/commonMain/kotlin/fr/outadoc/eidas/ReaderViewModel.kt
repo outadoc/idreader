@@ -128,7 +128,7 @@ class ReaderViewModel(
 
                     // Derive the key to decrypt the nonce from the CAN
                     val kPi: UByteArray =
-                        cryptoEngine.kdf(
+                        cryptoEngine.deriveKeyFromSecret(
                             algorithm = algorithm,
                             secret = canBytes,
                             nonce = ubyteArrayOf(),
