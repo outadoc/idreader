@@ -7,6 +7,8 @@ import android.nfc.tech.IsoDep
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.e
+import fr.outadoc.eidas.logging.i
+import fr.outadoc.eidas.utils.toPrettyHex
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -88,7 +90,10 @@ class AndroidNfcTagReader(
 
         return withContext(Dispatchers.IO) {
             try {
-                val response = isoDep.transceive(command.serialize())
+                val commandBytes = command.serialize()
+                logger.i(TAG, "SEND > ${commandBytes.toPrettyHex()}")
+                val response = isoDep.transceive(commandBytes)
+                logger.i(TAG, "RECV < ${response.toPrettyHex()}")
                 RApdu.parse(response)
             } catch (e: TagLostException) {
                 throw NfcException("Tag was lost during communication", e)
