@@ -26,8 +26,7 @@ import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcTagReader
-import fr.outadoc.eidas.nfc.commands.MseSetAtUseCase
-import fr.outadoc.eidas.nfc.commands.SelectUseCase
+import fr.outadoc.eidas.nfc.commands.MseSetAtCommand
 import fr.outadoc.eidas.settings.SettingsScreen
 import org.koin.compose.koinInject
 
@@ -39,8 +38,7 @@ fun App(
     memoryLogger: MemoryLogger = koinInject(),
     logger: Logger = koinInject(),
     tagReader: NfcTagReader = koinInject(),
-    mseSetAtUseCase: MseSetAtUseCase = koinInject(),
-    selectUseCase: SelectUseCase = koinInject(),
+    mseSetAtCommand: MseSetAtCommand = koinInject(),
 ) {
     AppTheme {
         val entries by memoryLogger.entries.collectAsState()
@@ -52,7 +50,7 @@ fun App(
                 tagReader.detectedTags.collect { tag ->
                     logger.i(TAG, "Tag detected: ${tag.description}")
 
-                    tagReader.transceive(tag, mseSetAtUseCase.paceSetAt()).assertSuccess()
+                    tagReader.transceive(tag, mseSetAtCommand.paceSetAt()).assertSuccess()
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error", e)

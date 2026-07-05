@@ -3,7 +3,7 @@ package fr.outadoc.eidas.nfc.commands
 import fr.outadoc.eidas.nfc.CApdu
 import fr.outadoc.eidas.utils.parseHex
 
-class SelectUseCase {
+class SelectCommand {
     fun selectAid(aidHex: String): CApdu {
         val aid = aidHex.parseHex()
         return CApdu(

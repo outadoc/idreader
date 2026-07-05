@@ -2,8 +2,8 @@ package fr.outadoc.eidas.di
 
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
-import fr.outadoc.eidas.nfc.commands.MseSetAtUseCase
-import fr.outadoc.eidas.nfc.commands.SelectUseCase
+import fr.outadoc.eidas.nfc.commands.MseSetAtCommand
+import fr.outadoc.eidas.nfc.commands.SelectCommand
 import fr.outadoc.eidas.settings.DataStoreSettingsRepository
 import fr.outadoc.eidas.settings.SettingsRepository
 import fr.outadoc.eidas.settings.SettingsViewModel
@@ -15,8 +15,8 @@ val sharedModule =
     module {
         single { MemoryLogger(getOrNull(named("platformLogger"))) }
         single<Logger> { get<MemoryLogger>() }
-        factory { SelectUseCase() }
-        factory { MseSetAtUseCase() }
+        factory { SelectCommand() }
+        factory { MseSetAtCommand() }
         viewModel { SettingsViewModel(get()) }
         single<SettingsRepository> { DataStoreSettingsRepository(get()) }
     }
