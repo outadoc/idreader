@@ -7,10 +7,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class AndroidSettingsRepository(
+class DataStoreSettingsRepository(
     private val dataStore: DataStore<Preferences>,
 ) : SettingsRepository {
-
     private val KEY_CAN = stringPreferencesKey("can")
 
     override val can: Flow<String> = dataStore.data.map { it[KEY_CAN] ?: "" }
