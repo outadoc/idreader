@@ -7,6 +7,7 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.NfcSessionManager
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.commands.CommandFactory
@@ -18,7 +19,7 @@ private const val TAG = "PaceMutualAuthUseCase"
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class PaceMutualAuthUseCase(
-    private val tagReader: NfcTagReader,
+    private val nfcSessionManager: NfcSessionManager,
     private val commandFactory: CommandFactory,
     private val cryptoEngine: CryptoEngine,
     private val logger: Logger,
@@ -55,7 +56,7 @@ class PaceMutualAuthUseCase(
         logger.i(TAG, "GENERAL AUTHENTICATE (step 4: mutual authentication)")
 
         val response =
-            tagReader
+            nfcSessionManager
                 .transceive(
                     tag,
                     commandFactory.generalAuthenticate(

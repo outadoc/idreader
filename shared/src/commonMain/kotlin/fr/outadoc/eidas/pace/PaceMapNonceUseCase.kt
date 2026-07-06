@@ -11,8 +11,8 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.NfcSessionManager
 import fr.outadoc.eidas.nfc.NfcTag
-import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.utils.toPrettyHex
@@ -22,7 +22,7 @@ private const val TAG = "PaceMapNonceUseCase"
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class PaceMapNonceUseCase(
-    private val tagReader: NfcTagReader,
+    private val nfcSessionManager: NfcSessionManager,
     private val commandFactory: CommandFactory,
     private val cryptoEngine: CryptoEngine,
     private val keyGenerator: KeyGenerator,
@@ -40,7 +40,7 @@ class PaceMapNonceUseCase(
         logger.i(TAG, "GENERAL AUTHENTICATE (step 2: generic mapping)")
 
         val response: UByteArray =
-            tagReader
+            nfcSessionManager
                 .transceive(
                     tag,
                     commandFactory.generalAuthenticate(

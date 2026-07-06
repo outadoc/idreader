@@ -2,14 +2,13 @@
 
 package fr.outadoc.eidas.crypto
 
+import fr.outadoc.eidas.utils.toByteArrayBe
 import org.bouncycastle.crypto.engines.AESEngine
 import org.bouncycastle.crypto.macs.CMac
 import org.bouncycastle.crypto.modes.CBCBlockCipher
 import org.bouncycastle.crypto.params.KeyParameter
 import org.bouncycastle.crypto.params.ParametersWithIV
 import java.math.BigInteger
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.security.MessageDigest
 
 class AndroidCryptoEngine : CryptoEngine {
@@ -177,13 +176,6 @@ class AndroidCryptoEngine : CryptoEngine {
             offset += cbc.processBlock(data, offset, output, offset)
         }
         return output
-    }
-
-    private fun Int.toByteArrayBe(): UByteArray {
-        val bb = ByteBuffer.allocate(4)
-        bb.order(ByteOrder.BIG_ENDIAN)
-        bb.putInt(this)
-        return bb.array().toUByteArray()
     }
 
     private fun Protocol.getHashFunctionName(): String =

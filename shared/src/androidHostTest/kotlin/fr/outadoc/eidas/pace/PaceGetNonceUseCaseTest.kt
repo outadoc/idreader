@@ -55,7 +55,7 @@ class PaceGetNonceUseCaseTest {
 
             val useCase =
                 PaceGetNonceUseCase(
-                    tagReader =
+                    nfcSessionManager =
                         StubNfcTagReader(
                             mseResponse.toByteArray(),
                             step1Response.toByteArray(),
