@@ -30,7 +30,7 @@ class RApdu private constructor(
             Result.success(data)
         } else {
             Result.failure(
-                IllegalStateException("APDU error: $sw1 $sw2"),
+                IllegalStateException("Non-success APDU"),
             )
         }
 

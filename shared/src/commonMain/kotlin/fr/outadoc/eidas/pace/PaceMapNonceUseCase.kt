@@ -16,6 +16,7 @@ import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.utils.toPrettyHex
+import io.github.rafaelrabeloit.bertlv.TLVList
 
 private const val TAG = "PaceMapNonceUseCase"
 
@@ -38,7 +39,7 @@ class PaceMapNonceUseCase(
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 2: generic mapping)")
 
-        val response =
+        val response: UByteArray =
             tagReader
                 .transceive(
                     tag,
@@ -59,32 +60,35 @@ class PaceMapNonceUseCase(
                 .getData()
                 .getOrElse { return Result.failure(it) }
 
-        val dynAuth =
+        val dynAuth: TLVList =
             response
                 .parseDynamicAuthData()
                 .getOrElse { return Result.failure(it) }
 
-        return runCatching {
-            val chipMappingData =
-                (dynAuth.find(Iso7816.Tags.ChipMappingData.toInt())?.value as? ByteArray)
-                    ?.toUByteArray()
-                    ?: throw IllegalStateException("Could not find mapping data in dynamic auth data")
+        val chipMappingData: UByteArray =
+            (dynAuth.find(Iso7816.Tags.ChipMappingData.toInt())?.value as? ByteArray)
+                ?.toUByteArray()
+                ?: return Result.failure(
+                    IllegalStateException("Could not find mapping data in dynamic auth data"),
+                )
 
-            logger.d(TAG, "Chip mapping point: ${chipMappingData.toPrettyHex()}")
+        logger.d(TAG, "Chip mapping point: ${chipMappingData.toPrettyHex()}")
 
-            val mappedGenerator =
+        val mappedGenerator: Result<EcPoint> =
+            runCatching {
                 cryptoEngine.computeMappedGenerator(
                     algorithm = algorithm,
                     mappingPrivateKey = mappingKeyPair.privateKey,
                     chipMappingPublicPoint = deserializedUncompressedEcPoint(chipMappingData),
                     decryptedNonce = nonce,
                 )
+            }.onSuccess { mappedGenerator ->
+                logger.d(
+                    TAG,
+                    "Mapped generator G': ${mappedGenerator.serializeUncompressed().toPrettyHex()}",
+                )
+            }
 
-            logger.d(
-                TAG,
-                "Mapped generator G': ${mappedGenerator.serializeUncompressed().toPrettyHex()}",
-            )
-            mappedGenerator
-        }
+        return mappedGenerator
     }
 }

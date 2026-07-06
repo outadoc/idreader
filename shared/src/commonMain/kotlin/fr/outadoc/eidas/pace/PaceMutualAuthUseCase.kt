@@ -82,13 +82,15 @@ class PaceMutualAuthUseCase(
                 .parseDynamicAuthData()
                 .getOrElse { return Result.failure(it) }
 
-        return runCatching {
-            val chipToken =
-                (dynAuth.find(Iso7816.Tags.ChipAuthenticationToken.toInt())?.value as? ByteArray)
-                    ?.toUByteArray()
-                    ?: throw IllegalStateException("Could not find chip authentication token")
+        val chipToken =
+            (dynAuth.find(Iso7816.Tags.ChipAuthenticationToken.toInt())?.value as? ByteArray)
+                ?.toUByteArray()
+                ?: return Result.failure(
+                    IllegalStateException("Could not find chip authentication token"),
+                )
 
-            val expectedChipToken =
+        val expectedChipToken: UByteArray =
+            runCatching {
                 cryptoEngine
                     .computeCmac(
                         algorithm = algorithm,
@@ -99,11 +101,19 @@ class PaceMutualAuthUseCase(
                                 pubKey = terminalFinalPub,
                             ),
                     ).copyOfRange(0, 8)
-
-            check(chipToken.contentEquals(expectedChipToken)) {
-                "Chip authentication token mismatch: got ${chipToken.toPrettyHex()}, expected ${expectedChipToken.toPrettyHex()}"
+            }.getOrElse {
+                return Result.failure(it)
             }
+
+        if (!chipToken.contentEquals(expectedChipToken)) {
+            return Result.failure(
+                IllegalStateException(
+                    "Chip authentication token mismatch: got ${chipToken.toPrettyHex()}, expected ${expectedChipToken.toPrettyHex()}",
+                ),
+            )
         }
+
+        return Result.success(Unit)
     }
 
     // Builds the auth token input: 7F49 { 06 <oid>, 86 <pubKey> }

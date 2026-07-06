@@ -29,7 +29,7 @@ class ReadCardAccessUseCase(
 
         logger.i(TAG, "READ BINARY EF.CardAccess")
 
-        val data =
+        val data: UByteArray =
             tagReader
                 .transceive(tag, commandFactory.readBinary())
                 .getOrElse { return Result.failure(it) }
