@@ -11,6 +11,10 @@ data class Algorithm(
                     protocol = Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256,
                     parameter = DomainParameter.BRAINPOOLP256R1,
                 ),
+                Algorithm(
+                    protocol = Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256,
+                    parameter = DomainParameter.SECP256R1,
+                ),
             )
     }
 }

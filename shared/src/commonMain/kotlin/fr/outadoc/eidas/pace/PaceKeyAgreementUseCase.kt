@@ -102,6 +102,11 @@ class PaceKeyAgreementUseCase(
         logger.d(TAG, "K_enc: ${kEnc.toPrettyHex()}")
         logger.d(TAG, "K_mac: ${kMac.toPrettyHex()}")
 
-        return PaceKeyAgreementResult(kEnc, kMac, terminalFinalPub, chipFinalPub)
+        return PaceKeyAgreementResult(
+            kEnc = kEnc,
+            kMac = kMac,
+            terminalFinalPub = terminalFinalPub,
+            chipFinalPub = chipFinalPub,
+        )
     }
 }

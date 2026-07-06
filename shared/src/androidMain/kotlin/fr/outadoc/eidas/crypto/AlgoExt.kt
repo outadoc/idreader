@@ -8,5 +8,6 @@ fun Algorithm.ecParams(): X9ECParameters = ECNamedCurveTable.getByName(getEcdhFu
 fun Algorithm.getEcdhFunctionName(): String =
     when (parameter) {
         DomainParameter.BRAINPOOLP256R1 -> "brainpoolP256r1"
+        DomainParameter.SECP256R1 -> "secp256r1"
         else -> throw NotImplementedError()
     }
