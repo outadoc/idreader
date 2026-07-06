@@ -93,6 +93,10 @@ class AndroidCryptoEngine : CryptoEngine {
                     data = data.toByteArray(),
                 ).toUByteArray()
             }
+
+            else -> {
+                throw NotImplementedError()
+            }
         }
 
     private fun decryptAesCbc(
