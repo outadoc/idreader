@@ -27,9 +27,23 @@ interface CryptoEngine {
         counter: Int,
     ): UByteArray
 
+    fun encryptSymmetric(
+        algorithm: Algorithm,
+        key: UByteArray,
+        iv: UByteArray,
+        data: UByteArray,
+    ): UByteArray
+
     fun decryptSymmetric(
         algorithm: Algorithm,
         key: UByteArray,
+        data: UByteArray,
+    ): UByteArray
+
+    fun decryptSymmetricWithIv(
+        algorithm: Algorithm,
+        key: UByteArray,
+        iv: UByteArray,
         data: UByteArray,
     ): UByteArray
 }

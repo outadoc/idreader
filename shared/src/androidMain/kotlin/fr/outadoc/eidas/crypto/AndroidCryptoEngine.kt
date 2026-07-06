@@ -140,15 +140,18 @@ class AndroidCryptoEngine : CryptoEngine {
             .toUByteArray()
     }
 
-    override fun decryptSymmetric(
+    override fun encryptSymmetric(
         algorithm: Algorithm,
         key: UByteArray,
+        iv: UByteArray,
         data: UByteArray,
     ): UByteArray =
         when (algorithm.protocol) {
             Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
-                decryptAesCbc(
+                aesCbc(
+                    encrypt = true,
                     key = key.toByteArray(),
+                    iv = iv.toByteArray(),
                     data = data.toByteArray(),
                 ).toUByteArray()
             }
@@ -158,18 +161,55 @@ class AndroidCryptoEngine : CryptoEngine {
             }
         }
 
-    private fun decryptAesCbc(
+    override fun decryptSymmetric(
+        algorithm: Algorithm,
+        key: UByteArray,
+        data: UByteArray,
+    ): UByteArray =
+        when (algorithm.protocol) {
+            Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
+                aesCbc(
+                    encrypt = false,
+                    key = key.toByteArray(),
+                    iv = ByteArray(16),
+                    data = data.toByteArray(),
+                ).toUByteArray()
+            }
+
+            else -> {
+                throw NotImplementedError()
+            }
+        }
+
+    override fun decryptSymmetricWithIv(
+        algorithm: Algorithm,
+        key: UByteArray,
+        iv: UByteArray,
+        data: UByteArray,
+    ): UByteArray =
+        when (algorithm.protocol) {
+            Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
+                aesCbc(
+                    encrypt = false,
+                    key = key.toByteArray(),
+                    iv = iv.toByteArray(),
+                    data = data.toByteArray(),
+                ).toUByteArray()
+            }
+
+            else -> {
+                throw NotImplementedError()
+            }
+        }
+
+    private fun aesCbc(
+        encrypt: Boolean,
         key: ByteArray,
+        iv: ByteArray,
         data: ByteArray,
     ): ByteArray {
         val cbc = CBCBlockCipher.newInstance(AESEngine.newInstance())
-        cbc.init(
-            false,
-            ParametersWithIV(
-                KeyParameter(key),
-                ByteArray(cbc.blockSize),
-            ),
-        )
+        cbc.init(encrypt, ParametersWithIV(KeyParameter(key), iv))
         val output = ByteArray(data.size)
         var offset = 0
         while (offset < data.size) {
