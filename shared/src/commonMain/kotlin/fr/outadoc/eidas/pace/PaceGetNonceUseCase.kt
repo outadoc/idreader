@@ -2,6 +2,7 @@ package fr.outadoc.eidas.pace
 
 import fr.outadoc.eidas.crypto.Algorithm
 import fr.outadoc.eidas.crypto.CryptoEngine
+import fr.outadoc.eidas.crypto.oidBytes
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
@@ -32,9 +33,7 @@ class PaceGetNonceUseCase(
             .transceive(
                 tag,
                 commandFactory.paceSetAt(
-                    algorithm =
-                        algorithm.protocol.oid.bytes
-                            .toUByteArray(),
+                    algorithm = algorithm.protocol.oidBytes,
                     keyReference = Iso7816.KeyRef.CAN,
                 ),
             ).getDataOrThrow()

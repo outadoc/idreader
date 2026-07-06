@@ -2,6 +2,7 @@ package fr.outadoc.eidas.pace
 
 import fr.outadoc.eidas.crypto.Algorithm
 import fr.outadoc.eidas.crypto.CryptoEngine
+import fr.outadoc.eidas.crypto.oidBytes
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
@@ -30,9 +31,7 @@ class PaceMutualAuthUseCase(
     ) {
         val tokenInput =
             paceTokenInput(
-                oid =
-                    algorithm.protocol.oid.bytes
-                        .toUByteArray(),
+                oid = algorithm.protocol.oidBytes,
                 pubKey = chipFinalPub,
             )
 
@@ -88,9 +87,7 @@ class PaceMutualAuthUseCase(
                     key = kMac,
                     data =
                         paceTokenInput(
-                            oid =
-                                algorithm.protocol.oid.bytes
-                                    .toUByteArray(),
+                            oid = algorithm.protocol.oidBytes,
                             pubKey = terminalFinalPub,
                         ),
                 ).copyOfRange(0, 8)

@@ -32,10 +32,6 @@ class ReadCardAccessUseCase(
                 .transceive(tag, commandFactory.readBinary())
                 .getDataOrThrow()
 
-        val infos = securityInfosParser.parse(data)
-        infos.forEach {
-            logger.i(TAG, "$it")
-        }
-        return infos
+        return securityInfosParser.parse(data)
     }
 }

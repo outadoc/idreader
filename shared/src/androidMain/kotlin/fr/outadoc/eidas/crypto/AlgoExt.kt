@@ -35,4 +35,6 @@ fun DomainParameter.getEcdhFunctionName(): String =
         DomainParameter.GFP_2048_224,
         DomainParameter.GFP_2048_256,
         -> throw NotImplementedError()
+
+        DomainParameter.UNKNOWN -> throw IllegalStateException()
     }

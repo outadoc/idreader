@@ -3,6 +3,8 @@ package fr.outadoc.eidas.crypto
 enum class DomainParameter(
     val parameterId: Int,
 ) {
+    UNKNOWN(-1),
+
     /**
      * 1024-bit MODP Group with 160-bit Prime Order Subgroup
      */
@@ -72,12 +74,13 @@ enum class DomainParameter(
      * NIST P-521 (secp521r1)
      */
     SECP521R1(18),
+
     ;
 
     companion object {
-        fun fromParameterId(id: Int): DomainParameter? =
-            entries.firstOrNull { entry ->
-                entry.parameterId == id
-            }
+        fun fromParameterId(id: Int?): DomainParameter =
+            entries
+                .firstOrNull { entry -> entry.parameterId == id }
+                ?: UNKNOWN
     }
 }

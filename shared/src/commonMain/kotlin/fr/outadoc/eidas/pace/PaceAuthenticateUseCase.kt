@@ -5,6 +5,7 @@ import fr.outadoc.eidas.crypto.DomainParameter
 import fr.outadoc.eidas.crypto.EcPoint
 import fr.outadoc.eidas.crypto.Protocol
 import fr.outadoc.eidas.logging.Logger
+import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.asn1.SecurityInfo
@@ -24,24 +25,30 @@ class PaceAuthenticateUseCase(
         tag: NfcTag,
         can: String,
     ): PaceSession {
-        val infos: List<SecurityInfo> = readCardAccess(tag)
+        val securityInfos: List<SecurityInfo> = readCardAccess(tag)
+
+        logger.d(TAG, "$securityInfos")
+
+        val chipSupportedAlgorithms: List<Algorithm> =
+            securityInfos
+                .filterIsInstance<SecurityInfo.Pace>()
+                .map { info ->
+                    Algorithm(
+                        protocol = Protocol.fromOid(info.protocol),
+                        parameter = DomainParameter.fromParameterId(info.parameterId),
+                    )
+                }
+
+        chipSupportedAlgorithms.forEach { algorithm ->
+            logger.i(TAG, "$algorithm")
+        }
 
         val selectedAlgorithm: Algorithm? =
             Algorithm.preferredAlgorithms
                 .firstOrNull { preferred ->
                     // Select the first algorithm in the list of preferred algorithms
                     // that is supported by the chip
-                    infos
-                        .filterIsInstance<SecurityInfo.Pace>()
-                        .any { info ->
-                            val protocol = Protocol.fromOid(info.protocol)
-                            val parameter =
-                                info.parameterId?.let {
-                                    DomainParameter.fromParameterId(it)
-                                }
-
-                            preferred.protocol == protocol && preferred.parameter == parameter
-                        }
+                    chipSupportedAlgorithms.contains(preferred)
                 }
 
         checkNotNull(selectedAlgorithm) {

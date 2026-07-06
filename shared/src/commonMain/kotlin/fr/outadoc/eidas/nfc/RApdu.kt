@@ -2,6 +2,7 @@ package fr.outadoc.eidas.nfc
 
 import fr.outadoc.eidas.utils.toPrettyHex
 
+@OptIn(ExperimentalUnsignedTypes::class)
 class RApdu private constructor(
     val data: UByteArray,
     val sw1: UByte,
