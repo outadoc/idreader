@@ -7,7 +7,6 @@ import android.nfc.tech.IsoDep
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.e
-import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.utils.toPrettyHex
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -24,6 +23,7 @@ private const val TAG = "AndroidNfcTagReader"
  * Only IsoDep (ISO 14443-4) tags are reported, since they are the only
  * ones supporting APDU communication.
  */
+@OptIn(ExperimentalUnsignedTypes::class)
 class AndroidNfcTagReader(
     private val activity: Activity,
     private val logger: Logger,

@@ -73,7 +73,7 @@ class PaceMapNonceUseCaseTest {
         chipMappingPub: EcPoint,
         nonce: UByteArray,
     ): EcPoint {
-        val params = algorithm.ecParams()
+        val params = algorithm.parameter.ecParams()
         val chipPub =
             params.curve.createPoint(
                 BigInteger(1, chipMappingPub.x.toByteArray()),

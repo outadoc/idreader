@@ -14,8 +14,13 @@ class AndroidKeyGenerator : KeyGenerator {
         val kp =
             KeyPairGenerator
                 .getInstance("EC", BouncyCastleProvider())
-                .apply { initialize(ECGenParameterSpec(algorithm.getEcdhFunctionName())) }
-                .generateKeyPair()
+                .apply {
+                    initialize(
+                        ECGenParameterSpec(
+                            algorithm.parameter.getEcdhFunctionName(),
+                        ),
+                    )
+                }.generateKeyPair()
 
         val ecPub = kp.public as ECPublicKey
         return KeyPair(
@@ -34,7 +39,7 @@ class AndroidKeyGenerator : KeyGenerator {
         algorithm: Algorithm,
         generator: EcPoint,
     ): KeyPair {
-        val params = algorithm.ecParams()
+        val params = algorithm.parameter.ecParams()
         val d =
             BigInteger(params.n.bitLength(), SecureRandom())
                 .mod(params.n - BigInteger.ONE) + BigInteger.ONE

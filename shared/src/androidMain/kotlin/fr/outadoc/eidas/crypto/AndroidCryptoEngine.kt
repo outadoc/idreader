@@ -40,7 +40,7 @@ class AndroidCryptoEngine : CryptoEngine {
         chipMappingPublicPoint: EcPoint,
         decryptedNonce: UByteArray,
     ): EcPoint {
-        val params = algorithm.ecParams()
+        val params = algorithm.parameter.ecParams()
         val d = (mappingPrivateKey as AndroidPrivateKey).scalar
         val chipPub =
             params.curve.createPoint(
@@ -82,7 +82,7 @@ class AndroidCryptoEngine : CryptoEngine {
         privateKey: PrivateKey,
         chipPublicPoint: EcPoint,
     ): UByteArray {
-        val params = algorithm.ecParams()
+        val params = algorithm.parameter.ecParams()
         val d = (privateKey as AndroidPrivateKey).scalar
         val chipPub =
             params.curve.createPoint(

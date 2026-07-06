@@ -10,13 +10,20 @@ import fr.outadoc.eidas.crypto.ecParams
 import java.math.BigInteger
 
 @OptIn(ExperimentalUnsignedTypes::class)
-class FakeKeyGenerator(private val scalar: BigInteger) : KeyGenerator {
+class FakeKeyGenerator(
+    private val scalar: BigInteger,
+) : KeyGenerator {
     override fun generateKeyPair(algorithm: Algorithm): KeyPair {
-        val params = algorithm.ecParams()
-        val baseG = EcPoint(
-            x = params.g.xCoord.encoded.toUByteArray(),
-            y = params.g.yCoord.encoded.toUByteArray(),
-        )
+        val params = algorithm.parameter.ecParams()
+        val baseG =
+            EcPoint(
+                x =
+                    params.g.xCoord.encoded
+                        .toUByteArray(),
+                y =
+                    params.g.yCoord.encoded
+                        .toUByteArray(),
+            )
         return generateKeyPairOnGenerator(algorithm, baseG)
     }
 
@@ -24,7 +31,7 @@ class FakeKeyGenerator(private val scalar: BigInteger) : KeyGenerator {
         algorithm: Algorithm,
         generator: EcPoint,
     ): KeyPair {
-        val params = algorithm.ecParams()
+        val params = algorithm.parameter.ecParams()
         val g =
             params.curve.createPoint(
                 BigInteger(1, generator.x.toByteArray()),

@@ -60,7 +60,7 @@ class PaceKeyAgreementUseCaseTest {
             val result = useCase(tag, algorithm, mappedGenerator)
 
             // Independently compute expected session keys using the same test scalar and chip pub
-            val params = algorithm.ecParams()
+            val params = algorithm.parameter.ecParams()
             val chipPoint =
                 params.curve.createPoint(
                     BigInteger(1, chipFinalPub.sliceArray(1..32).toByteArray()),
@@ -83,7 +83,7 @@ class PaceKeyAgreementUseCaseTest {
     // ECDH(terminal_priv, chip_pub) == ECDH(chip_priv, terminal_pub)
     @Test
     fun sharedSecretIsCommutative() {
-        val params = algorithm.ecParams()
+        val params = algorithm.parameter.ecParams()
         val scalarA = BigInteger("99999")
         val scalarB = BigInteger("12345")
 
