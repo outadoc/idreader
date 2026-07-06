@@ -5,7 +5,10 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.tlvList
 
 class CommandFactory {
-    fun generalAuthenticate(data: UByteArray, chained: Boolean = true): CApdu =
+    fun generalAuthenticate(
+        data: UByteArray,
+        chained: Boolean = true,
+    ): CApdu =
         CApdu(
             cla = if (chained) 0x10u else 0x00u,
             ins = 0x86u,
@@ -46,7 +49,7 @@ class CommandFactory {
             cla = 0x00u,
             ins = 0xA4u,
             p1 = 0x04u,
-            p2 = 0x00u,
+            p2 = 0x0Cu,
             data = aid,
             le = 0x00u,
         )

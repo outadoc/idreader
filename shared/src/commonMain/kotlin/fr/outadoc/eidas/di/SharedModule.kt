@@ -36,5 +36,5 @@ val sharedModule =
         factory { PaceAuthenticateUseCase(get(), get(), get(), get(), get(), get()) }
 
         viewModel { SettingsViewModel(get()) }
-        viewModel { ReaderViewModel(get(), get(), get(), get()) }
+        viewModel { ReaderViewModel(get(), get(), get(), get(), get(), get()) }
     }

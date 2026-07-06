@@ -44,7 +44,7 @@ class SecureSessionManager(
         // DO'87': encrypt data if present
         val do87Bytes: UByteArray =
             if (command.data != null) {
-                val padded = isoPad(command.data)
+                val padded: UByteArray = isoPad(command.data)
 
                 // IV = E(K_enc, SSC): single-block AES-CBC with zero IV equals AES-ECB of the block
                 val iv: UByteArray =
@@ -126,9 +126,7 @@ class SecureSessionManager(
             response
                 .getData()
                 .getOrElse {
-                    throw IllegalStateException(
-                        "SM response had non-success status: ${response.sw1} ${response.sw2}",
-                    )
+                    throw IllegalStateException("SM response had non-success status")
                 }
 
         val tlvs = TLVList.fromTlvListBuffer(body.toByteArray())
@@ -147,7 +145,7 @@ class SecureSessionManager(
                 ?: throw IllegalStateException("SM response missing DO'8E' checksum")
 
         // Reconstruct TLV wire bytes for MAC verification
-        val do87TlvBytes =
+        val do87TlvBytes: UByteArray =
             if (do87Value != null) {
                 tlvList {
                     tlv(
@@ -158,10 +156,15 @@ class SecureSessionManager(
             } else {
                 ubyteArrayOf()
             }
-        val do99TlvBytes = tlvList { tlv(Iso7816.Tags.ProcessingStatus, do99Value) }
+
+        val do99TlvBytes: UByteArray =
+            tlvList {
+                tlv(Iso7816.Tags.ProcessingStatus, do99Value)
+            }
 
         // Verify MAC: CMAC(K_mac, SSC || [DO'87' TLV] || DO'99' TLV)[0..7]
-        val macInput = ssc + do87TlvBytes + do99TlvBytes
+        val macInput: UByteArray = ssc + do87TlvBytes + do99TlvBytes
+
         val expectedMac: UByteArray =
             cryptoEngine
                 .computeCmac(
