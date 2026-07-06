@@ -1,5 +1,6 @@
 package fr.outadoc.eidas.nfc
 
+@OptIn(ExperimentalUnsignedTypes::class)
 class CApdu(
     val cla: UByte,
     val ins: UByte,

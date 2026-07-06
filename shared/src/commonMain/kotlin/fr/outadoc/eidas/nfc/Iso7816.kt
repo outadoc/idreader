@@ -60,5 +60,9 @@ object Iso7816 {
         val ChipPublicKey: UByte = 0x84u
         val AuthenticationToken: UByte = 0x85u
         val ChipAuthenticationToken: UByte = 0x86u
+        val PaddingContentIndicatorFollowedByCryptogram: UByte = 0x87u
+        val ProtectedLe: UByte = 0x97u
+        val ProcessingStatus: UByte = 0x99u
+        val CryptographicChecksum: UByte = 0x8Eu
     }
 }
