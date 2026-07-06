@@ -18,6 +18,27 @@ class AndroidCryptoEngine : CryptoEngine {
         mappingPrivateKey: PrivateKey,
         chipMappingPublicPoint: EcPoint,
         decryptedNonce: UByteArray,
+    ): EcPoint =
+        when (algorithm.protocol) {
+            Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
+                computeMappedGeneratorEc(
+                    algorithm = algorithm,
+                    mappingPrivateKey = mappingPrivateKey,
+                    chipMappingPublicPoint = chipMappingPublicPoint,
+                    decryptedNonce = decryptedNonce,
+                )
+            }
+
+            else -> {
+                throw NotImplementedError()
+            }
+        }
+
+    private fun computeMappedGeneratorEc(
+        algorithm: Algorithm,
+        mappingPrivateKey: PrivateKey,
+        chipMappingPublicPoint: EcPoint,
+        decryptedNonce: UByteArray,
     ): EcPoint {
         val params = algorithm.ecParams()
         val d = (mappingPrivateKey as AndroidPrivateKey).scalar
@@ -41,6 +62,25 @@ class AndroidCryptoEngine : CryptoEngine {
         algorithm: Algorithm,
         privateKey: PrivateKey,
         chipPublicPoint: EcPoint,
+    ): UByteArray =
+        when (algorithm.protocol) {
+            Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
+                computeSharedSecretEc(
+                    algorithm = algorithm,
+                    privateKey = privateKey,
+                    chipPublicPoint = chipPublicPoint,
+                )
+            }
+
+            else -> {
+                throw NotImplementedError()
+            }
+        }
+
+    private fun computeSharedSecretEc(
+        algorithm: Algorithm,
+        privateKey: PrivateKey,
+        chipPublicPoint: EcPoint,
     ): UByteArray {
         val params = algorithm.ecParams()
         val d = (privateKey as AndroidPrivateKey).scalar
@@ -58,6 +98,20 @@ class AndroidCryptoEngine : CryptoEngine {
         algorithm: Algorithm,
         key: UByteArray,
         data: UByteArray,
+    ): UByteArray =
+        when (algorithm.protocol) {
+            Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
+                computeCmacAes(key, data)
+            }
+
+            else -> {
+                throw NotImplementedError()
+            }
+        }
+
+    private fun computeCmacAes(
+        key: UByteArray,
+        data: UByteArray,
     ): UByteArray {
         val mac = CMac(AESEngine.newInstance())
         mac.init(KeyParameter(key.toByteArray()))
@@ -73,9 +127,15 @@ class AndroidCryptoEngine : CryptoEngine {
         nonce: UByteArray,
         counter: Int,
     ): UByteArray {
-        val message = ubyteArrayOf(*secret, *nonce, *counter.toByteArrayBe())
+        val message =
+            ubyteArrayOf(
+                *secret,
+                *nonce,
+                *counter.toByteArrayBe(),
+            )
+
         return MessageDigest
-            .getInstance(algorithm.getHashFunctionName())
+            .getInstance(algorithm.protocol.getHashFunctionName())
             .apply { update(message.toByteArray()) }
             .digest()
             .toUByteArray()
@@ -125,4 +185,10 @@ class AndroidCryptoEngine : CryptoEngine {
         bb.putInt(this)
         return bb.array().toUByteArray()
     }
+
+    private fun Protocol.getHashFunctionName(): String =
+        when (this) {
+            Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> "SHA-256"
+            else -> throw NotImplementedError()
+        }
 }

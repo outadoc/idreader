@@ -10,9 +10,3 @@ fun Algorithm.getEcdhFunctionName(): String =
         DomainParameter.BRAINPOOLP256R1 -> "brainpoolP256r1"
         else -> throw NotImplementedError()
     }
-
-fun Algorithm.getHashFunctionName(): String =
-    when (protocol) {
-        Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> "SHA-256"
-        else -> throw NotImplementedError()
-    }

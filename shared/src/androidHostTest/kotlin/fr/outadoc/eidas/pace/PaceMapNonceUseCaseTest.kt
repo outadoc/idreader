@@ -2,7 +2,9 @@ package fr.outadoc.eidas.pace
 
 import fr.outadoc.eidas.crypto.Algorithm
 import fr.outadoc.eidas.crypto.AndroidCryptoEngine
+import fr.outadoc.eidas.crypto.DomainParameter
 import fr.outadoc.eidas.crypto.EcPoint
+import fr.outadoc.eidas.crypto.Protocol
 import fr.outadoc.eidas.crypto.deserializedUncompressedEcPoint
 import fr.outadoc.eidas.crypto.ecParams
 import fr.outadoc.eidas.logging.MemoryLogger
@@ -15,8 +17,12 @@ import kotlin.test.assertContentEquals
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class PaceMapNonceUseCaseTest {
+    private val algorithm =
+        Algorithm(
+            protocol = Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256,
+            parameter = DomainParameter.BRAINPOOLP256R1,
+        )
 
-    private val algorithm = Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1
     private val cryptoEngine = AndroidCryptoEngine()
     private val tag = NfcTag(id = byteArrayOf(), description = "stub")
 
@@ -24,41 +30,43 @@ class PaceMapNonceUseCaseTest {
 
     // From real card run
     private val chipMappingPub =
-        "046208ED0926CAD959A0118D2A9AE3DAFEAEF1DD6FF72203F24891C460F174A6C1510773B444766CA14AFDB2843259DCFFD9337D64A57ECEDCFF0F926CB8A451BE".hexBytes()
+        "046208ED0926CAD959A0118D2A9AE3DAFEAEF1DD6FF72203F24891C460F174A6C1510773B444766CA14AFDB2843259DCFFD9337D64A57ECEDCFF0F926CB8A451BE"
+            .hexToUByteArray()
 
     private val decryptedNonce =
-        "1A40ABB16BAC88EBBE4777CDC674A75DC4894E5BCF41ABB7A31F3D378EF59596".hexBytes()
+        "1A40ABB16BAC88EBBE4777CDC674A75DC4894E5BCF41ABB7A31F3D378EF59596".hexToUByteArray()
 
     @Test
-    fun computesMappedGeneratorFromChipMappingPoint() = runTest {
-        // Build a step-2 response with the logged chip mapping pub
-        val step2Response =
-            ubyteArrayOf(0x7Cu, 0x43u, 0x82u, 0x41u) +
-                chipMappingPub +
-                ubyteArrayOf(0x90u, 0x00u)
+    fun computesMappedGeneratorFromChipMappingPoint() =
+        runTest {
+            // Build a step-2 response with the logged chip mapping pub
+            val step2Response =
+                ubyteArrayOf(0x7Cu, 0x43u, 0x82u, 0x41u) +
+                    chipMappingPub +
+                    ubyteArrayOf(0x90u, 0x00u)
 
-        val useCase =
-            PaceMapNonceUseCase(
-                tagReader = StubNfcTagReader(step2Response.toByteArray()),
-                commandFactory = CommandFactory(),
-                cryptoEngine = cryptoEngine,
-                keyGenerator = FakeKeyGenerator(testScalar),
-                logger = MemoryLogger(),
-            )
+            val useCase =
+                PaceMapNonceUseCase(
+                    tagReader = StubNfcTagReader(step2Response.toByteArray()),
+                    commandFactory = CommandFactory(),
+                    cryptoEngine = cryptoEngine,
+                    keyGenerator = FakeKeyGenerator(testScalar),
+                    logger = MemoryLogger(),
+                )
 
-        val gPrime = useCase(tag, algorithm, decryptedNonce)
+            val gPrime = useCase(tag, algorithm, decryptedNonce)
 
-        // Independently compute expected G' = d_map·chipMappingPub + s·G
-        val expectedGPrime =
-            computeExpectedMappedGenerator(
-                scalar = testScalar,
-                chipMappingPub = deserializedUncompressedEcPoint(chipMappingPub),
-                nonce = decryptedNonce,
-            )
+            // Independently compute expected G' = d_map·chipMappingPub + s·G
+            val expectedGPrime =
+                computeExpectedMappedGenerator(
+                    scalar = testScalar,
+                    chipMappingPub = deserializedUncompressedEcPoint(chipMappingPub),
+                    nonce = decryptedNonce,
+                )
 
-        assertContentEquals(expectedGPrime.x, gPrime.x)
-        assertContentEquals(expectedGPrime.y, gPrime.y)
-    }
+            assertContentEquals(expectedGPrime.x, gPrime.x)
+            assertContentEquals(expectedGPrime.y, gPrime.y)
+        }
 
     private fun computeExpectedMappedGenerator(
         scalar: BigInteger,
@@ -80,6 +88,3 @@ class PaceMapNonceUseCaseTest {
         )
     }
 }
-
-private fun String.hexBytes(): UByteArray =
-    chunked(2).map { it.toInt(16).toUByte() }.toUByteArray()
