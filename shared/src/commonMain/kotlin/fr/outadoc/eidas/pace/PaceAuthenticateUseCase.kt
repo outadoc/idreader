@@ -9,11 +9,6 @@ import fr.outadoc.eidas.nfc.asn1.SecurityInfo
 private const val TAG = "PaceAuthenticateUseCase"
 
 @OptIn(ExperimentalUnsignedTypes::class)
-data class PaceSession(
-    val kEnc: UByteArray,
-    val kMac: UByteArray,
-)
-
 class PaceAuthenticateUseCase(
     private val readCardAccess: ReadCardAccessUseCase,
     private val getNonce: PaceGetNonceUseCase,
@@ -33,8 +28,8 @@ class PaceAuthenticateUseCase(
         check(
             infos.any { info ->
                 info is SecurityInfo.Pace &&
-                    info.protocol == algorithm.oid &&
-                    info.parameterId == algorithm.parameterId
+                        info.protocol == algorithm.oid &&
+                        info.parameterId == algorithm.parameterId
             },
         ) { "Chip does not support expected PACE algorithm." }
 
