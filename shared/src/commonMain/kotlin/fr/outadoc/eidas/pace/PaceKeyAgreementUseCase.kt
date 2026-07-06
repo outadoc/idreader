@@ -58,11 +58,14 @@ class PaceKeyAgreementUseCase(
                 .getData()
                 .getOrElse { return Result.failure(it) }
 
+        logger.d(TAG, "Step 3 raw response: ${response.toPrettyHex()}")
+
+        val dynAuth =
+            response
+                .parseDynamicAuthData()
+                .getOrElse { return Result.failure(it) }
+
         return runCatching {
-            logger.d(TAG, "Step 3 raw response: ${response.toPrettyHex()}")
-
-            val dynAuth = response.parseDynamicAuthData()
-
             val chipFinalPub =
                 (dynAuth.find(Iso7816.Tags.ChipPublicKey.toInt())?.value as? ByteArray)
                     ?.toUByteArray()

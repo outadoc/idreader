@@ -58,9 +58,12 @@ class PaceGetNonceUseCase(
                 .getData()
                 .getOrElse { return Result.failure(it) }
 
-        return runCatching {
-            val dynAuth = response.parseDynamicAuthData()
+        val dynAuth =
+            response
+                .parseDynamicAuthData()
+                .getOrElse { return Result.failure(it) }
 
+        return runCatching {
             val encryptedNonce =
                 (dynAuth.find(Iso7816.Tags.Nonce.toInt())?.value as? ByteArray)?.toUByteArray()
                     ?: throw IllegalStateException("Could not find nonce in dynamic auth data")

@@ -6,7 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class SecurityInfosParserTest {
-
     private val parser = SecurityInfosParser()
 
     // 31 28  SET (40 bytes)
@@ -19,28 +18,19 @@ class SecurityInfosParserTest {
     //     02 01 02  INTEGER 2  (version)
     //     02 01 0D  INTEGER 13 (parameterId)
     // 00 00 00 00 00 00 00 00  trailing file padding
-    private val derBytes = byteArrayOf(
-        0x31, 0x28,
-            0x30, 0x12,
-                0x06, 0x0A, 0x04, 0x00, 0x7F.toByte(), 0x00, 0x07, 0x02, 0x02, 0x04, 0x02, 0x04,
-                0x02, 0x01, 0x02,
-                0x02, 0x01, 0x0D,
-            0x30, 0x12,
-                0x06, 0x0A, 0x04, 0x00, 0x7F.toByte(), 0x00, 0x07, 0x02, 0x02, 0x04, 0x04, 0x04,
-                0x02, 0x01, 0x02,
-                0x02, 0x01, 0x0D,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    )
+    private val derBytes =
+        "31283012060A04007F0007020204020402010202010D3012060A04007F0007020204040402010202010D0000000000000000"
+            .hexToUByteArray()
 
     @Test
     fun parsesExactlyTwoEntries() {
-        val result = parser.parse(derBytes.toUByteArray())
+        val result = parser.parse(derBytes.toUByteArray()).getOrThrow()
         assertEquals(2, result.size)
     }
 
     @Test
     fun parsesFirstPaceInfo() {
-        val pace = parser.parse(derBytes.toUByteArray())[0] as SecurityInfo.Pace
+        val pace = parser.parse(derBytes.toUByteArray()).getOrThrow()[0] as SecurityInfo.Pace
         assertEquals(ObjectIdentifier("0.4.0.127.0.7.2.2.4.2.4"), pace.protocol)
         assertEquals(2, pace.version)
         assertEquals(13, pace.parameterId)
@@ -48,7 +38,7 @@ class SecurityInfosParserTest {
 
     @Test
     fun parsesSecondPaceInfo() {
-        val pace = parser.parse(derBytes.toUByteArray())[1] as SecurityInfo.Pace
+        val pace = parser.parse(derBytes.toUByteArray()).getOrThrow()[1] as SecurityInfo.Pace
         assertEquals(ObjectIdentifier("0.4.0.127.0.7.2.2.4.4.4"), pace.protocol)
         assertEquals(2, pace.version)
         assertEquals(13, pace.parameterId)
@@ -57,7 +47,7 @@ class SecurityInfosParserTest {
     @Test
     fun ignoresTrailingPaddingBytes() {
         // Padding must not produce extra entries
-        val result = parser.parse(derBytes.toUByteArray())
+        val result = parser.parse(derBytes.toUByteArray()).getOrThrow()
         assertEquals(2, result.size)
     }
 
@@ -67,17 +57,11 @@ class SecurityInfosParserTest {
         // SET (37 = 0x25 bytes)
         //   SEQUENCE (15 = 0x0F bytes): OID + version only
         //   SEQUENCE (18 = 0x12 bytes): OID + version + parameterId
-        val derWithoutParamId = byteArrayOf(
-            0x31, 0x25,
-                0x30, 0x0F,
-                    0x06, 0x0A, 0x04, 0x00, 0x7F.toByte(), 0x00, 0x07, 0x02, 0x02, 0x04, 0x02, 0x04,
-                    0x02, 0x01, 0x02,
-                0x30, 0x12,
-                    0x06, 0x0A, 0x04, 0x00, 0x7F.toByte(), 0x00, 0x07, 0x02, 0x02, 0x04, 0x04, 0x04,
-                    0x02, 0x01, 0x02,
-                    0x02, 0x01, 0x0D,
-        )
-        val result = parser.parse(derWithoutParamId.toUByteArray())
+        val derWithoutParamId =
+            "3125300F060A04007F000702020402040201023012060A04007F0007020204040402010202010D"
+                .hexToUByteArray()
+
+        val result = parser.parse(derWithoutParamId).getOrThrow()
         val first = result[0] as SecurityInfo.Pace
         assertNull(first.parameterId)
         val second = result[1] as SecurityInfo.Pace

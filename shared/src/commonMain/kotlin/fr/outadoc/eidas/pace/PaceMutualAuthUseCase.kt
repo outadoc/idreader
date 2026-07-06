@@ -12,6 +12,7 @@ import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.utils.toPrettyHex
+import io.github.rafaelrabeloit.bertlv.TLVList
 
 private const val TAG = "PaceMutualAuthUseCase"
 
@@ -76,9 +77,12 @@ class PaceMutualAuthUseCase(
                 .getData()
                 .getOrElse { return Result.failure(it) }
 
-        return runCatching {
-            val dynAuth = response.parseDynamicAuthData()
+        val dynAuth: TLVList =
+            response
+                .parseDynamicAuthData()
+                .getOrElse { return Result.failure(it) }
 
+        return runCatching {
             val chipToken =
                 (dynAuth.find(Iso7816.Tags.ChipAuthenticationToken.toInt())?.value as? ByteArray)
                     ?.toUByteArray()
