@@ -33,7 +33,9 @@ class ReadCardAccessUseCase(
                 .getDataOrThrow()
 
         val infos = securityInfosParser.parse(data)
-        infos.forEach { logger.i(TAG, "$it") }
+        infos.forEach {
+            logger.i(TAG, "$it")
+        }
         return infos
     }
 }

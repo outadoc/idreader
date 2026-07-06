@@ -18,14 +18,6 @@ import fr.outadoc.eidas.utils.toPrettyHex
 private const val TAG = "PaceKeyAgreementUseCase"
 
 @OptIn(ExperimentalUnsignedTypes::class)
-data class PaceKeyAgreementResult(
-    val kEnc: UByteArray,
-    val kMac: UByteArray,
-    val terminalFinalPub: UByteArray,
-    val chipFinalPub: UByteArray,
-)
-
-@OptIn(ExperimentalUnsignedTypes::class)
 class PaceKeyAgreementUseCase(
     private val tagReader: NfcTagReader,
     private val commandFactory: CommandFactory,
