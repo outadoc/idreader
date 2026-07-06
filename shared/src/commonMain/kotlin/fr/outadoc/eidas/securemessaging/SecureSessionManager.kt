@@ -8,16 +8,18 @@ import fr.outadoc.eidas.nfc.NfcSessionManager
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.RApdu
 import fr.outadoc.eidas.nfc.tlvList
-import fr.outadoc.eidas.pace.PaceSessionKeys
+import fr.outadoc.eidas.pace.PaceSession
 import io.github.rafaelrabeloit.bertlv.TLVList
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class SecureSessionManager(
+    private val paceSession: PaceSession,
     private val nfcSessionManager: NfcSessionManager,
-    private val algorithm: Algorithm,
-    private val paceSessionKeys: PaceSessionKeys,
     private val cryptoEngine: CryptoEngine,
 ) : NfcSessionManager {
+    private val algorithm: Algorithm
+        get() = paceSession.algorithm
+
     // 128-bit Send Sequence Counter (big-endian), starts at 0 after PACE
     private var ssc = UByteArray(16)
 
@@ -48,7 +50,7 @@ class SecureSessionManager(
                 val iv: UByteArray =
                     cryptoEngine.encryptSymmetric(
                         algorithm = algorithm,
-                        key = paceSessionKeys.kEnc,
+                        key = paceSession.kEnc,
                         iv = UByteArray(16),
                         data = ssc,
                     )
@@ -57,7 +59,7 @@ class SecureSessionManager(
                     cryptoEngine
                         .encryptSymmetric(
                             algorithm = algorithm,
-                            key = paceSessionKeys.kEnc,
+                            key = paceSession.kEnc,
                             iv = iv,
                             data = padded,
                         )
@@ -98,7 +100,7 @@ class SecureSessionManager(
             cryptoEngine
                 .computeCmac(
                     algorithm = algorithm,
-                    key = paceSessionKeys.kMac,
+                    key = paceSession.kMac,
                     data = macInput,
                 ).copyOfRange(0, 8)
 
@@ -164,7 +166,7 @@ class SecureSessionManager(
             cryptoEngine
                 .computeCmac(
                     algorithm = algorithm,
-                    key = paceSessionKeys.kMac,
+                    key = paceSession.kMac,
                     data = macInput,
                 ).copyOfRange(0, 8)
 
@@ -188,7 +190,7 @@ class SecureSessionManager(
                 val iv: UByteArray =
                     cryptoEngine.encryptSymmetric(
                         algorithm,
-                        paceSessionKeys.kEnc,
+                        paceSession.kEnc,
                         UByteArray(16),
                         ssc,
                     )
@@ -196,7 +198,7 @@ class SecureSessionManager(
                 val padded: UByteArray =
                     cryptoEngine.decryptSymmetricWithIv(
                         algorithm = algorithm,
-                        key = paceSessionKeys.kEnc,
+                        key = paceSession.kEnc,
                         iv = iv,
                         data = encrypted,
                     )

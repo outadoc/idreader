@@ -7,6 +7,7 @@ import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
+import fr.outadoc.eidas.securemessaging.SecureSessionFactory
 import fr.outadoc.eidas.settings.SettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -18,6 +19,7 @@ class ReaderViewModel(
     private val tagReader: NfcTagReader,
     private val paceAuthenticate: PaceAuthenticateUseCase,
     private val settingsRepository: SettingsRepository,
+    private val secureSessionFactory: SecureSessionFactory,
 ) : ViewModel() {
     fun startListening() {
         viewModelScope.launch {
@@ -30,6 +32,8 @@ class ReaderViewModel(
                         can = settingsRepository.settings.first().can,
                     ).onFailure { e ->
                         logger.e(TAG, "Authentication failed", e)
+                    }.onSuccess { session ->
+                        val ssm = secureSessionFactory.newInstance(session)
                     }
                 }
             } catch (e: Exception) {
