@@ -86,9 +86,12 @@ class AndroidCryptoEngine : CryptoEngine {
         key: UByteArray,
         data: UByteArray,
     ): UByteArray =
-        when (algorithm) {
-            Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1 -> {
-                decryptAesCbc(key.toByteArray(), data.toByteArray()).toUByteArray()
+        when (algorithm.protocol) {
+            Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
+                decryptAesCbc(
+                    key = key.toByteArray(),
+                    data = data.toByteArray(),
+                ).toUByteArray()
             }
         }
 

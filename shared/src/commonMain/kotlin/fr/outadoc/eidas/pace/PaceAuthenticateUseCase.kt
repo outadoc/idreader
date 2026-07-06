@@ -1,7 +1,9 @@
 package fr.outadoc.eidas.pace
 
 import fr.outadoc.eidas.crypto.Algorithm
+import fr.outadoc.eidas.crypto.DomainParameter
 import fr.outadoc.eidas.crypto.EcPoint
+import fr.outadoc.eidas.crypto.Protocol
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcTag
@@ -26,14 +28,20 @@ class PaceAuthenticateUseCase(
 
         val selectedAlgorithm: Algorithm? =
             Algorithm.preferredAlgorithms
-                .firstOrNull { algorithm ->
+                .firstOrNull { preferred ->
                     // Select the first algorithm in the list of preferred algorithms
                     // that is supported by the chip
-                    infos.any { info ->
-                        info is SecurityInfo.Pace &&
-                                info.protocol == algorithm.oid &&
-                                info.parameterId == algorithm.parameterId
-                    }
+                    infos
+                        .filterIsInstance<SecurityInfo.Pace>()
+                        .any { info ->
+                            val protocol = Protocol.fromOid(info.protocol)
+                            val parameter =
+                                info.parameterId?.let {
+                                    DomainParameter.fromParameterId(it)
+                                }
+
+                            preferred.protocol == protocol && preferred.parameter == parameter
+                        }
                 }
 
         checkNotNull(selectedAlgorithm) {

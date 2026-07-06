@@ -32,7 +32,9 @@ class PaceGetNonceUseCase(
             .transceive(
                 tag,
                 commandFactory.paceSetAt(
-                    algorithm = algorithm.oid.bytes.toUByteArray(),
+                    algorithm =
+                        algorithm.protocol.oid.bytes
+                            .toUByteArray(),
                     keyReference = Iso7816.KeyRef.CAN,
                 ),
             ).getDataOrThrow()
@@ -45,7 +47,10 @@ class PaceGetNonceUseCase(
                     tag,
                     commandFactory.generalAuthenticate(
                         tlvList {
-                            tlv(Iso7816.Tags.DynamicAuthenticationData, ubyteArrayOf())
+                            tlv(
+                                Iso7816.Tags.DynamicAuthenticationData,
+                                ubyteArrayOf(),
+                            )
                         },
                     ),
                 ).getDataOrThrow()

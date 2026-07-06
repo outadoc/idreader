@@ -30,7 +30,9 @@ class PaceMutualAuthUseCase(
     ) {
         val tokenInput =
             paceTokenInput(
-                oid = algorithm.oid.bytes.toUByteArray(),
+                oid =
+                    algorithm.protocol.oid.bytes
+                        .toUByteArray(),
                 pubKey = chipFinalPub,
             )
 
@@ -82,9 +84,15 @@ class PaceMutualAuthUseCase(
         val expectedChipToken =
             cryptoEngine
                 .computeCmac(
-                    algorithm,
-                    kMac,
-                    paceTokenInput(algorithm.oid.bytes.toUByteArray(), terminalFinalPub),
+                    algorithm = algorithm,
+                    key = kMac,
+                    data =
+                        paceTokenInput(
+                            oid =
+                                algorithm.protocol.oid.bytes
+                                    .toUByteArray(),
+                            pubKey = terminalFinalPub,
+                        ),
                 ).copyOfRange(0, 8)
 
         check(chipToken.contentEquals(expectedChipToken)) {
