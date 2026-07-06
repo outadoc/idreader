@@ -24,8 +24,10 @@ class PaceAuthenticateUseCase(
     suspend operator fun invoke(
         tag: NfcTag,
         can: String,
-    ): PaceSession {
-        val securityInfos: List<SecurityInfo> = readCardAccess(tag)
+    ): Result<PaceSession> {
+        val securityInfos =
+            readCardAccess(tag)
+                .getOrElse { return Result.failure(it) }
 
         logger.d(TAG, "$securityInfos")
 
@@ -43,17 +45,14 @@ class PaceAuthenticateUseCase(
             logger.i(TAG, "$algorithm")
         }
 
-        val selectedAlgorithm: Algorithm? =
+        val selectedAlgorithm: Algorithm =
             Algorithm.preferredAlgorithms
-                .firstOrNull { preferred ->
-                    // Select the first algorithm in the list of preferred algorithms
-                    // that is supported by the chip
-                    chipSupportedAlgorithms.contains(preferred)
-                }
-
-        checkNotNull(selectedAlgorithm) {
-            "Chip does not support any of the expected algorithms: ${Algorithm.preferredAlgorithms}"
-        }
+                .firstOrNull { preferred -> chipSupportedAlgorithms.contains(preferred) }
+                ?: return Result.failure(
+                    IllegalStateException(
+                        "Chip does not support any of the expected algorithms: ${Algorithm.preferredAlgorithms}",
+                    ),
+                )
 
         logger.i(TAG, "Selected algorithm: $selectedAlgorithm")
 
@@ -62,21 +61,27 @@ class PaceAuthenticateUseCase(
                 tag = tag,
                 algorithm = selectedAlgorithm,
                 can = can,
-            )
+            ).getOrElse {
+                return Result.failure(it)
+            }
 
         val mappedGenerator: EcPoint =
             mapNonce(
                 tag = tag,
                 algorithm = selectedAlgorithm,
                 nonce = nonce,
-            )
+            ).getOrElse {
+                return Result.failure(it)
+            }
 
         val keys: PaceKeyAgreementResult =
             keyAgreement(
                 tag = tag,
                 algorithm = selectedAlgorithm,
                 mappedGenerator = mappedGenerator,
-            )
+            ).getOrElse {
+                return Result.failure(it)
+            }
 
         mutualAuth(
             tag = tag,
@@ -84,13 +89,17 @@ class PaceAuthenticateUseCase(
             kMac = keys.kMac,
             terminalFinalPub = keys.terminalFinalPub,
             chipFinalPub = keys.chipFinalPub,
-        )
+        ).getOrElse {
+            return Result.failure(it)
+        }
 
         logger.i(TAG, "PACE authentication successful")
 
-        return PaceSession(
-            kEnc = keys.kEnc,
-            kMac = keys.kMac,
+        return Result.success(
+            PaceSession(
+                kEnc = keys.kEnc,
+                kMac = keys.kMac,
+            ),
         )
     }
 }

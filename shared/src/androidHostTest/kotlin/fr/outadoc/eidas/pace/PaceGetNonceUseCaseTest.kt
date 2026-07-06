@@ -65,7 +65,7 @@ class PaceGetNonceUseCaseTest {
                     logger = MemoryLogger(),
                 )
 
-            val result = useCase(tag, algorithm, testCan)
+            val result = useCase(tag, algorithm, testCan).getOrThrow()
             assertContentEquals(plainNonce.toUByteArray(), result)
         }
 

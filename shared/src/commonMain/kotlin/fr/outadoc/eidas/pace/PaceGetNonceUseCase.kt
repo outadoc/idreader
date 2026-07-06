@@ -10,7 +10,6 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.commands.CommandFactory
-import fr.outadoc.eidas.nfc.getDataOrThrow
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.utils.toPrettyHex
 
@@ -27,64 +26,68 @@ class PaceGetNonceUseCase(
         tag: NfcTag,
         algorithm: Algorithm,
         can: String,
-    ): UByteArray {
-        logger.i(TAG, "MSE:Set AT")
+    ): Result<UByteArray> =
+        runCatching {
+            logger.i(TAG, "MSE:Set AT")
 
-        tagReader
-            .transceive(
-                tag,
-                commandFactory.paceSetAt(
-                    algorithm = algorithm.protocol.oidBytes,
-                    keyReference = Iso7816.KeyRef.CAN,
-                ),
-            ).getDataOrThrow()
-
-        logger.i(TAG, "GENERAL AUTHENTICATE (step 1: encrypted nonce)")
-
-        val response =
             tagReader
                 .transceive(
                     tag,
-                    commandFactory.generalAuthenticate(
-                        tlvList {
-                            tlv(
-                                Iso7816.Tags.DynamicAuthenticationData,
-                                ubyteArrayOf(),
-                            )
-                        },
+                    commandFactory.paceSetAt(
+                        algorithm = algorithm.protocol.oidBytes,
+                        keyReference = Iso7816.KeyRef.CAN,
                     ),
-                ).getDataOrThrow()
+                ).getOrThrow()
+                .getDataOrThrow()
 
-        val dynAuth = response.parseDynamicAuthData()
+            logger.i(TAG, "GENERAL AUTHENTICATE (step 1: encrypted nonce)")
 
-        val encryptedNonce =
-            (dynAuth.find(Iso7816.Tags.Nonce.toInt())?.value as? ByteArray)?.toUByteArray()
+            val response =
+                tagReader
+                    .transceive(
+                        tag,
+                        commandFactory.generalAuthenticate(
+                            tlvList {
+                                tlv(
+                                    Iso7816.Tags.DynamicAuthenticationData,
+                                    ubyteArrayOf(),
+                                )
+                            },
+                        ),
+                    ).getOrThrow()
+                    .getDataOrThrow()
 
-        checkNotNull(encryptedNonce) {
-            "Could not find nonce in dynamic auth data"
+            val dynAuth = response.parseDynamicAuthData()
+
+            val encryptedNonce =
+                (dynAuth.find(Iso7816.Tags.Nonce.toInt())?.value as? ByteArray)
+                    ?.toUByteArray()
+
+            checkNotNull(encryptedNonce) {
+                "Could not find nonce in dynamic auth data"
+            }
+
+            logger.d(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
+
+            val canBytes = can.toByteArray(Charsets.US_ASCII).toUByteArray()
+
+            val kPi =
+                cryptoEngine.deriveKeyFromSecret(
+                    algorithm = algorithm,
+                    secret = canBytes,
+                    nonce = ubyteArrayOf(),
+                    counter = 3,
+                )
+
+            val decryptedNonce =
+                cryptoEngine.decryptSymmetric(
+                    algorithm = algorithm,
+                    key = kPi,
+                    data = encryptedNonce,
+                )
+
+            logger.d(TAG, "Decrypted nonce: ${decryptedNonce.toPrettyHex()}")
+
+            decryptedNonce
         }
-
-        logger.d(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
-
-        val canBytes = can.toByteArray(Charsets.US_ASCII).toUByteArray()
-
-        val kPi =
-            cryptoEngine.deriveKeyFromSecret(
-                algorithm = algorithm,
-                secret = canBytes,
-                nonce = ubyteArrayOf(),
-                counter = 3,
-            )
-
-        val decryptedNonce =
-            cryptoEngine.decryptSymmetric(
-                algorithm = algorithm,
-                key = kPi,
-                data = encryptedNonce,
-            )
-
-        logger.d(TAG, "Decrypted nonce: ${decryptedNonce.toPrettyHex()}")
-
-        return decryptedNonce
-    }
 }

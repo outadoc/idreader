@@ -12,7 +12,6 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.NfcTagReader
-import fr.outadoc.eidas.nfc.getDataOrThrow
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.utils.toPrettyHex
@@ -31,7 +30,7 @@ class PaceMapNonceUseCase(
         tag: NfcTag,
         algorithm: Algorithm,
         nonce: UByteArray,
-    ): EcPoint {
+    ): Result<EcPoint> = runCatching {
         val mappingKeyPair = keyGenerator.generateKeyPair(algorithm)
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 2: generic mapping)")
@@ -53,7 +52,8 @@ class PaceMapNonceUseCase(
                             )
                         },
                     ),
-                ).getDataOrThrow()
+                ).getOrThrow()
+                .getDataOrThrow()
 
         val dynAuth = response.parseDynamicAuthData()
 
@@ -78,6 +78,6 @@ class PaceMapNonceUseCase(
             TAG,
             "Mapped generator G': ${mappedGenerator.serializeUncompressed().toPrettyHex()}",
         )
-        return mappedGenerator
+        mappedGenerator
     }
 }

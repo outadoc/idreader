@@ -54,7 +54,7 @@ class PaceMapNonceUseCaseTest {
                     logger = MemoryLogger(),
                 )
 
-            val gPrime = useCase(tag, algorithm, decryptedNonce)
+            val gPrime = useCase(tag, algorithm, decryptedNonce).getOrThrow()
 
             // Independently compute expected G' = d_map·chipMappingPub + s·G
             val expectedGPrime =

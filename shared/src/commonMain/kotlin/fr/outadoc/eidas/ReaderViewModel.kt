@@ -26,12 +26,10 @@ class ReaderViewModel(
                 tagReader.detectedTags.collect { tag ->
                     logger.i(TAG, "Tag detected: ${tag.description}")
 
-                    runCatching {
-                        paceAuthenticate(
-                            tag = tag,
-                            can = settingsRepository.settings.first().can,
-                        )
-                    }.onFailure { e ->
+                    paceAuthenticate(
+                        tag = tag,
+                        can = settingsRepository.settings.first().can,
+                    ).onFailure { e ->
                         logger.e(TAG, "Authentication failed", e)
                     }
                 }

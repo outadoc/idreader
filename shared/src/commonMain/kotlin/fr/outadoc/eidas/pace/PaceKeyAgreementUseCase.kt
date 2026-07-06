@@ -11,7 +11,6 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.NfcTagReader
-import fr.outadoc.eidas.nfc.getDataOrThrow
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.utils.toPrettyHex
@@ -30,7 +29,7 @@ class PaceKeyAgreementUseCase(
         tag: NfcTag,
         algorithm: Algorithm,
         mappedGenerator: EcPoint,
-    ): PaceKeyAgreementResult {
+    ): Result<PaceKeyAgreementResult> = runCatching {
         val finalKeyPair = keyGenerator.generateKeyPairOnGenerator(algorithm, mappedGenerator)
         val terminalFinalPub = finalKeyPair.publicKey.uncompressedPublicPoint
 
@@ -50,7 +49,8 @@ class PaceKeyAgreementUseCase(
                             )
                         },
                     ),
-                ).getDataOrThrow()
+                ).getOrThrow()
+                .getDataOrThrow()
 
         logger.d(TAG, "Step 3 raw response: ${response.toPrettyHex()}")
 
@@ -95,7 +95,7 @@ class PaceKeyAgreementUseCase(
         logger.d(TAG, "K_enc: ${kEnc.toPrettyHex()}")
         logger.d(TAG, "K_mac: ${kMac.toPrettyHex()}")
 
-        return PaceKeyAgreementResult(
+        PaceKeyAgreementResult(
             kEnc = kEnc,
             kMac = kMac,
             terminalFinalPub = terminalFinalPub,

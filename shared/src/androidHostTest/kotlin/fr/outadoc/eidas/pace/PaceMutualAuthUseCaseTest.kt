@@ -55,7 +55,7 @@ class PaceMutualAuthUseCaseTest {
             val response = buildChipTokenResponse(chipToken)
 
             val useCase = buildUseCase(StubNfcTagReader(response))
-            useCase(tag, algorithm, kMac, terminalFinalPub, chipFinalPub)
+            useCase(tag, algorithm, kMac, terminalFinalPub, chipFinalPub).getOrThrow()
         }
 
     @Test
@@ -65,9 +65,8 @@ class PaceMutualAuthUseCaseTest {
             val response = buildChipTokenResponse(wrongToken)
 
             val useCase = buildUseCase(StubNfcTagReader(response))
-            assertFailsWith<IllegalStateException> {
-                useCase(tag, algorithm, kMac, terminalFinalPub, chipFinalPub)
-            }
+            val result = useCase(tag, algorithm, kMac, terminalFinalPub, chipFinalPub)
+            assertFailsWith<IllegalStateException> { result.getOrThrow() }
         }
 
     private fun computeChipToken(): UByteArray {

@@ -57,7 +57,7 @@ class PaceKeyAgreementUseCaseTest {
                     logger = MemoryLogger(),
                 )
 
-            val result = useCase(tag, algorithm, mappedGenerator)
+            val result = useCase(tag, algorithm, mappedGenerator).getOrThrow()
 
             // Independently compute expected session keys using the same test scalar and chip pub
             val params = algorithm.parameter.ecParams()
