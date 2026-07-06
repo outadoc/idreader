@@ -2,6 +2,8 @@ package fr.outadoc.eidas.securemessaging
 
 import fr.outadoc.eidas.crypto.Algorithm
 import fr.outadoc.eidas.crypto.CryptoEngine
+import fr.outadoc.eidas.logging.Logger
+import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.nfc.CApdu
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSessionManager
@@ -9,13 +11,17 @@ import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.RApdu
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.pace.PaceSession
+import fr.outadoc.eidas.utils.toPrettyHex
 import io.github.rafaelrabeloit.bertlv.TLVList
+
+private val TAG = "SecureSessionManager"
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class SecureSessionManager(
     private val paceSession: PaceSession,
     private val nfcSessionManager: NfcSessionManager,
     private val cryptoEngine: CryptoEngine,
+    private val logger: Logger,
 ) : NfcSessionManager {
     private val algorithm: Algorithm
         get() = paceSession.algorithm
@@ -26,14 +32,18 @@ class SecureSessionManager(
     override suspend fun transceive(
         tag: NfcTag,
         command: CApdu,
-    ): Result<RApdu> =
-        nfcSessionManager
+    ): Result<RApdu> {
+        logger.d(TAG, "SEND >> ${command.serialize().toPrettyHex()}")
+
+        return nfcSessionManager
             .transceive(
                 tag = tag,
                 command = secureCApdu(command),
-            ).map { response ->
-                decryptRApdu(response)
+            ).map { response -> decryptRApdu(response) }
+            .onSuccess { clearResponse ->
+                logger.d(TAG, "RECV << ${clearResponse.raw.toPrettyHex()}")
             }
+    }
 
     private fun secureCApdu(command: CApdu): CApdu {
         incrementSsc()

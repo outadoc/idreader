@@ -20,7 +20,7 @@ val androidModule =
         single<Logger>(named("platformLogger")) { AndroidLogger() }
         single<CryptoEngine> { AndroidCryptoEngine() }
         single<KeyGenerator> { AndroidKeyGenerator() }
-        factory { SecureSessionFactory(get(), get()) }
+        factory { SecureSessionFactory(get(), get(), get()) }
         single<DataStore<Preferences>> {
             PreferenceDataStoreFactory.createWithPath(
                 produceFile = {
