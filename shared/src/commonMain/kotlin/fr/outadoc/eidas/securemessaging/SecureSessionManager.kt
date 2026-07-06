@@ -94,7 +94,7 @@ class SecureSessionManager(
             )
 
         val paddedHeader: UByteArray = isoPad(header)
-        val macInput: UByteArray = ssc + paddedHeader + do87Bytes + do97Bytes
+        val macInput: UByteArray = isoPad(ssc + paddedHeader + do87Bytes + do97Bytes)
 
         val mac: UByteArray =
             cryptoEngine
@@ -162,8 +162,8 @@ class SecureSessionManager(
                 tlv(Iso7816.Tags.ProcessingStatus, do99Value)
             }
 
-        // Verify MAC: CMAC(K_mac, SSC || [DO'87' TLV] || DO'99' TLV)[0..7]
-        val macInput: UByteArray = ssc + do87TlvBytes + do99TlvBytes
+        // Verify MAC: CMAC(K_mac, iso_pad(SSC || [DO'87' TLV] || DO'99' TLV))[0..7]
+        val macInput: UByteArray = isoPad(ssc + do87TlvBytes + do99TlvBytes)
 
         val expectedMac: UByteArray =
             cryptoEngine
