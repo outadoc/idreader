@@ -1,6 +1,7 @@
 package fr.outadoc.eidas.pace
 
 import fr.outadoc.eidas.crypto.Algorithm
+import fr.outadoc.eidas.crypto.EcPoint
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcTag
@@ -17,46 +18,54 @@ class PaceAuthenticateUseCase(
     private val mutualAuth: PaceMutualAuthUseCase,
     private val logger: Logger,
 ) {
-    private val algorithm = Algorithm.PACE_AES256_GM_ECDH_BRAINPOOLP256R1
-
     suspend operator fun invoke(
         tag: NfcTag,
         can: String,
     ): PaceSession {
-        val infos = readCardAccess(tag)
+        val infos: List<SecurityInfo> = readCardAccess(tag)
 
-        check(
-            infos.any { info ->
-                info is SecurityInfo.Pace &&
-                        info.protocol == algorithm.oid &&
-                        info.parameterId == algorithm.parameterId
-            },
-        ) { "Chip does not support expected PACE algorithm." }
+        val selectedAlgorithm: Algorithm? =
+            Algorithm.preferredAlgorithms
+                .firstOrNull { algorithm ->
+                    // Select the first algorithm in the list of preferred algorithms
+                    // that is supported by the chip
+                    infos.any { info ->
+                        info is SecurityInfo.Pace &&
+                                info.protocol == algorithm.oid &&
+                                info.parameterId == algorithm.parameterId
+                    }
+                }
 
-        val nonce =
+        checkNotNull(selectedAlgorithm) {
+            "Chip does not support any of the expected algorithms: ${Algorithm.preferredAlgorithms}"
+        }
+
+        logger.i(TAG, "Selected algorithm: $selectedAlgorithm")
+
+        val nonce: UByteArray =
             getNonce(
                 tag = tag,
-                algorithm = algorithm,
+                algorithm = selectedAlgorithm,
                 can = can,
             )
 
-        val mappedGenerator =
+        val mappedGenerator: EcPoint =
             mapNonce(
                 tag = tag,
-                algorithm = algorithm,
+                algorithm = selectedAlgorithm,
                 nonce = nonce,
             )
 
-        val keys =
+        val keys: PaceKeyAgreementResult =
             keyAgreement(
                 tag = tag,
-                algorithm = algorithm,
+                algorithm = selectedAlgorithm,
                 mappedGenerator = mappedGenerator,
             )
 
         mutualAuth(
             tag = tag,
-            algorithm = algorithm,
+            algorithm = selectedAlgorithm,
             kMac = keys.kMac,
             terminalFinalPub = keys.terminalFinalPub,
             chipFinalPub = keys.chipFinalPub,
