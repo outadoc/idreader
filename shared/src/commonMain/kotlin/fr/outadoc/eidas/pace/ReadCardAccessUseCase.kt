@@ -18,22 +18,24 @@ class ReadCardAccessUseCase(
     private val securityInfosParser: SecurityInfosParser,
     private val logger: Logger,
 ) {
-    suspend operator fun invoke(tag: NfcTag): Result<List<SecurityInfo>> = runCatching {
+    suspend operator fun invoke(tag: NfcTag): Result<List<SecurityInfo>> {
         logger.i(TAG, "SELECT FILE EF.CardAccess")
 
         tagReader
             .transceive(tag, commandFactory.selectFile(Iso7816.File.CardAccess.FILE_ID))
-            .getOrThrow()
-            .getDataOrThrow()
+            .getOrElse { return Result.failure(it) }
+            .getData()
+            .getOrElse { return Result.failure(it) }
 
         logger.i(TAG, "READ BINARY EF.CardAccess")
 
         val data =
             tagReader
                 .transceive(tag, commandFactory.readBinary())
-                .getOrThrow()
-                .getDataOrThrow()
+                .getOrElse { return Result.failure(it) }
+                .getData()
+                .getOrElse { return Result.failure(it) }
 
-        securityInfosParser.parse(data)
+        return securityInfosParser.parse(data)
     }
 }

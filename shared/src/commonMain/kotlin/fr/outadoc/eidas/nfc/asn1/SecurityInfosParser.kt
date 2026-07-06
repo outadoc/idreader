@@ -12,14 +12,18 @@ import at.asitplus.signum.indispensable.asn1.readOid
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class SecurityInfosParser {
-    fun parse(bytes: UByteArray): List<SecurityInfo> {
-        val set = Asn1Element.parseFirst(bytes.toByteArray()).first as Asn1Set
-        return set.children.mapNotNull { element ->
-            runCatching { parseSecurityInfo(element as Asn1Sequence) }
-                .onFailure { e -> e.printStackTrace() }
-                .getOrNull()
+    fun parse(bytes: UByteArray): Result<List<SecurityInfo>> =
+        runCatching {
+            val set = Asn1Element.parseFirst(bytes.toByteArray()).first as Asn1Set
+            val elements =
+                set.children.mapNotNull { element ->
+                    runCatching { parseSecurityInfo(element as Asn1Sequence) }
+                        .onFailure { e -> e.printStackTrace() }
+                        .getOrNull()
+                }
+
+            return Result.success(elements)
         }
-    }
 
     private fun parseSecurityInfo(seq: Asn1Sequence): SecurityInfo {
         val children = seq.children.toList()

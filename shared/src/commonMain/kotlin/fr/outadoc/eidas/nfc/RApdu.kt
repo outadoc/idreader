@@ -4,7 +4,7 @@ import fr.outadoc.eidas.utils.toPrettyHex
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class RApdu private constructor(
-    val data: UByteArray,
+    private val data: UByteArray,
     val sw1: UByte,
     val sw2: UByte,
 ) {
@@ -25,10 +25,14 @@ class RApdu private constructor(
     val isSuccess: Boolean
         get() = sw1 == 0x90u.toUByte() && sw2 == 0x00u.toUByte()
 
-    fun getDataOrThrow(): UByteArray {
-        check(isSuccess) { "Command failure: $this" }
-        return data
-    }
+    fun getData(): Result<UByteArray> =
+        if (isSuccess) {
+            Result.success(data)
+        } else {
+            Result.failure(
+                IllegalStateException("APDU error: $sw1 $sw2"),
+            )
+        }
 
     override fun toString(): String = data.toPrettyHex()
 }

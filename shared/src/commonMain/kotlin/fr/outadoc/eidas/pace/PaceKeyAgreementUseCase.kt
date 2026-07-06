@@ -29,8 +29,13 @@ class PaceKeyAgreementUseCase(
         tag: NfcTag,
         algorithm: Algorithm,
         mappedGenerator: EcPoint,
-    ): Result<PaceKeyAgreementResult> = runCatching {
-        val finalKeyPair = keyGenerator.generateKeyPairOnGenerator(algorithm, mappedGenerator)
+    ): Result<PaceKeyAgreementResult> {
+        val finalKeyPair =
+            runCatching { keyGenerator.generateKeyPairOnGenerator(algorithm, mappedGenerator) }
+                .getOrElse {
+                    return Result.failure(it)
+                }
+
         val terminalFinalPub = finalKeyPair.publicKey.uncompressedPublicPoint
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 3: final key exchange)")
@@ -49,57 +54,59 @@ class PaceKeyAgreementUseCase(
                             )
                         },
                     ),
-                ).getOrThrow()
-                .getDataOrThrow()
+                ).getOrElse { return Result.failure(it) }
+                .getData()
+                .getOrElse { return Result.failure(it) }
 
-        logger.d(TAG, "Step 3 raw response: ${response.toPrettyHex()}")
+        return runCatching {
+            logger.d(TAG, "Step 3 raw response: ${response.toPrettyHex()}")
 
-        val dynAuth = response.parseDynamicAuthData()
+            val dynAuth = response.parseDynamicAuthData()
 
-        val chipFinalPub =
-            (dynAuth.find(Iso7816.Tags.ChipPublicKey.toInt())?.value as? ByteArray)
-                ?.toUByteArray()
+            val chipFinalPub =
+                (dynAuth.find(Iso7816.Tags.ChipPublicKey.toInt())?.value as? ByteArray)
+                    ?.toUByteArray()
+                    ?: return Result.failure(
+                        IllegalStateException("Could not find chip final public key in dynamic auth data"),
+                    )
 
-        checkNotNull(chipFinalPub) {
-            "Could not find chip final public key in dynamic auth data"
+            logger.d(TAG, "Terminal final pub: ${terminalFinalPub.toPrettyHex()}")
+            logger.d(TAG, "Chip final pub: ${chipFinalPub.toPrettyHex()}")
+
+            val sharedSecret =
+                cryptoEngine.computeSharedSecret(
+                    algorithm = algorithm,
+                    privateKey = finalKeyPair.privateKey,
+                    chipPublicPoint = deserializedUncompressedEcPoint(chipFinalPub),
+                )
+
+            logger.d(TAG, "Shared secret K: ${sharedSecret.toPrettyHex()}")
+
+            val kEnc =
+                cryptoEngine.deriveKeyFromSecret(
+                    algorithm = algorithm,
+                    secret = sharedSecret,
+                    nonce = ubyteArrayOf(),
+                    counter = 1,
+                )
+
+            val kMac =
+                cryptoEngine.deriveKeyFromSecret(
+                    algorithm = algorithm,
+                    secret = sharedSecret,
+                    nonce = ubyteArrayOf(),
+                    counter = 2,
+                )
+
+            logger.d(TAG, "K_enc: ${kEnc.toPrettyHex()}")
+            logger.d(TAG, "K_mac: ${kMac.toPrettyHex()}")
+
+            PaceKeyAgreementResult(
+                kEnc = kEnc,
+                kMac = kMac,
+                terminalFinalPub = terminalFinalPub,
+                chipFinalPub = chipFinalPub,
+            )
         }
-
-        logger.d(TAG, "Terminal final pub: ${terminalFinalPub.toPrettyHex()}")
-        logger.d(TAG, "Chip final pub: ${chipFinalPub.toPrettyHex()}")
-
-        val sharedSecret =
-            cryptoEngine.computeSharedSecret(
-                algorithm = algorithm,
-                privateKey = finalKeyPair.privateKey,
-                chipPublicPoint = deserializedUncompressedEcPoint(chipFinalPub),
-            )
-
-        logger.d(TAG, "Shared secret K: ${sharedSecret.toPrettyHex()}")
-
-        val kEnc =
-            cryptoEngine.deriveKeyFromSecret(
-                algorithm = algorithm,
-                secret = sharedSecret,
-                nonce = ubyteArrayOf(),
-                counter = 1,
-            )
-
-        val kMac =
-            cryptoEngine.deriveKeyFromSecret(
-                algorithm = algorithm,
-                secret = sharedSecret,
-                nonce = ubyteArrayOf(),
-                counter = 2,
-            )
-
-        logger.d(TAG, "K_enc: ${kEnc.toPrettyHex()}")
-        logger.d(TAG, "K_mac: ${kMac.toPrettyHex()}")
-
-        PaceKeyAgreementResult(
-            kEnc = kEnc,
-            kMac = kMac,
-            terminalFinalPub = terminalFinalPub,
-            chipFinalPub = chipFinalPub,
-        )
     }
 }

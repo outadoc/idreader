@@ -28,7 +28,7 @@ class PaceMutualAuthUseCase(
         kMac: UByteArray,
         terminalFinalPub: UByteArray,
         chipFinalPub: UByteArray,
-    ): Result<Unit> = runCatching {
+    ): Result<Unit> {
         val tokenInput =
             paceTokenInput(
                 oid = algorithm.protocol.oidBytes,
@@ -38,12 +38,16 @@ class PaceMutualAuthUseCase(
         logger.d(TAG, "Terminal token CMAC input: ${tokenInput.toPrettyHex()}")
 
         val terminalToken =
-            cryptoEngine
-                .computeCmac(
-                    algorithm = algorithm,
-                    key = kMac,
-                    data = tokenInput,
-                ).copyOfRange(0, 8)
+            runCatching {
+                cryptoEngine
+                    .computeCmac(
+                        algorithm = algorithm,
+                        key = kMac,
+                        data = tokenInput,
+                    ).copyOfRange(0, 8)
+            }.getOrElse {
+                return Result.failure(it)
+            }
 
         logger.d(TAG, "Terminal token (8 bytes): ${terminalToken.toPrettyHex()}")
 
@@ -68,33 +72,33 @@ class PaceMutualAuthUseCase(
                             },
                         chained = false,
                     ),
-                ).getOrThrow()
-                .getDataOrThrow()
+                ).getOrElse { return Result.failure(it) }
+                .getData()
+                .getOrElse { return Result.failure(it) }
 
-        val dynAuth = response.parseDynamicAuthData()
+        return runCatching {
+            val dynAuth = response.parseDynamicAuthData()
 
-        val chipToken =
-            (dynAuth.find(Iso7816.Tags.ChipAuthenticationToken.toInt())?.value as? ByteArray)
-                ?.toUByteArray()
+            val chipToken =
+                (dynAuth.find(Iso7816.Tags.ChipAuthenticationToken.toInt())?.value as? ByteArray)
+                    ?.toUByteArray()
+                    ?: throw IllegalStateException("Could not find chip authentication token")
 
-        checkNotNull(chipToken) {
-            "Could not find chip authentication token"
-        }
+            val expectedChipToken =
+                cryptoEngine
+                    .computeCmac(
+                        algorithm = algorithm,
+                        key = kMac,
+                        data =
+                            paceTokenInput(
+                                oid = algorithm.protocol.oidBytes,
+                                pubKey = terminalFinalPub,
+                            ),
+                    ).copyOfRange(0, 8)
 
-        val expectedChipToken =
-            cryptoEngine
-                .computeCmac(
-                    algorithm = algorithm,
-                    key = kMac,
-                    data =
-                        paceTokenInput(
-                            oid = algorithm.protocol.oidBytes,
-                            pubKey = terminalFinalPub,
-                        ),
-                ).copyOfRange(0, 8)
-
-        check(chipToken.contentEquals(expectedChipToken)) {
-            "Chip authentication token mismatch: got ${chipToken.toPrettyHex()}, expected ${expectedChipToken.toPrettyHex()}"
+            check(chipToken.contentEquals(expectedChipToken)) {
+                "Chip authentication token mismatch: got ${chipToken.toPrettyHex()}, expected ${expectedChipToken.toPrettyHex()}"
+            }
         }
     }
 

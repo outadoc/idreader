@@ -26,46 +26,44 @@ class PaceGetNonceUseCase(
         tag: NfcTag,
         algorithm: Algorithm,
         can: String,
-    ): Result<UByteArray> =
-        runCatching {
-            logger.i(TAG, "MSE:Set AT")
+    ): Result<UByteArray> {
+        logger.i(TAG, "MSE:Set AT")
 
+        tagReader
+            .transceive(
+                tag,
+                commandFactory.paceSetAt(
+                    algorithm = algorithm.protocol.oidBytes,
+                    keyReference = Iso7816.KeyRef.CAN,
+                ),
+            ).getOrElse { return Result.failure(it) }
+            .getData()
+            .getOrElse { return Result.failure(it) }
+
+        logger.i(TAG, "GENERAL AUTHENTICATE (step 1: encrypted nonce)")
+
+        val response =
             tagReader
                 .transceive(
                     tag,
-                    commandFactory.paceSetAt(
-                        algorithm = algorithm.protocol.oidBytes,
-                        keyReference = Iso7816.KeyRef.CAN,
+                    commandFactory.generalAuthenticate(
+                        tlvList {
+                            tlv(
+                                Iso7816.Tags.DynamicAuthenticationData,
+                                ubyteArrayOf(),
+                            )
+                        },
                     ),
-                ).getOrThrow()
-                .getDataOrThrow()
+                ).getOrElse { return Result.failure(it) }
+                .getData()
+                .getOrElse { return Result.failure(it) }
 
-            logger.i(TAG, "GENERAL AUTHENTICATE (step 1: encrypted nonce)")
-
-            val response =
-                tagReader
-                    .transceive(
-                        tag,
-                        commandFactory.generalAuthenticate(
-                            tlvList {
-                                tlv(
-                                    Iso7816.Tags.DynamicAuthenticationData,
-                                    ubyteArrayOf(),
-                                )
-                            },
-                        ),
-                    ).getOrThrow()
-                    .getDataOrThrow()
-
+        return runCatching {
             val dynAuth = response.parseDynamicAuthData()
 
             val encryptedNonce =
-                (dynAuth.find(Iso7816.Tags.Nonce.toInt())?.value as? ByteArray)
-                    ?.toUByteArray()
-
-            checkNotNull(encryptedNonce) {
-                "Could not find nonce in dynamic auth data"
-            }
+                (dynAuth.find(Iso7816.Tags.Nonce.toInt())?.value as? ByteArray)?.toUByteArray()
+                    ?: throw IllegalStateException("Could not find nonce in dynamic auth data")
 
             logger.d(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
 
@@ -90,4 +88,5 @@ class PaceGetNonceUseCase(
 
             decryptedNonce
         }
+    }
 }

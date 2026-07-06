@@ -27,7 +27,9 @@ class PaceAuthenticateUseCase(
     ): Result<PaceSession> {
         val securityInfos =
             readCardAccess(tag)
-                .getOrElse { return Result.failure(it) }
+                .getOrElse {
+                    return Result.failure(it)
+                }
 
         logger.d(TAG, "$securityInfos")
 

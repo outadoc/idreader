@@ -4,6 +4,7 @@ import fr.outadoc.eidas.crypto.Algorithm
 import fr.outadoc.eidas.crypto.CryptoEngine
 import fr.outadoc.eidas.crypto.EcPoint
 import fr.outadoc.eidas.crypto.KeyGenerator
+import fr.outadoc.eidas.crypto.KeyPair
 import fr.outadoc.eidas.crypto.deserializedUncompressedEcPoint
 import fr.outadoc.eidas.crypto.serializeUncompressed
 import fr.outadoc.eidas.logging.Logger
@@ -30,8 +31,10 @@ class PaceMapNonceUseCase(
         tag: NfcTag,
         algorithm: Algorithm,
         nonce: UByteArray,
-    ): Result<EcPoint> = runCatching {
-        val mappingKeyPair = keyGenerator.generateKeyPair(algorithm)
+    ): Result<EcPoint> {
+        val mappingKeyPair: KeyPair =
+            runCatching { keyGenerator.generateKeyPair(algorithm) }
+                .getOrElse { return Result.failure(it) }
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 2: generic mapping)")
 
@@ -52,32 +55,33 @@ class PaceMapNonceUseCase(
                             )
                         },
                     ),
-                ).getOrThrow()
-                .getDataOrThrow()
+                ).getOrElse { return Result.failure(it) }
+                .getData()
+                .getOrElse { return Result.failure(it) }
 
-        val dynAuth = response.parseDynamicAuthData()
+        return runCatching {
+            val dynAuth = response.parseDynamicAuthData()
 
-        val chipMappingData =
-            (dynAuth.find(Iso7816.Tags.ChipMappingData.toInt())?.value as? ByteArray)?.toUByteArray()
+            val chipMappingData =
+                (dynAuth.find(Iso7816.Tags.ChipMappingData.toInt())?.value as? ByteArray)
+                    ?.toUByteArray()
+                    ?: throw IllegalStateException("Could not find mapping data in dynamic auth data")
 
-        checkNotNull(chipMappingData) {
-            "Could not find mapping data in dynamic auth data"
-        }
+            logger.d(TAG, "Chip mapping point: ${chipMappingData.toPrettyHex()}")
 
-        logger.d(TAG, "Chip mapping point: ${chipMappingData.toPrettyHex()}")
+            val mappedGenerator =
+                cryptoEngine.computeMappedGenerator(
+                    algorithm = algorithm,
+                    mappingPrivateKey = mappingKeyPair.privateKey,
+                    chipMappingPublicPoint = deserializedUncompressedEcPoint(chipMappingData),
+                    decryptedNonce = nonce,
+                )
 
-        val mappedGenerator =
-            cryptoEngine.computeMappedGenerator(
-                algorithm = algorithm,
-                mappingPrivateKey = mappingKeyPair.privateKey,
-                chipMappingPublicPoint = deserializedUncompressedEcPoint(chipMappingData),
-                decryptedNonce = nonce,
+            logger.d(
+                TAG,
+                "Mapped generator G': ${mappedGenerator.serializeUncompressed().toPrettyHex()}",
             )
-
-        logger.d(
-            TAG,
-            "Mapped generator G': ${mappedGenerator.serializeUncompressed().toPrettyHex()}",
-        )
-        mappedGenerator
+            mappedGenerator
+        }
     }
 }
