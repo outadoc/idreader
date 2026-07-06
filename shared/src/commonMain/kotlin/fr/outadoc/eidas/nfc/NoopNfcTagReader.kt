@@ -6,6 +6,6 @@ import kotlinx.coroutines.flow.emptyFlow
 class NoopNfcTagReader : NfcTagReader {
     override val detectedTags: Flow<NfcTag> = emptyFlow()
 
-    override suspend fun transceive(tag: NfcTag, command: CApdu): RApdu =
-        throw NfcException("Not supported")
+    override suspend fun transceive(tag: NfcTag, command: CApdu): Result<RApdu> =
+        Result.failure(NfcException("Not supported"))
 }

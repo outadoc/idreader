@@ -90,24 +90,28 @@ class AndroidNfcTagReader(
     override suspend fun transceive(
         tag: NfcTag,
         command: CApdu,
-    ): RApdu {
+    ): Result<RApdu> {
         val isoDep =
             currentConnection
                 ?.takeIf { (currentTag, _) -> currentTag == tag }
                 ?.second
-                ?: throw NfcException("Tag is no longer available")
+                ?: return Result.failure(
+                    NfcException("Tag is no longer available"),
+                )
 
         return withContext(Dispatchers.IO) {
-            try {
-                val commandBytes = command.serialize()
-                logger.d(TAG, "SEND > ${commandBytes.toPrettyHex()}")
-                val response = isoDep.transceive(commandBytes.toByteArray()).toUByteArray()
-                logger.d(TAG, "RECV < ${response.toPrettyHex()}")
-                RApdu.parse(response)
-            } catch (e: TagLostException) {
-                throw NfcException("Tag was lost during communication", e)
-            } catch (e: IOException) {
-                throw NfcException("Failed to communicate with tag", e)
+            runCatching {
+                try {
+                    val commandBytes = command.serialize()
+                    logger.d(TAG, "SEND > ${commandBytes.toPrettyHex()}")
+                    val response = isoDep.transceive(commandBytes.toByteArray()).toUByteArray()
+                    logger.d(TAG, "RECV < ${response.toPrettyHex()}")
+                    RApdu.parse(response)
+                } catch (e: TagLostException) {
+                    throw NfcException("Tag was lost during communication", e)
+                } catch (e: IOException) {
+                    throw NfcException("Failed to communicate with tag", e)
+                }
             }
         }
     }

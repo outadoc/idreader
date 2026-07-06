@@ -43,9 +43,7 @@ class AndroidCryptoEngineTest {
 
     @Test
     fun cmacOfChipPubUnderKMacMatchesLoggedTerminalToken() {
-        val oid =
-            algorithm.protocol.oid.bytes
-                .toUByteArray()
+        val oid = algorithm.protocol.oidBytes
         val tokenInput = paceTokenInput(oid, chipFinalPub)
         val token = cryptoEngine.computeCmac(algorithm, expectedKMac, tokenInput).copyOfRange(0, 8)
         assertContentEquals(expectedTerminalToken, token)

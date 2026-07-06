@@ -26,14 +26,17 @@ class ReaderViewModel(
                 tagReader.detectedTags.collect { tag ->
                     logger.i(TAG, "Tag detected: ${tag.description}")
 
-                    val session: PaceSession =
+                    runCatching {
                         paceAuthenticate(
                             tag = tag,
                             can = settingsRepository.settings.first().can,
                         )
+                    }.onFailure { e ->
+                        logger.e(TAG, "Authentication failed", e)
+                    }
                 }
             } catch (e: Exception) {
-                logger.e(TAG, "Error", e)
+                logger.e(TAG, "NFC error", e)
             }
         }
     }

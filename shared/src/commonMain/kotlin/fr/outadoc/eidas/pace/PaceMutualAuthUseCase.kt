@@ -9,6 +9,7 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.NfcTagReader
+import fr.outadoc.eidas.nfc.getDataOrThrow
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.utils.toPrettyHex

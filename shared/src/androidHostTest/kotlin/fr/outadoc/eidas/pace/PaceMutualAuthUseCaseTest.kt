@@ -4,6 +4,7 @@ import fr.outadoc.eidas.crypto.Algorithm
 import fr.outadoc.eidas.crypto.AndroidCryptoEngine
 import fr.outadoc.eidas.crypto.DomainParameter
 import fr.outadoc.eidas.crypto.Protocol
+import fr.outadoc.eidas.crypto.oidBytes
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
@@ -41,9 +42,7 @@ class PaceMutualAuthUseCaseTest {
     fun terminalTokenMatchesLoggedValue() {
         // Verify our CMAC computation produces the same token recorded in the real card run.
         // This is the key diagnostic test for the 63 00 failure.
-        val oid =
-            algorithm.protocol.oid.bytes
-                .toUByteArray()
+        val oid = algorithm.protocol.oidBytes
         val tokenInput = paceTokenInput(oid, chipFinalPub)
         val token = cryptoEngine.computeCmac(algorithm, kMac, tokenInput).copyOfRange(0, 8)
         assertContentEquals(expectedTerminalToken, token)
@@ -72,9 +71,7 @@ class PaceMutualAuthUseCaseTest {
         }
 
     private fun computeChipToken(): UByteArray {
-        val oid =
-            algorithm.protocol.oid.bytes
-                .toUByteArray()
+        val oid = algorithm.protocol.oidBytes
         return cryptoEngine
             .computeCmac(algorithm, kMac, paceTokenInput(oid, terminalFinalPub))
             .copyOfRange(0, 8)

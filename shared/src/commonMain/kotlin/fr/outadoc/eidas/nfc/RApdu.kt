@@ -32,3 +32,6 @@ class RApdu private constructor(
 
     override fun toString(): String = data.toPrettyHex()
 }
+
+@OptIn(ExperimentalUnsignedTypes::class)
+fun Result<RApdu>.getDataOrThrow(): UByteArray = getOrThrow().getDataOrThrow()

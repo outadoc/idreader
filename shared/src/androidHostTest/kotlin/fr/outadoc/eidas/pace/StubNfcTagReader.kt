@@ -13,6 +13,6 @@ class StubNfcTagReader(vararg responses: ByteArray) : NfcTagReader {
 
     override val detectedTags: Flow<NfcTag> = emptyFlow()
 
-    override suspend fun transceive(tag: NfcTag, command: CApdu): RApdu =
-        RApdu.parse(queue.removeFirst().toUByteArray())
+    override suspend fun transceive(tag: NfcTag, command: CApdu): Result<RApdu> =
+        Result.success(RApdu.parse(queue.removeFirst().toUByteArray()))
 }
