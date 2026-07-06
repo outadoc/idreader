@@ -27,7 +27,8 @@ private const val TAG = "AndroidNfcTagReader"
 class AndroidNfcTagReader(
     private val activity: Activity,
     private val logger: Logger,
-) : NfcTagReader {
+) : NfcTagReader,
+    NfcSessionManager {
     private var currentConnection: Pair<NfcTag, IsoDep>? = null
 
     override val detectedTags: Flow<NfcTag> =

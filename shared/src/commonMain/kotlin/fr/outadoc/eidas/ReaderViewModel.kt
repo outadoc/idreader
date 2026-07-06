@@ -7,7 +7,6 @@ import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
-import fr.outadoc.eidas.pace.PaceSession
 import fr.outadoc.eidas.settings.SettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch

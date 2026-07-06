@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
  * APDU-based communication (ISO 14443-4 / ISO 7816-4).
  */
 interface NfcTagReader {
-
     /**
      * Tags detected near the device.
      *
@@ -17,13 +16,4 @@ interface NfcTagReader {
      * @throws NfcException if NFC is not available on this device.
      */
     val detectedTags: Flow<NfcTag>
-
-    /**
-     * Sends a raw APDU command to the given tag and returns the response,
-     * including the SW1/SW2 status bytes.
-     *
-     * Returns [Result.failure] wrapping an [NfcException] if the tag has
-     * moved out of range or communication fails.
-     */
-    suspend fun transceive(tag: NfcTag, command: CApdu): Result<RApdu>
 }

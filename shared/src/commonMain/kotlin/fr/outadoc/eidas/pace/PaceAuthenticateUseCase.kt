@@ -24,7 +24,7 @@ class PaceAuthenticateUseCase(
     suspend operator fun invoke(
         tag: NfcTag,
         can: String,
-    ): Result<PaceSession> {
+    ): Result<PaceSessionKeys> {
         val securityInfos =
             readCardAccess(tag)
                 .getOrElse {
@@ -98,7 +98,7 @@ class PaceAuthenticateUseCase(
         logger.i(TAG, "PACE authentication successful")
 
         return Result.success(
-            PaceSession(
+            PaceSessionKeys(
                 kEnc = keys.kEnc,
                 kMac = keys.kMac,
             ),
