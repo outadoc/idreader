@@ -20,12 +20,17 @@ class SecureSessionManager(
     override suspend fun transceive(
         tag: NfcTag,
         command: CApdu,
-    ): Result<RApdu> {
-        TODO("Not yet implemented")
-    }
+    ): Result<RApdu> =
+        nfcSessionManager
+            .transceive(
+                tag = tag,
+                command = secureCApdu(command),
+            ).map { response ->
+                decryptRApdu(response)
+            }
 
-    private fun secureCApdu(apdu: CApdu): CApdu {
-        val protectedLe: UByte? = apdu.le
+    private fun secureCApdu(command: CApdu): CApdu {
+        val protectedLe: UByte? = command.le
 
         // TODO pad + encrypt data
         val protectedData: UByteArray? = null
@@ -34,10 +39,10 @@ class SecureSessionManager(
         val checksum: UByteArray = ubyteArrayOf()
 
         return CApdu(
-            cla = apdu.cla,
-            ins = apdu.ins,
-            p1 = apdu.p1,
-            p2 = apdu.p2,
+            cla = command.cla,
+            ins = command.ins,
+            p1 = command.p1,
+            p2 = command.p2,
             data =
                 tlvList {
                     if (protectedData != null) {
@@ -61,5 +66,9 @@ class SecureSessionManager(
                 },
             le = 0x00u,
         )
+    }
+
+    private fun decryptRApdu(response: RApdu): RApdu {
+        TODO()
     }
 }

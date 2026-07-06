@@ -12,11 +12,11 @@ An Android app for reading EU passports and ID cards via NFC, implementing the [
 # Build debug APK
 ./gradlew :androidApp:assembleDebug
 
-# Run Android host tests (runs on JVM, not a device)
+# Run all tests (runs on JVM, not a device)
 ./gradlew :shared:testAndroidHostTest
 
-# Run common tests
-./gradlew :shared:testCommonUnitTest
+# Run a single test class
+./gradlew :shared:testAndroidHostTest --tests "fr.outadoc.eidas.pace.PaceGetNonceUseCaseTest"
 ```
 
 ## Architecture
@@ -27,39 +27,62 @@ Two Gradle modules:
 - **`shared`** — all business logic, Compose UI, and platform abstractions. Structured as KMP source sets:
   - `commonMain` — platform-agnostic code, interfaces, and Compose UI
   - `androidMain` — Android implementations of platform interfaces
-  - `androidHostTest` / `commonTest` — tests
+  - `androidHostTest` — tests running on JVM (no device required)
 
 ### NFC / APDU layer (`shared/.../nfc/`)
 
-The core abstraction is `NfcTagReader`, a cold `Flow`-based interface:
-- Collecting `detectedTags` starts NFC discovery; cancelling stops it.
-- `transceive(tag, CApdu)` sends an ISO 7816-4 C-APDU and returns an `RApdu`.
-- `CApdu` models a command APDU (built via factory methods like `CApdu.selectAid`).
-- `RApdu` is an inline value class wrapping the raw response bytes, exposing `sw1`/`sw2` and `isSuccess`.
-- `AndroidNfcTagReader` implements `NfcTagReader` using Android's reader mode API, limited to IsoDep (ISO 14443-4) tags.
-- Known AIDs are collected in `Aid` (e.g., `Aid.MRTD` for the MRTD/ePassport application).
+Two complementary interfaces, both implemented by `AndroidNfcTagReader`:
+
+- **`NfcTagReader`** — only exposes `detectedTags: Flow<NfcTag>`. Collecting starts NFC discovery; cancelling stops it. Errors setting up the reader (e.g. NFC unavailable) throw from the flow.
+- **`NfcSessionManager`** — only exposes `transceive(tag, CApdu): Result<RApdu>`. Returns `Result.failure(NfcException)` on transport errors; never throws.
+
+`AndroidNfcTagReader` implements both by maintaining an `IsoDep` connection internally.
+
+`CApdu` models a command APDU built via `CommandFactory`. `RApdu` exposes `sw1`/`sw2`, `isSuccess`, and `getData(): Result<UByteArray>` (returns `Result.failure` on non-90-00 status).
+
+### Error handling convention
+
+All use cases and APDU-touching code follow a railway-oriented style using `kotlin.Result`:
+
+- `nfcSessionManager.transceive(...).getOrElse { return Result.failure(it) }` — propagates NFC transport errors
+- `.getData().getOrElse { return Result.failure(it) }` — propagates APDU status errors
+- Crypto/parsing blocks that can throw are wrapped in `runCatching { ... }` and returned directly
+- `parseDynamicAuthData(): Result<TLVList>` (extension on `UByteArray` in `DynAuthExt.kt`) follows the same convention
+
+All five PACE use cases (`ReadCardAccessUseCase`, `PaceGetNonceUseCase`, `PaceMapNonceUseCase`, `PaceKeyAgreementUseCase`, `PaceMutualAuthUseCase`) return `Result<T>`. `PaceAuthenticateUseCase` chains them with `getOrElse { return Result.failure(it) }`.
+
+`ReaderViewModel` catches per-tag errors **inside** the `collect { }` lambda (via `.onFailure { }` on the `Result` returned by `paceAuthenticate`) so that a failed tag never cancels the flow and disables reader mode.
+
+### PACE authentication flow (`shared/.../pace/`)
+
+BSI TR-03110 PACE in four steps, each a use case:
+1. `ReadCardAccessUseCase` — SELECT + READ BINARY EF.CardAccess, parse `SecurityInfo` to discover the chip's supported algorithms
+2. `PaceGetNonceUseCase` — MSE:Set AT + General Authenticate step 1; derives key from CAN, decrypts chip nonce
+3. `PaceMapNonceUseCase` — General Authenticate step 2 (generic mapping); produces mapped EC generator G′
+4. `PaceKeyAgreementUseCase` — General Authenticate step 3; performs ECDH, derives session keys K_enc and K_mac
+5. `PaceMutualAuthUseCase` — General Authenticate step 4; verifies CMAC tokens both ways
+
+`PaceAuthenticateUseCase` orchestrates all five and returns `Result<PaceSession>` containing the session keys.
+
+`SecureSessionManager` (in `securemessaging/`) wraps an `NfcSessionManager` to add TR-03110 secure messaging (encrypt + MAC) after a successful PACE session — currently a WIP stub.
 
 ### Logging (`shared/.../logging/`)
 
-Layered logger design:
-- `Logger` is the common interface with `d/i/w/e` extension helpers.
-- `MemoryLogger` wraps an optional delegate and accumulates entries into a `StateFlow<List<LogEntry>>`, which the UI observes.
-- `AndroidLogger` delegates to Android's `Log`.
-- The Koin graph wires `AndroidLogger` → `MemoryLogger` → `Logger`, so all log output also flows to the in-app terminal view.
-
-### UI (`shared/.../`)
-
-- `App` is the root `@Composable`; it collects `detectedTags` in a `LaunchedEffect`, sends the SELECT AID command, and logs results.
-- `TerminalView` renders the `MemoryLogger` entries as a scrolling monospace terminal with color-coded log levels.
+- `Logger` — common interface with `d/i/w/e` extension helpers.
+- `MemoryLogger` — wraps an optional delegate and accumulates entries into a `StateFlow<List<LogEntry>>` observed by the UI.
+- `AndroidLogger` — delegates to Android's `Log`.
 
 ### Dependency Injection (Koin)
 
-- `sharedModule` (commonMain) — registers `MemoryLogger` and `Logger`.
-- `androidModule(activity)` (androidMain) — registers `AndroidLogger` (as named `"platformLogger"`) and `AndroidNfcTagReader`.
-- The Android entry point starts Koin with both modules before the Compose tree is created.
+Three Koin modules loaded in order:
+
+- **`androidModule`** (androidMain) — `AndroidLogger` (named `"platformLogger"`), `AndroidCryptoEngine`, `AndroidKeyGenerator`, `DataStore`.
+- **`sharedModule`** (commonMain) — `MemoryLogger` → `Logger`, all use cases, `SettingsRepository`, `SettingsViewModel`, `ReaderViewModel`.
+- **`activityScopedModule(activity)`** (androidMain) — `AndroidNfcTagReader` as both `NfcTagReader` and `NfcSessionManager` (activity-scoped because Android's reader mode API requires an `Activity`).
 
 ## Key Conventions
 
-- All NFC communication is mediated through `NfcTagReader`; never access `android.nfc` directly outside `androidMain`.
-- APDU responses must be validated via `RApdu.isSuccess` before trusting the payload.
+- Never access `android.nfc` directly outside `androidMain`.
+- `transceive` never throws; use `.getOrElse { return Result.failure(it) }` to propagate errors.
+- Use `getData()` on `RApdu` to extract the payload; it returns `Result.failure` on non-9000 status.
 - Hex encoding/decoding utilities live in `utils/Hex.kt`.
