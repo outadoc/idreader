@@ -15,7 +15,7 @@ class DataStoreSettingsRepository(
     override val settings: Flow<AppSettings> =
         dataStore.data.map { AppSettings(can = it[KEY_CAN] ?: "") }
 
-    override suspend fun updateCan(value: String) {
-        dataStore.edit { it[KEY_CAN] = value }
+    override suspend fun saveSettings(settings: AppSettings) {
+        dataStore.edit { it[KEY_CAN] = settings.can }
     }
 }

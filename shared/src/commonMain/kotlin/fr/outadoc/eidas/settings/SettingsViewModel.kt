@@ -21,8 +21,21 @@ class SettingsViewModel(
     init {
         viewModelScope.launch {
             repository.settings.collect { settings ->
-                _state.update { it.copy(can = settings.can) }
+                _state.update {
+                    it.copy(can = settings.can)
+                }
             }
+        }
+    }
+
+    fun onDismiss() {
+        viewModelScope.launch {
+            val currentState = state.value
+            repository.saveSettings(
+                AppSettings(
+                    can = currentState.can
+                )
+            )
         }
     }
 
@@ -35,10 +48,6 @@ class SettingsViewModel(
 
         _state.update {
             it.copy(can = sanitizedCan)
-        }
-
-        viewModelScope.launch {
-            repository.updateCan(sanitizedCan)
         }
     }
 }

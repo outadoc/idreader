@@ -7,6 +7,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -17,6 +18,10 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    DisposableEffect(Unit) {
+        onDispose { viewModel.onDismiss() }
+    }
 
     Column(modifier = Modifier.padding(16.dp)) {
         OutlinedTextField(
