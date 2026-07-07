@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import fr.outadoc.eidas.lds.ReadLdsDataUseCase
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.e
+import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
@@ -30,9 +31,11 @@ class ReaderViewModel(
         viewModelScope.launch {
             try {
                 tagReader.detectedTags.collect { nfcSession ->
+                    val settings = settingsRepository.settings.first()
                     paceAuthenticate(
                         nfcSession = nfcSession,
-                        can = settingsRepository.settings.first().can,
+                        authenticationMethod = settings.authenticationMethod,
+                        password = settings.password,
                     ).onFailure { e ->
                         logger.e(TAG, "Authentication failed", e)
                     }.onSuccess { credentials ->
@@ -46,6 +49,8 @@ class ReaderViewModel(
                             nfcSession = ssm,
                         )
                     }
+
+                    logger.i(TAG, "Done!")
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "NFC error", e)

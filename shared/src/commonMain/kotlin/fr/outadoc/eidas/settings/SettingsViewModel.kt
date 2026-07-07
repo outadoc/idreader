@@ -12,7 +12,8 @@ class SettingsViewModel(
     private val repository: SettingsRepository,
 ) : ViewModel() {
     data class State(
-        val can: String = "",
+        val password: String = "",
+        val authenticationMethod: AuthenticationMethod = AuthenticationMethod.CAN,
     )
 
     private val _state = MutableStateFlow(State())
@@ -23,7 +24,8 @@ class SettingsViewModel(
             repository.settings.collect { settings ->
                 _state.update { state ->
                     state.copy(
-                        can = settings.can
+                        password = settings.password,
+                        authenticationMethod = settings.authenticationMethod,
                     )
                 }
             }
@@ -35,23 +37,22 @@ class SettingsViewModel(
             val currentState = state.value
             repository.saveSettings(
                 AppSettings(
-                    can = currentState.can
-                )
+                    password = currentState.password,
+                    authenticationMethod = currentState.authenticationMethod,
+                ),
             )
         }
     }
 
-    fun onCanChanged(can: String) {
-        val sanitizedCan: String =
-            can.replace(
-                regex = Regex("[^0-9]"),
-                replacement = ""
-            )
-
+    fun onPasswordChanged(password: String) {
         _state.update { state ->
-            state.copy(
-                can = sanitizedCan
-            )
+            state.copy(password = password)
+        }
+    }
+
+    fun onAuthenticationMethodChanged(method: AuthenticationMethod) {
+        _state.update { state ->
+            state.copy(authenticationMethod = method)
         }
     }
 }

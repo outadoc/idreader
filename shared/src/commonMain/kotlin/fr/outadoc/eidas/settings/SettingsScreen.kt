@@ -25,17 +25,23 @@ fun SettingsScreen(viewModel: SettingsViewModel = koinViewModel()) {
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
+        AuthenticationMethodDropdown(
+            modifier = Modifier.fillMaxWidth(),
+            selected = state.authenticationMethod,
+            onSelected = viewModel::onAuthenticationMethodChanged,
+        )
+
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
-            value = state.can,
-            onValueChange = viewModel::onCanChanged,
-            label = { Text("Card Access Number (CAN)") },
-            placeholder = { Text("000000") },
+            value = state.password,
+            onValueChange = viewModel::onPasswordChanged,
+            label = { Text("Password for the selected method") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.NumberPassword,
-            )
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                ),
         )
     }
 }

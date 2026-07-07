@@ -14,35 +14,38 @@ class DataStoreSettingsRepository(
     private val settingsEncryptor: SettingsEncryptor,
     private val logger: Logger,
 ) : SettingsRepository {
-
-    private companion object {
-        val KEY_CAN = stringPreferencesKey("can")
-        const val TAG = "DataStoreSettingsRepository"
-    }
-
     override val settings: Flow<AppSettings> =
         dataStore.data.map { store ->
             AppSettings(
-                can = store[KEY_CAN]
-                    ?.let { cipherText ->
-                        settingsEncryptor.decrypt(cipherText)
-                            .onFailure { e ->
-                                logger.e(TAG, "Decryption failure", e)
-                            }
-                            .getOrDefault("")
-                    }
-                    .orEmpty()
+                authenticationMethod =
+                    store[KEY_AUTHENTICATION_METHOD]
+                        ?.let { runCatching { AuthenticationMethod.valueOf(it) }.getOrNull() }
+                        ?: AuthenticationMethod.CAN,
+                password =
+                    store[KEY_PASSWORD]
+                        ?.let { cipherText ->
+                            settingsEncryptor
+                                .decrypt(cipherText)
+                                .onFailure { e -> logger.e(TAG, "Decryption failure", e) }
+                                .getOrDefault("")
+                        }.orEmpty(),
             )
         }
 
     override suspend fun saveSettings(settings: AppSettings) {
         dataStore.edit { store ->
-            store[KEY_CAN] = settingsEncryptor
-                .encrypt(settings.can)
-                .onFailure { e ->
-                    logger.e(TAG, "Encryption failure", e)
-                }
-                .getOrDefault("")
+            store[KEY_AUTHENTICATION_METHOD] = settings.authenticationMethod.name
+            store[KEY_PASSWORD] =
+                settingsEncryptor
+                    .encrypt(settings.password)
+                    .onFailure { e -> logger.e(TAG, "Encryption failure", e) }
+                    .getOrDefault("")
         }
+    }
+
+    private companion object {
+        val KEY_PASSWORD = stringPreferencesKey("password")
+        val KEY_AUTHENTICATION_METHOD = stringPreferencesKey("authentication_method")
+        const val TAG = "DataStoreSettingsRepository"
     }
 }

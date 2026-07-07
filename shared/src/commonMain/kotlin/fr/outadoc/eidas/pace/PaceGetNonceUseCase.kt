@@ -8,9 +8,9 @@ import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
-import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
+import fr.outadoc.eidas.settings.AuthenticationMethod
 import fr.outadoc.eidas.utils.toPrettyHex
 import io.github.rafaelrabeloit.bertlv.TLVList
 
@@ -25,7 +25,8 @@ class PaceGetNonceUseCase(
     suspend operator fun invoke(
         nfcSession: NfcSession,
         algorithm: Algorithm,
-        can: String,
+        authenticationMethod: AuthenticationMethod,
+        password: String,
     ): Result<UByteArray> {
         logger.i(TAG, "MSE:Set AT")
 
@@ -33,7 +34,13 @@ class PaceGetNonceUseCase(
             .transceive(
                 commandFactory.paceSetAt(
                     algorithm = algorithm.protocol.oidBytes,
-                    keyReference = Iso7816.KeyRef.CAN,
+                    keyReference =
+                        when (authenticationMethod) {
+                            AuthenticationMethod.CAN -> Iso7816.KeyRef.CAN
+                            AuthenticationMethod.MRZ -> Iso7816.KeyRef.MRZ
+                            AuthenticationMethod.PIN -> Iso7816.KeyRef.PIN
+                            AuthenticationMethod.PUK -> Iso7816.KeyRef.PUK
+                        },
                 ),
             ).getOrElse { return Result.failure(it) }
             .getData()
@@ -69,8 +76,8 @@ class PaceGetNonceUseCase(
 
         logger.d(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
 
-        val canBytes: UByteArray =
-            can
+        val passwordBytes: UByteArray =
+            password
                 .toByteArray(Charsets.US_ASCII)
                 .toUByteArray()
 
@@ -78,7 +85,7 @@ class PaceGetNonceUseCase(
             runCatching {
                 cryptoEngine.deriveKeyFromSecret(
                     algorithm = algorithm,
-                    secret = canBytes,
+                    secret = passwordBytes,
                     nonce = ubyteArrayOf(),
                     counter = 3,
                 )

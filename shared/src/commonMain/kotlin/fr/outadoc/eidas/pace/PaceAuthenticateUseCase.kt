@@ -9,6 +9,7 @@ import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.asn1.SecurityInfo
+import fr.outadoc.eidas.settings.AuthenticationMethod
 
 private const val TAG = "PaceAuthenticateUseCase"
 
@@ -23,7 +24,8 @@ class PaceAuthenticateUseCase(
 ) {
     suspend operator fun invoke(
         nfcSession: NfcSession,
-        can: String,
+        authenticationMethod: AuthenticationMethod,
+        password: String,
     ): Result<PaceCredentials> {
         val securityInfos =
             readCardAccess(
@@ -63,7 +65,8 @@ class PaceAuthenticateUseCase(
             getNonce(
                 nfcSession = nfcSession,
                 algorithm = selectedAlgorithm,
-                can = can,
+                authenticationMethod = authenticationMethod,
+                password = password,
             ).getOrElse {
                 return Result.failure(it)
             }
