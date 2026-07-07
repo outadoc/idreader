@@ -4,16 +4,17 @@ import fr.outadoc.eidas.crypto.Algorithm
 import fr.outadoc.eidas.crypto.CryptoEngine
 import fr.outadoc.eidas.crypto.EcPoint
 import fr.outadoc.eidas.crypto.KeyGenerator
+import fr.outadoc.eidas.crypto.KeyPair
 import fr.outadoc.eidas.crypto.deserializedUncompressedEcPoint
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
-import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.utils.toPrettyHex
+import io.github.rafaelrabeloit.bertlv.TLVList
 
 private const val TAG = "PaceKeyAgreementUseCase"
 
@@ -29,17 +30,17 @@ class PaceKeyAgreementUseCase(
         algorithm: Algorithm,
         mappedGenerator: EcPoint,
     ): Result<PaceKeyAgreementResult> {
-        val finalKeyPair =
+        val finalKeyPair: KeyPair =
             runCatching { keyGenerator.generateKeyPairOnGenerator(algorithm, mappedGenerator) }
                 .getOrElse {
                     return Result.failure(it)
                 }
 
-        val terminalFinalPub = finalKeyPair.publicKey.uncompressedPublicPoint
+        val terminalFinalPub: UByteArray = finalKeyPair.publicKey.uncompressedPublicPoint
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 3: final key exchange)")
 
-        val response =
+        val response: UByteArray =
             nfcSession
                 .transceive(
                     commandFactory.generalAuthenticate(
@@ -58,7 +59,7 @@ class PaceKeyAgreementUseCase(
 
         logger.d(TAG, "Step 3 raw response: ${response.toPrettyHex()}")
 
-        val dynAuth =
+        val dynAuth: TLVList =
             response
                 .parseDynamicAuthData()
                 .getOrElse { return Result.failure(it) }
@@ -74,7 +75,7 @@ class PaceKeyAgreementUseCase(
             logger.d(TAG, "Terminal final pub: ${terminalFinalPub.toPrettyHex()}")
             logger.d(TAG, "Chip final pub: ${chipFinalPub.toPrettyHex()}")
 
-            val sharedSecret =
+            val sharedSecret: UByteArray =
                 cryptoEngine.computeSharedSecret(
                     algorithm = algorithm,
                     privateKey = finalKeyPair.privateKey,
@@ -83,7 +84,7 @@ class PaceKeyAgreementUseCase(
 
             logger.d(TAG, "Shared secret K: ${sharedSecret.toPrettyHex()}")
 
-            val kEnc =
+            val kEnc: UByteArray =
                 cryptoEngine.deriveKeyFromSecret(
                     algorithm = algorithm,
                     secret = sharedSecret,
@@ -91,7 +92,7 @@ class PaceKeyAgreementUseCase(
                     counter = 1,
                 )
 
-            val kMac =
+            val kMac: UByteArray =
                 cryptoEngine.deriveKeyFromSecret(
                     algorithm = algorithm,
                     secret = sharedSecret,
