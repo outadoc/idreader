@@ -26,7 +26,7 @@ val sharedModule =
         factory { SecurityInfosParser() }
         factory { CommandFactory() }
 
-        single<SettingsRepository> { DataStoreSettingsRepository(get()) }
+        single<SettingsRepository> { DataStoreSettingsRepository(get(), get(), get()) }
 
         factory { ReadCardAccessUseCase(get(), get(), get(), get()) }
         factory { PaceGetNonceUseCase(get(), get(), get(), get()) }
