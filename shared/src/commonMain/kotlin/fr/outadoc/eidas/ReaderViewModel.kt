@@ -2,10 +2,10 @@ package fr.outadoc.eidas
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import fr.outadoc.eidas.lds.ReadLdsDataUseCase
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
-import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
@@ -24,6 +24,7 @@ class ReaderViewModel(
     private val settingsRepository: SettingsRepository,
     private val secureSessionFactory: SecureSessionFactory,
     private val commandFactory: CommandFactory,
+    private val readLdsData: ReadLdsDataUseCase,
 ) : ViewModel() {
     fun startListening() {
         viewModelScope.launch {
@@ -38,13 +39,7 @@ class ReaderViewModel(
                         logger.e(TAG, "Authentication failed", e)
                     }.onSuccess { session ->
                         val ssm = secureSessionFactory.newInstance(session)
-
-                        ssm.transceive(
-                            tag,
-                            commandFactory.selectAid(
-                                Iso7816.Aid.MRTD.hexToUByteArray(),
-                            ),
-                        )
+                        readLdsData(tag, ssm)
                     }
                 }
             } catch (e: Exception) {

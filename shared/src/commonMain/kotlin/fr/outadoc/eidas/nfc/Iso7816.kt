@@ -1,5 +1,6 @@
 package fr.outadoc.eidas.nfc
 
+@OptIn(ExperimentalUnsignedTypes::class)
 object Iso7816 {
     object Aid {
         /**
@@ -10,11 +11,11 @@ object Iso7816 {
         const val MRTD = "A0000002471001"
     }
 
-    object File {
-        object CardAccess {
-            val FILE_ID = ubyteArrayOf(0x01u, 0x1Cu)
-            val SHORT_FILE_ID: UByte = 0x1Cu
-        }
+    enum class File(
+        val fileId: UByteArray,
+    ) {
+        CardAccess(fileId = ubyteArrayOf(0x01u, 0x1Cu)),
+        DIR(fileId = ubyteArrayOf(0x2fu, 0x00u)),
     }
 
     object KeyRef {

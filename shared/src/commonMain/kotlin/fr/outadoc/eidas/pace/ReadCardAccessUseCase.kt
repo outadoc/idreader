@@ -22,7 +22,7 @@ class ReadCardAccessUseCase(
         logger.i(TAG, "SELECT FILE EF.CardAccess")
 
         nfcSessionManager
-            .transceive(tag, commandFactory.selectFile(Iso7816.File.CardAccess.FILE_ID))
+            .transceive(tag, commandFactory.selectFile(Iso7816.File.CardAccess.fileId))
             .getOrElse { return Result.failure(it) }
             .getData()
             .getOrElse { return Result.failure(it) }

@@ -1,6 +1,8 @@
 package fr.outadoc.eidas.di
 
 import fr.outadoc.eidas.ReaderViewModel
+import fr.outadoc.eidas.lds.ReadDirUseCase
+import fr.outadoc.eidas.lds.ReadLdsDataUseCase
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
@@ -28,6 +30,8 @@ val sharedModule =
 
         single<SettingsRepository> { DataStoreSettingsRepository(get(), get(), get()) }
 
+        factory { ReadDirUseCase(get(), get()) }
+        factory { ReadLdsDataUseCase(get(), get(), get()) }
         factory { ReadCardAccessUseCase(get(), get(), get(), get()) }
         factory { PaceGetNonceUseCase(get(), get(), get(), get()) }
         factory { PaceMapNonceUseCase(get(), get(), get(), get(), get()) }
@@ -36,5 +40,5 @@ val sharedModule =
         factory { PaceAuthenticateUseCase(get(), get(), get(), get(), get(), get()) }
 
         viewModel { SettingsViewModel(get()) }
-        viewModel { ReaderViewModel(get(), get(), get(), get(), get(), get()) }
+        viewModel { ReaderViewModel(get(), get(), get(), get(), get(), get(), get()) }
     }
