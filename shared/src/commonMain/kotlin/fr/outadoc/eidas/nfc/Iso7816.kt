@@ -15,7 +15,7 @@ object Iso7816 {
         val fileId: UByteArray,
     ) {
         CardAccess(fileId = ubyteArrayOf(0x01u, 0x1Cu)),
-        DIR(fileId = ubyteArrayOf(0x2fu, 0x00u)),
+        COM(fileId = ubyteArrayOf(0x01u, 0x1Eu)),
     }
 
     object KeyRef {

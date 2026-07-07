@@ -1,6 +1,7 @@
 package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.logging.Logger
+import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
@@ -11,18 +12,25 @@ private val TAG = "ReadLdsDataUseCase"
 class ReadLdsDataUseCase(
     private val commandFactory: CommandFactory,
     private val logger: Logger,
-    private val readDir: ReadDirUseCase,
+    private val readComFile: ReadComFileUseCase,
 ) {
     suspend operator fun invoke(nfcSession: NfcSession): Result<LdsDump> {
-        nfcSession.transceive(
-            commandFactory.selectAid(
-                Iso7816.Aid.MRTD.hexToUByteArray(),
-            ),
-        )
+        logger.i(TAG, "Select MRTD application")
 
-        readDir(
+        nfcSession
+            .transceive(
+                commandFactory.selectAid(
+                    Iso7816.Aid.MRTD.hexToUByteArray(),
+                ),
+            ).getOrElse { return Result.failure(it) }
+            .getData()
+            .getOrElse { return Result.failure(it) }
+
+        readComFile(
             nfcSession = nfcSession,
-        )
+        ).getOrElse {
+            return Result.failure(it)
+        }
 
         return Result.failure(NotImplementedError())
     }
