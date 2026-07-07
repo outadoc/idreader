@@ -45,16 +45,16 @@ class PaceMapNonceUseCaseTest {
                     chipMappingPub +
                     ubyteArrayOf(0x90u, 0x00u)
 
+            val nfcSession = StubNfcSession(step2Response.toByteArray())
             val useCase =
                 PaceMapNonceUseCase(
-                    nfcSession = StubNfcTagReader(step2Response.toByteArray()),
                     commandFactory = CommandFactory(),
                     cryptoEngine = cryptoEngine,
                     keyGenerator = FakeKeyGenerator(testScalar),
                     logger = MemoryLogger(),
                 )
 
-            val gPrime = useCase(tag, algorithm, decryptedNonce).getOrThrow()
+            val gPrime = useCase(nfcSession, algorithm, decryptedNonce).getOrThrow()
 
             // Independently compute expected G' = d_map·chipMappingPub + s·G
             val expectedGPrime =

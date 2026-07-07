@@ -53,19 +53,20 @@ class PaceGetNonceUseCaseTest {
                     encryptedNonce.toUByteArray() +
                     ubyteArrayOf(0x90u, 0x00u)
 
+            val nfcSession =
+                StubNfcSession(
+                    mseResponse.toByteArray(),
+                    step1Response.toByteArray(),
+                )
+
             val useCase =
                 PaceGetNonceUseCase(
-                    nfcSession =
-                        StubNfcTagReader(
-                            mseResponse.toByteArray(),
-                            step1Response.toByteArray(),
-                        ),
                     commandFactory = CommandFactory(),
                     cryptoEngine = cryptoEngine,
                     logger = MemoryLogger(),
                 )
 
-            val result = useCase(tag, algorithm, testCan).getOrThrow()
+            val result = useCase(nfcSession, algorithm, testCan).getOrThrow()
             assertContentEquals(plainNonce.toUByteArray(), result)
         }
 

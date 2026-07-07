@@ -8,7 +8,6 @@ import fr.outadoc.eidas.crypto.EcPoint
 import fr.outadoc.eidas.crypto.Protocol
 import fr.outadoc.eidas.crypto.ecParams
 import fr.outadoc.eidas.logging.MemoryLogger
-import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import kotlinx.coroutines.test.runTest
 import java.math.BigInteger
@@ -24,7 +23,6 @@ class PaceKeyAgreementUseCaseTest {
         )
 
     private val cryptoEngine = AndroidCryptoEngine()
-    private val tag = NfcTag(id = byteArrayOf(), description = "stub")
 
     private val testScalar = BigInteger("31337")
 
@@ -50,14 +48,15 @@ class PaceKeyAgreementUseCaseTest {
 
             val useCase =
                 PaceKeyAgreementUseCase(
-                    nfcSession = StubNfcTagReader(step3Response.toByteArray()),
                     commandFactory = CommandFactory(),
                     cryptoEngine = cryptoEngine,
                     keyGenerator = FakeKeyGenerator(testScalar),
                     logger = MemoryLogger(),
                 )
 
-            val result = useCase(tag, algorithm, mappedGenerator).getOrThrow()
+            val nfcSession = StubNfcSession(step3Response.toByteArray())
+
+            val result = useCase(nfcSession, algorithm, mappedGenerator).getOrThrow()
 
             // Independently compute expected session keys using the same test scalar and chip pub
             val params = algorithm.parameter.ecParams()

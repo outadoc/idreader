@@ -54,8 +54,20 @@ class PaceMutualAuthUseCaseTest {
             val chipToken = computeChipToken()
             val response = buildChipTokenResponse(chipToken)
 
-            val useCase = buildUseCase(StubNfcTagReader(response))
-            useCase(tag, algorithm, kMac, terminalFinalPub, chipFinalPub).getOrThrow()
+            val useCase =
+                PaceMutualAuthUseCase(
+                    commandFactory = CommandFactory(),
+                    cryptoEngine = cryptoEngine,
+                    logger = MemoryLogger(),
+                )
+
+            useCase(
+                nfcSession = StubNfcSession(response),
+                algorithm = algorithm,
+                kMac = kMac,
+                terminalFinalPub = terminalFinalPub,
+                chipFinalPub = chipFinalPub,
+            ).getOrThrow()
         }
 
     @Test
@@ -64,8 +76,22 @@ class PaceMutualAuthUseCaseTest {
             val wrongToken = UByteArray(8)
             val response = buildChipTokenResponse(wrongToken)
 
-            val useCase = buildUseCase(StubNfcTagReader(response))
-            val result = useCase(tag, algorithm, kMac, terminalFinalPub, chipFinalPub)
+            val useCase =
+                PaceMutualAuthUseCase(
+                    commandFactory = CommandFactory(),
+                    cryptoEngine = cryptoEngine,
+                    logger = MemoryLogger(),
+                )
+
+            val result =
+                useCase(
+                    nfcSession = StubNfcSession(response),
+                    algorithm = algorithm,
+                    kMac = kMac,
+                    terminalFinalPub = terminalFinalPub,
+                    chipFinalPub = chipFinalPub,
+                )
+
             assertFailsWith<IllegalStateException> { result.getOrThrow() }
         }
 
@@ -84,14 +110,6 @@ class PaceMutualAuthUseCaseTest {
                     0x00u,
                 )
         ).toByteArray()
-
-    private fun buildUseCase(stubReader: StubNfcTagReader): PaceMutualAuthUseCase =
-        PaceMutualAuthUseCase(
-            nfcSession = stubReader,
-            commandFactory = CommandFactory(),
-            cryptoEngine = cryptoEngine,
-            logger = MemoryLogger(),
-        )
 
     private fun paceTokenInput(
         oid: UByteArray,
