@@ -7,7 +7,7 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
-import fr.outadoc.eidas.nfc.NfcSessionManager
+import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
@@ -18,21 +18,19 @@ private const val TAG = "PaceGetNonceUseCase"
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class PaceGetNonceUseCase(
-    private val nfcSessionManager: NfcSessionManager,
     private val commandFactory: CommandFactory,
     private val cryptoEngine: CryptoEngine,
     private val logger: Logger,
 ) {
     suspend operator fun invoke(
-        tag: NfcTag,
+        nfcSession: NfcSession,
         algorithm: Algorithm,
         can: String,
     ): Result<UByteArray> {
         logger.i(TAG, "MSE:Set AT")
 
-        nfcSessionManager
+        nfcSession
             .transceive(
-                tag,
                 commandFactory.paceSetAt(
                     algorithm = algorithm.protocol.oidBytes,
                     keyReference = Iso7816.KeyRef.CAN,
@@ -44,9 +42,8 @@ class PaceGetNonceUseCase(
         logger.i(TAG, "GENERAL AUTHENTICATE (step 1: encrypted nonce)")
 
         val response: UByteArray =
-            nfcSessionManager
+            nfcSession
                 .transceive(
-                    tag,
                     commandFactory.generalAuthenticate(
                         tlvList {
                             tlv(

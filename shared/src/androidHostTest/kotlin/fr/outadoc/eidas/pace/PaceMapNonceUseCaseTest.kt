@@ -47,7 +47,7 @@ class PaceMapNonceUseCaseTest {
 
             val useCase =
                 PaceMapNonceUseCase(
-                    nfcSessionManager = StubNfcTagReader(step2Response.toByteArray()),
+                    nfcSession = StubNfcTagReader(step2Response.toByteArray()),
                     commandFactory = CommandFactory(),
                     cryptoEngine = cryptoEngine,
                     keyGenerator = FakeKeyGenerator(testScalar),

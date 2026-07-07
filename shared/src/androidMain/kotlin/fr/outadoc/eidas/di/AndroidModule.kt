@@ -23,7 +23,7 @@ val androidModule =
         single<CryptoEngine> { AndroidCryptoEngine() }
         single<KeyGenerator> { AndroidKeyGenerator() }
         factory<SettingsEncryptor> { AndroidSettingsEncryptor() }
-        factory { SecureSessionFactory(get(), get(), get()) }
+        factory { SecureSessionFactory(get(), get()) }
         single<DataStore<Preferences>> {
             PreferenceDataStoreFactory.createWithPath(
                 produceFile = {

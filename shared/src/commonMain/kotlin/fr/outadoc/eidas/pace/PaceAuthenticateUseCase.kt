@@ -7,7 +7,7 @@ import fr.outadoc.eidas.crypto.Protocol
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
-import fr.outadoc.eidas.nfc.NfcTag
+import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.asn1.SecurityInfo
 
 private const val TAG = "PaceAuthenticateUseCase"
@@ -22,14 +22,15 @@ class PaceAuthenticateUseCase(
     private val logger: Logger,
 ) {
     suspend operator fun invoke(
-        tag: NfcTag,
+        nfcSession: NfcSession,
         can: String,
-    ): Result<PaceSession> {
+    ): Result<PaceCredentials> {
         val securityInfos =
-            readCardAccess(tag)
-                .getOrElse {
-                    return Result.failure(it)
-                }
+            readCardAccess(
+                nfcSession = nfcSession,
+            ).getOrElse {
+                return Result.failure(it)
+            }
 
         logger.d(TAG, "$securityInfos")
 
@@ -60,7 +61,7 @@ class PaceAuthenticateUseCase(
 
         val nonce: UByteArray =
             getNonce(
-                tag = tag,
+                nfcSession = nfcSession,
                 algorithm = selectedAlgorithm,
                 can = can,
             ).getOrElse {
@@ -69,7 +70,7 @@ class PaceAuthenticateUseCase(
 
         val mappedGenerator: EcPoint =
             mapNonce(
-                tag = tag,
+                nfcSession = nfcSession,
                 algorithm = selectedAlgorithm,
                 nonce = nonce,
             ).getOrElse {
@@ -78,7 +79,7 @@ class PaceAuthenticateUseCase(
 
         val keys: PaceKeyAgreementResult =
             keyAgreement(
-                tag = tag,
+                nfcSession = nfcSession,
                 algorithm = selectedAlgorithm,
                 mappedGenerator = mappedGenerator,
             ).getOrElse {
@@ -86,7 +87,7 @@ class PaceAuthenticateUseCase(
             }
 
         mutualAuth(
-            tag = tag,
+            nfcSession = nfcSession,
             algorithm = selectedAlgorithm,
             kMac = keys.kMac,
             terminalFinalPub = keys.terminalFinalPub,
@@ -98,7 +99,7 @@ class PaceAuthenticateUseCase(
         logger.i(TAG, "PACE authentication successful")
 
         return Result.success(
-            PaceSession(
+            PaceCredentials(
                 algorithm = selectedAlgorithm,
                 kEnc = keys.kEnc,
                 kMac = keys.kMac,

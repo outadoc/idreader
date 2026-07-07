@@ -9,7 +9,7 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
-import fr.outadoc.eidas.nfc.NfcSessionManager
+import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
@@ -19,14 +19,13 @@ private const val TAG = "PaceKeyAgreementUseCase"
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class PaceKeyAgreementUseCase(
-    private val nfcSessionManager: NfcSessionManager,
     private val commandFactory: CommandFactory,
     private val cryptoEngine: CryptoEngine,
     private val keyGenerator: KeyGenerator,
     private val logger: Logger,
 ) {
     suspend operator fun invoke(
-        tag: NfcTag,
+        nfcSession: NfcSession,
         algorithm: Algorithm,
         mappedGenerator: EcPoint,
     ): Result<PaceKeyAgreementResult> {
@@ -41,9 +40,8 @@ class PaceKeyAgreementUseCase(
         logger.i(TAG, "GENERAL AUTHENTICATE (step 3: final key exchange)")
 
         val response =
-            nfcSessionManager
+            nfcSession
                 .transceive(
-                    tag,
                     commandFactory.generalAuthenticate(
                         tlvList {
                             tlv(

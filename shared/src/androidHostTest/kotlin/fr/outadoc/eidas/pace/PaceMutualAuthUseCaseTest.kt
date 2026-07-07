@@ -87,7 +87,7 @@ class PaceMutualAuthUseCaseTest {
 
     private fun buildUseCase(stubReader: StubNfcTagReader): PaceMutualAuthUseCase =
         PaceMutualAuthUseCase(
-            nfcSessionManager = stubReader,
+            nfcSession = stubReader,
             commandFactory = CommandFactory(),
             cryptoEngine = cryptoEngine,
             logger = MemoryLogger(),

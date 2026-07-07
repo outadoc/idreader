@@ -50,7 +50,7 @@ class PaceKeyAgreementUseCaseTest {
 
             val useCase =
                 PaceKeyAgreementUseCase(
-                    nfcSessionManager = StubNfcTagReader(step3Response.toByteArray()),
+                    nfcSession = StubNfcTagReader(step3Response.toByteArray()),
                     commandFactory = CommandFactory(),
                     cryptoEngine = cryptoEngine,
                     keyGenerator = FakeKeyGenerator(testScalar),

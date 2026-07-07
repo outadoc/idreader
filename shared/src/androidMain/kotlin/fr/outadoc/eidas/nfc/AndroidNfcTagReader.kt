@@ -2,17 +2,13 @@ package fr.outadoc.eidas.nfc
 
 import android.app.Activity
 import android.nfc.NfcAdapter
-import android.nfc.TagLostException
 import android.nfc.tech.IsoDep
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.e
-import fr.outadoc.eidas.utils.toPrettyHex
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.withContext
 import java.io.IOException
 
 private const val TAG = "AndroidNfcTagReader"
@@ -27,11 +23,10 @@ private const val TAG = "AndroidNfcTagReader"
 class AndroidNfcTagReader(
     private val activity: Activity,
     private val logger: Logger,
-) : NfcTagReader,
-    NfcSessionManager {
-    private var currentConnection: Pair<NfcTag, IsoDep>? = null
+) : NfcTagReader {
+    private var currentConnection: RealNfcSession? = null
 
-    override val detectedTags: Flow<NfcTag> =
+    override val detectedTags: Flow<NfcSession> =
         callbackFlow {
             val adapter =
                 NfcAdapter.getDefaultAdapter(activity)
@@ -63,11 +58,21 @@ class AndroidNfcTagReader(
                                 },
                         )
 
-                    currentConnection?.second?.closeQuietly()
-                    currentConnection = nfcTag to isoDep
+                    logger.d(
+                        TAG,
+                        "Tag detected: uid=${nfcTag.id.toHexString()}, ${nfcTag.description}",
+                    )
 
-                    logger.d(TAG, "Tag detected: uid=${nfcTag.id.toHexString()}")
-                    trySend(nfcTag)
+                    val session =
+                        RealNfcSession(
+                            isoDep = isoDep,
+                            logger = logger,
+                        )
+
+                    currentConnection?.close()
+                    currentConnection = session
+
+                    trySend(session)
                 }
 
             adapter.enableReaderMode(
@@ -83,44 +88,8 @@ class AndroidNfcTagReader(
 
             awaitClose {
                 adapter.disableReaderMode(activity)
-                currentConnection?.second?.closeQuietly()
+                currentConnection?.close()
                 currentConnection = null
             }
         }
-
-    override suspend fun transceive(
-        tag: NfcTag,
-        command: CApdu,
-    ): Result<RApdu> {
-        val isoDep =
-            currentConnection
-                ?.takeIf { (currentTag, _) -> currentTag == tag }
-                ?.second
-                ?: return Result.failure(
-                    NfcException("Tag is no longer available"),
-                )
-
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                try {
-                    val commandBytes = command.serialize()
-                    logger.d(TAG, "SEND > ${commandBytes.toPrettyHex()}")
-                    val response = isoDep.transceive(commandBytes.toByteArray()).toUByteArray()
-                    logger.d(TAG, "RECV < ${response.toPrettyHex()}")
-                    RApdu.parse(response)
-                } catch (e: TagLostException) {
-                    throw NfcException("Tag was lost during communication", e)
-                } catch (e: IOException) {
-                    throw NfcException("Failed to communicate with tag", e)
-                }
-            }
-        }
-    }
-
-    private fun IsoDep.closeQuietly() {
-        try {
-            close()
-        } catch (_: Exception) {
-        }
-    }
 }

@@ -5,10 +5,10 @@ import androidx.lifecycle.viewModelScope
 import fr.outadoc.eidas.lds.ReadLdsDataUseCase
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.e
-import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
+import fr.outadoc.eidas.securemessaging.SecureMessagingSession
 import fr.outadoc.eidas.securemessaging.SecureSessionFactory
 import fr.outadoc.eidas.settings.SettingsRepository
 import kotlinx.coroutines.flow.first
@@ -29,17 +29,22 @@ class ReaderViewModel(
     fun startListening() {
         viewModelScope.launch {
             try {
-                tagReader.detectedTags.collect { tag ->
-                    logger.i(TAG, "Tag detected: ${tag.description}")
-
+                tagReader.detectedTags.collect { nfcSession ->
                     paceAuthenticate(
-                        tag = tag,
+                        nfcSession = nfcSession,
                         can = settingsRepository.settings.first().can,
                     ).onFailure { e ->
                         logger.e(TAG, "Authentication failed", e)
-                    }.onSuccess { session ->
-                        val ssm = secureSessionFactory.newInstance(session)
-                        readLdsData(tag, ssm)
+                    }.onSuccess { credentials ->
+                        val ssm: SecureMessagingSession =
+                            secureSessionFactory.newInstance(
+                                nfcSession = nfcSession,
+                                paceCredentials = credentials,
+                            )
+
+                        readLdsData(
+                            nfcSession = ssm,
+                        )
                     }
                 }
             } catch (e: Exception) {

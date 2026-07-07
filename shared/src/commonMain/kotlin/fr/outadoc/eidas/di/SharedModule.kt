@@ -32,11 +32,11 @@ val sharedModule =
 
         factory { ReadDirUseCase(get(), get()) }
         factory { ReadLdsDataUseCase(get(), get(), get()) }
-        factory { ReadCardAccessUseCase(get(), get(), get(), get()) }
-        factory { PaceGetNonceUseCase(get(), get(), get(), get()) }
-        factory { PaceMapNonceUseCase(get(), get(), get(), get(), get()) }
-        factory { PaceKeyAgreementUseCase(get(), get(), get(), get(), get()) }
-        factory { PaceMutualAuthUseCase(get(), get(), get(), get()) }
+        factory { ReadCardAccessUseCase(get(), get(), get()) }
+        factory { PaceGetNonceUseCase(get(), get(), get()) }
+        factory { PaceMapNonceUseCase(get(), get(), get(), get()) }
+        factory { PaceKeyAgreementUseCase(get(), get(), get(), get()) }
+        factory { PaceMutualAuthUseCase(get(), get(), get()) }
         factory { PaceAuthenticateUseCase(get(), get(), get(), get(), get(), get()) }
 
         viewModel { SettingsViewModel(get()) }
