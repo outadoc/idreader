@@ -21,8 +21,10 @@ class SettingsViewModel(
     init {
         viewModelScope.launch {
             repository.settings.collect { settings ->
-                _state.update {
-                    it.copy(can = settings.can)
+                _state.update { state ->
+                    state.copy(
+                        can = settings.can
+                    )
                 }
             }
         }
@@ -46,8 +48,10 @@ class SettingsViewModel(
                 replacement = ""
             )
 
-        _state.update {
-            it.copy(can = sanitizedCan)
+        _state.update { state ->
+            state.copy(
+                can = sanitizedCan
+            )
         }
     }
 }
