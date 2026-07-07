@@ -27,7 +27,11 @@ class SettingsViewModel(
     }
 
     fun onCanChanged(can: String) {
-        val sanitizedCan = can.trim().uppercase()
+        val sanitizedCan: String =
+            can.replace(
+                regex = Regex("[^0-9]"),
+                replacement = ""
+            )
 
         _state.update {
             it.copy(can = sanitizedCan)
