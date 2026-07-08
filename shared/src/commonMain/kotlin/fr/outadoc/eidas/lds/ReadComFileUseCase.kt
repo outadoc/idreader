@@ -53,24 +53,25 @@ class ReadComFileUseCase(
     }
 
     private companion object {
-        val DG_TAG_TO_NUMBER: Map<UInt, Int> =
+        val FID_RANGE_START = 0x0100
+        val DG_TAG_TO_NUMBER: Map<UInt, UByte> =
             mapOf(
-                0x61u to 1,
-                0x75u to 2,
-                0x63u to 3,
-                0x76u to 4,
-                0x65u to 5,
-                0x66u to 6,
-                0x67u to 7,
-                0x68u to 8,
-                0x69u to 9,
-                0x6Au to 10,
-                0x6Bu to 11,
-                0x6Cu to 12,
-                0x6Du to 13,
-                0x6Eu to 14,
-                0x6Fu to 15,
-                0x70u to 16,
+                0x61u to 0x01u,
+                0x75u to 0x02u,
+                0x63u to 0x03u,
+                0x76u to 0x04u,
+                0x65u to 0x05u,
+                0x66u to 0x06u,
+                0x67u to 0x07u,
+                0x68u to 0x08u,
+                0x69u to 0x09u,
+                0x6Au to 0x0Au,
+                0x6Bu to 0x0Bu,
+                0x6Cu to 0x0Cu,
+                0x6Du to 0x0Du,
+                0x6Eu to 0x0Eu,
+                0x6Fu to 0x0Fu,
+                0x70u to 0x10u,
             )
     }
 }

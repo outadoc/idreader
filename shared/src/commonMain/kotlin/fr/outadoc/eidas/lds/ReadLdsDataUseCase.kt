@@ -2,6 +2,7 @@ package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
+import fr.outadoc.eidas.logging.w
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
@@ -13,6 +14,7 @@ class ReadLdsDataUseCase(
     private val commandFactory: CommandFactory,
     private val logger: Logger,
     private val readComFile: ReadComFileUseCase,
+    private val readDataGroup: ReadDataGroupUseCase,
 ) {
     suspend operator fun invoke(nfcSession: NfcSession): Result<LdsDump> {
         logger.i(TAG, "Select MRTD application")
@@ -34,6 +36,18 @@ class ReadLdsDataUseCase(
             }
 
         logger.i(TAG, "COM data: $comData")
+
+        val dataGroupContents: Map<UByte, UByteArray?> =
+            comData
+                .dataGroupNumbers
+                .associateWith { dgNumber ->
+                    readDataGroup(
+                        nfcSession = nfcSession,
+                        dataGroupNumber = dgNumber,
+                    ).onFailure {
+                        logger.w(TAG, "Failed to read DG #${dgNumber.toHexString()}")
+                    }.getOrNull()
+                }
 
         return Result.success(
             LdsDump(),
