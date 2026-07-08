@@ -14,6 +14,7 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.media.CoilJpeg2000Decoder
 import fr.outadoc.eidas.media.CoilLogger
 import fr.outadoc.eidas.media.DocumentPictureFetcher
+import fr.outadoc.eidas.media.DocumentPictureKeyer
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.KoinApplication
@@ -55,6 +56,7 @@ class MainActivity : ComponentActivity() {
                             .crossfade(true)
                             .logger(CoilLogger(logger))
                             .components {
+                                add(DocumentPictureKeyer())
                                 add(DocumentPictureFetcher.Factory())
                                 add(CoilJpeg2000Decoder.Factory())
                             }.build()
