@@ -21,6 +21,7 @@ class ReadLdsDataUseCase(
     private val readComFile: ReadComFileUseCase,
     private val readDataGroup: ReadDataGroupUseCase,
     private val parseDG1: ParseDG1UseCase,
+    private val parseDG2: ParseDG2UseCase,
     private val parseDG11: ParseDG11UseCase,
 ) {
     suspend operator fun invoke(nfcSession: NfcSession): Result<LdsDump> {

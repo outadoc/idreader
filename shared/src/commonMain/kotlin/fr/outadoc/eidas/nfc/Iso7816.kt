@@ -138,6 +138,23 @@ object Iso7816 {
         val CustodyInformation: UInt = 0x5F18u
 
         val MRZ: UInt = 0x5F1Fu
+
+        val DG1: UInt = 0x61u
+        val DG2: UInt = 0x75u
+        val DG3: UInt = 0x63u
+        val DG4: UInt = 0x76u
+        val DG5: UInt = 0x65u
+        val DG6: UInt = 0x66u
+        val DG7: UInt = 0x67u
+        val DG8: UInt = 0x68u
+        val DG9: UInt = 0x69u
+        val DG10: UInt = 0x6Au
+        val DG11: UInt = 0x6Bu
+        val DG12: UInt = 0x6Cu
+        val DG13: UInt = 0x6Du
+        val DG14: UInt = 0x6Eu
+        val DG15: UInt = 0x6Fu
+        val DG16: UInt = 0x70u
     }
 
     object DataGroup {

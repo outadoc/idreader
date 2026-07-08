@@ -3,6 +3,7 @@ package fr.outadoc.eidas.di
 import fr.outadoc.eidas.ReaderViewModel
 import fr.outadoc.eidas.lds.ParseDG11UseCase
 import fr.outadoc.eidas.lds.ParseDG1UseCase
+import fr.outadoc.eidas.lds.ParseDG2UseCase
 import fr.outadoc.eidas.lds.ParseMrzNameUseCase
 import fr.outadoc.eidas.lds.ParseMrzUseCase
 import fr.outadoc.eidas.lds.ReadComFileUseCase
@@ -37,7 +38,7 @@ val sharedModule =
 
         factory { ReadComFileUseCase(get(), get()) }
         factory { ReadDataGroupUseCase(get(), get()) }
-        factory { ReadLdsDataUseCase(get(), get(), get(), get(), get(), get()) }
+        factory { ReadLdsDataUseCase(get(), get(), get(), get(), get(), get(), get()) }
         factory { ReadCardAccessUseCase(get(), get(), get()) }
         factory { PaceGetNonceUseCase(get(), get(), get()) }
         factory { PaceMapNonceUseCase(get(), get(), get(), get()) }
@@ -47,6 +48,7 @@ val sharedModule =
         factory { ParseMrzUseCase(get()) }
         factory { ParseMrzNameUseCase() }
         factory { ParseDG1UseCase(get()) }
+        factory { ParseDG2UseCase() }
         factory { ParseDG11UseCase(get()) }
 
         viewModel { SettingsViewModel(get()) }
