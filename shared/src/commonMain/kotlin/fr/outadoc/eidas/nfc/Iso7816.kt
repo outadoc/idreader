@@ -139,4 +139,23 @@ object Iso7816 {
 
         val MRZ: UInt = 0x5F1Fu
     }
+
+    object DataGroup {
+        val DG1: UByte = 1u
+        val DG2: UByte = 2u
+        val DG3: UByte = 3u
+        val DG4: UByte = 4u
+        val DG5: UByte = 5u
+        val DG6: UByte = 6u
+        val DG7: UByte = 7u
+        val DG8: UByte = 8u
+        val DG9: UByte = 9u
+        val DG10: UByte = 10u
+        val DG11: UByte = 11u
+        val DG12: UByte = 12u
+        val DG13: UByte = 13u
+        val DG14: UByte = 14u
+        val DG15: UByte = 15u
+        val DG16: UByte = 16u
+    }
 }

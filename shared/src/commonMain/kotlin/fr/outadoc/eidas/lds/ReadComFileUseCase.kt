@@ -64,22 +64,22 @@ class ReadComFileUseCase(
     private companion object {
         val DG_TAG_TO_NUMBER: Map<UInt, UByte> =
             mapOf(
-                0x61u to 1u,
-                0x75u to 2u,
-                0x63u to 3u,
-                0x76u to 4u,
-                0x65u to 5u,
-                0x66u to 6u,
-                0x67u to 7u,
-                0x68u to 8u,
-                0x69u to 9u,
-                0x6Au to 10u,
-                0x6Bu to 11u,
-                0x6Cu to 12u,
-                0x6Du to 13u,
-                0x6Eu to 14u,
-                0x6Fu to 15u,
-                0x70u to 16u,
+                0x61u to Iso7816.DataGroup.DG1,
+                0x75u to Iso7816.DataGroup.DG2,
+                0x63u to Iso7816.DataGroup.DG3,
+                0x76u to Iso7816.DataGroup.DG4,
+                0x65u to Iso7816.DataGroup.DG5,
+                0x66u to Iso7816.DataGroup.DG6,
+                0x67u to Iso7816.DataGroup.DG7,
+                0x68u to Iso7816.DataGroup.DG8,
+                0x69u to Iso7816.DataGroup.DG9,
+                0x6Au to Iso7816.DataGroup.DG10,
+                0x6Bu to Iso7816.DataGroup.DG11,
+                0x6Cu to Iso7816.DataGroup.DG12,
+                0x6Du to Iso7816.DataGroup.DG13,
+                0x6Eu to Iso7816.DataGroup.DG14,
+                0x6Fu to Iso7816.DataGroup.DG15,
+                0x70u to Iso7816.DataGroup.DG16,
             )
     }
 }

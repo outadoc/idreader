@@ -56,12 +56,12 @@ class ReadLdsDataUseCase(
                 }
 
         val mrzInfo: MrzInfo? =
-            dataGroupContents[1u]?.let { fileBytes ->
+            dataGroupContents[Iso7816.DataGroup.DG1]?.let { fileBytes ->
                 parseDG1(fileBytes).getOrNull()
             }
 
         val additionalPersonalDetails: AdditionalPersonalDetails? =
-            dataGroupContents[11u]?.let { fileBytes ->
+            dataGroupContents[Iso7816.DataGroup.DG11]?.let { fileBytes ->
                 parseDG11(fileBytes).getOrNull()
             }
 
