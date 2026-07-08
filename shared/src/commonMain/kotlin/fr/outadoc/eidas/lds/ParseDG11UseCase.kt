@@ -19,7 +19,7 @@ class ParseDG11UseCase(
                 }
 
         val rootNode: TlvNode =
-            tagList.firstWithTag(0x6Bu)
+            tagList.firstWithTag(Iso7816.Tags.DG11)
                 ?: return Result.failure(IllegalStateException("Missing 0x6B tag"))
 
         val info: List<TlvNode> =

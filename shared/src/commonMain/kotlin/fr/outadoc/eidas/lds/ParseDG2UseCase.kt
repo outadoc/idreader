@@ -1,6 +1,7 @@
 package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.lds.model.Picture
+import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
@@ -14,11 +15,18 @@ class ParseDG2UseCase {
                 .getOrElse { return Result.failure(it) }
 
         val rootNode: TlvNode =
-            tagList.firstWithTag(0x7F61u)
+            tagList.firstWithTag(Iso7816.Tags.DG2)
+                ?: return Result.failure(IllegalStateException("Missing 0x7F61 tag"))
+
+        val templateNode: TlvNode =
+            rootNode.value
+                .parseTlv()
+                .getOrElse { return Result.failure(it) }
+                .firstWithTag(0x7F61u)
                 ?: return Result.failure(IllegalStateException("Missing 0x7F61 tag"))
 
         val biometricInformation: TlvNode =
-            rootNode.value
+            templateNode.value
                 .parseTlv()
                 .getOrElse { return Result.failure(it) }
                 .firstWithTag(0x7F60u)

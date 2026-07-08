@@ -19,7 +19,7 @@ class ParseDG1UseCase(
                 }
 
         val rootNode: TlvNode =
-            tagList.firstWithTag(0x61u)
+            tagList.firstWithTag(Iso7816.Tags.DG1)
                 ?: return Result.failure(IllegalStateException("Missing 0x61 tag"))
 
         val mrzBytes: UByteArray =
