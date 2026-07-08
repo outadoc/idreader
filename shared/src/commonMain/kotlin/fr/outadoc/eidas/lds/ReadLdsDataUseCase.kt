@@ -16,6 +16,7 @@ class ReadLdsDataUseCase(
     private val logger: Logger,
     private val readComFile: ReadComFileUseCase,
     private val readDataGroup: ReadDataGroupUseCase,
+    private val parseDG1: ParseDG1UseCase,
 ) {
     suspend operator fun invoke(nfcSession: NfcSession): Result<LdsDump> {
         logger.i(TAG, "Select MRTD application")
@@ -49,8 +50,15 @@ class ReadLdsDataUseCase(
                     }.getOrNull()
                 }
 
+        val mrzInfo: MrzInfo? =
+            dataGroupContents[1u]?.let { dg1Contents ->
+                parseDG1(dg1Contents).getOrNull()
+            }
+
         return Result.success(
-            LdsDump(),
+            LdsDump(
+                mrzInfo = mrzInfo,
+            ),
         )
     }
 }

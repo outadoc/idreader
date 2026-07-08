@@ -1,3 +1,5 @@
 package fr.outadoc.eidas.lds
 
-class LdsDump
+data class LdsDump(
+    val mrzInfo: MrzInfo?,
+)

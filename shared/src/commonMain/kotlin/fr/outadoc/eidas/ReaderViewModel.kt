@@ -59,6 +59,8 @@ class ReaderViewModel(
                             return@collect
                         }
 
+                    logger.i(TAG, "LDS: $data")
+
                     logger.i(TAG, "Done!")
                 }
             } catch (e: Exception) {

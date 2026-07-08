@@ -5,8 +5,10 @@ import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
 
 @OptIn(ExperimentalUnsignedTypes::class)
-class ParseDG1UseCase {
-    suspend operator fun invoke(rawData: UByteArray): Result<MrzInfo> {
+class ParseDG1UseCase(
+    private val parseMrzUseCase: ParseMrzUseCase,
+) {
+    operator fun invoke(rawData: UByteArray): Result<MrzInfo> {
         val tagList: List<TlvNode> =
             rawData
                 .parseTlv()
@@ -27,27 +29,8 @@ class ParseDG1UseCase {
                     ?: return Result.failure(IllegalStateException("Missing 0x5F1F tag"))
             ).value
 
-        return Result.success(
-            MrzInfo(
-                format = TODO(),
-                documentCode = TODO(),
-                issuingState = TODO(),
-                documentNumber = TODO(),
-                documentNumberCheckDigit = TODO(),
-                optionalData1 = TODO(),
-                birthDateRaw = TODO(),
-                birthDate = TODO(),
-                birthDateCheckDigit = TODO(),
-                sex = TODO(),
-                expiryDateRaw = TODO(),
-                expiryDate = TODO(),
-                expiryDateCheckDigit = TODO(),
-                nationality = TODO(),
-                optionalData2 = TODO(),
-                compositeCheckDigit = TODO(),
-                surname = TODO(),
-                givenNames = TODO(),
-            ),
-        )
+        val mrz: String = mrzBytes.toByteArray().decodeToString()
+
+        return parseMrzUseCase(mrz)
     }
 }
