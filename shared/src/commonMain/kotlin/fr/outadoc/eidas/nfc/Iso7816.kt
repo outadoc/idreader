@@ -136,5 +136,7 @@ object Iso7816 {
          * Custody information.
          */
         val CustodyInformation: UInt = 0x5F18u
+
+        val MRZ: UInt = 0x5F1Fu
     }
 }

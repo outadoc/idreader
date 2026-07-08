@@ -6,7 +6,9 @@ import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
 
 @OptIn(ExperimentalUnsignedTypes::class)
-class ParseDG11UseCase {
+class ParseDG11UseCase(
+    private val parseMrzName: ParseMrzNameUseCase,
+) {
     operator fun invoke(rawData: UByteArray): Result<AdditionalPersonalDetails> {
         val tagList: List<TlvNode> =
             rawData
@@ -31,7 +33,8 @@ class ParseDG11UseCase {
                         .firstWithTag(Iso7816.Tags.FullNameNationalCharacters)
                         ?.value
                         ?.toByteArray()
-                        ?.decodeToString(),
+                        ?.decodeToString()
+                        ?.let { parseMrzName(it) },
                 personalNumber =
                     info
                         .firstWithTag(Iso7816.Tags.PersonalNumber)

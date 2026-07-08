@@ -1,6 +1,8 @@
 package fr.outadoc.eidas.lds
 
-class ParseMrzUseCase {
+class ParseMrzUseCase(
+    private val parseMrzName: ParseMrzNameUseCase,
+) {
     operator fun invoke(mrz: String): Result<MrzInfo> {
         val format: String =
             when (mrz.length) {
@@ -36,20 +38,7 @@ class ParseMrzUseCase {
                 .trim('<')
                 .takeIf { it.isNotEmpty() }
 
-        // Line 3 (60–89): SURNAME<<GIVEN1<GIVEN2<...
-        val nameField: String = mrz.substring(60, 90)
-
-        val nameParts: List<String> =
-            nameField.split("<<", limit = 2)
-
-        val surname: String =
-            nameParts[0].replace('<', ' ').trim()
-
-        val givenNames: List<String> =
-            nameParts
-                .getOrElse(1) { "" }
-                .trim('<')
-                .split('<')
+        val cardHolderName = parseMrzName(mrz.substring(60, 90))
 
         return Result.success(
             MrzInfo(
@@ -58,8 +47,7 @@ class ParseMrzUseCase {
                 documentNumber = documentNumber,
                 issuingState = issuingState,
                 nationality = nationality,
-                surname = surname,
-                givenNames = givenNames,
+                cardHolderName = cardHolderName,
                 birthDate = birthDateRaw,
                 sex = sex,
                 expiryDate = expiryDateRaw,

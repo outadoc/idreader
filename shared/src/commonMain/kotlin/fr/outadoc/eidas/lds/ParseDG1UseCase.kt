@@ -1,5 +1,6 @@
 package fr.outadoc.eidas.lds
 
+import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
@@ -25,7 +26,7 @@ class ParseDG1UseCase(
                 rootNode.value
                     .parseTlv()
                     .getOrElse { return Result.failure(it) }
-                    .firstWithTag(0x5F1Fu)
+                    .firstWithTag(Iso7816.Tags.MRZ)
                     ?: return Result.failure(IllegalStateException("Missing 0x5F1F tag"))
             ).value
 
