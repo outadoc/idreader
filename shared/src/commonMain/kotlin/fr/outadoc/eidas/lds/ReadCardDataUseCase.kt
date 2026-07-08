@@ -1,8 +1,8 @@
 package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.lds.model.AdditionalPersonalDetails
+import fr.outadoc.eidas.lds.model.CardDump
 import fr.outadoc.eidas.lds.model.ComData
-import fr.outadoc.eidas.lds.model.LdsDump
 import fr.outadoc.eidas.lds.model.MrzInfo
 import fr.outadoc.eidas.lds.model.Picture
 import fr.outadoc.eidas.logging.Logger
@@ -16,7 +16,7 @@ import fr.outadoc.eidas.utils.flatMap
 private val TAG = "ReadLdsDataUseCase"
 
 @OptIn(ExperimentalUnsignedTypes::class)
-class ReadLdsDataUseCase(
+class ReadCardDataUseCase(
     private val commandFactory: CommandFactory,
     private val logger: Logger,
     private val readComFile: ReadComFileUseCase,
@@ -25,7 +25,7 @@ class ReadLdsDataUseCase(
     private val parseDG2: ParseDG2UseCase,
     private val parseDG11: ParseDG11UseCase,
 ) {
-    suspend operator fun invoke(nfcSession: NfcSession): Result<LdsDump> {
+    suspend operator fun invoke(nfcSession: NfcSession): Result<CardDump> {
         logger.i(TAG, "Select MRTD application")
 
         nfcSession
@@ -59,21 +59,27 @@ class ReadLdsDataUseCase(
 
         val mrzInfo: MrzInfo? =
             dataGroupContents[Iso7816.DataGroup.DG1]?.let { fileBytes ->
-                parseDG1(fileBytes).getOrNull()
-            }
-
-        val additionalPersonalDetails: AdditionalPersonalDetails? =
-            dataGroupContents[Iso7816.DataGroup.DG11]?.let { fileBytes ->
-                parseDG11(fileBytes).getOrNull()
+                parseDG1(fileBytes)
+                    .onFailure { e -> logger.w(TAG, "Failed to parse DG1", e) }
+                    .getOrNull()
             }
 
         val picture: Picture? =
             dataGroupContents[Iso7816.DataGroup.DG2]?.let { fileBytes ->
-                parseDG2(fileBytes).getOrNull()
+                parseDG2(fileBytes)
+                    .onFailure { e -> logger.w(TAG, "Failed to parse DG2", e) }
+                    .getOrNull()
+            }
+
+        val additionalPersonalDetails: AdditionalPersonalDetails? =
+            dataGroupContents[Iso7816.DataGroup.DG11]?.let { fileBytes ->
+                parseDG11(fileBytes)
+                    .onFailure { e -> logger.w(TAG, "Failed to parse DG11", e) }
+                    .getOrNull()
             }
 
         return Result.success(
-            LdsDump(
+            CardDump(
                 mrzInfo = mrzInfo,
                 additionalPersonalDetails = additionalPersonalDetails,
                 picture = picture,
