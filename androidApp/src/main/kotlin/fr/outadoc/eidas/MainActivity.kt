@@ -11,6 +11,7 @@ import fr.outadoc.eidas.di.activityScopedModule
 import fr.outadoc.eidas.di.androidModule
 import fr.outadoc.eidas.di.sharedModule
 import fr.outadoc.eidas.logging.Logger
+import fr.outadoc.eidas.media.CoilJpeg2000Decoder
 import fr.outadoc.eidas.media.CoilLogger
 import fr.outadoc.eidas.media.DocumentPictureFetcher
 import org.koin.android.ext.android.inject
@@ -55,6 +56,7 @@ class MainActivity : ComponentActivity() {
                             .logger(CoilLogger(logger))
                             .components {
                                 add(DocumentPictureFetcher.Factory())
+                                add(CoilJpeg2000Decoder.Factory())
                             }.build()
                     }
 
