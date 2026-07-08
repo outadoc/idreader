@@ -9,6 +9,7 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.settings.AuthenticationMethod
 import fr.outadoc.eidas.utils.toPrettyHex
@@ -42,13 +43,12 @@ class PaceGetNonceUseCase(
                             AuthenticationMethod.PUK -> Iso7816.KeyRef.PUK
                         },
                 ),
-            ).getOrElse { return Result.failure(it) }
-            .getData()
+            ).flatMap { it.getData() }
             .getOrElse { return Result.failure(it) }
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 1: encrypted nonce)")
 
-        val response: UByteArray =
+        val dynAuth: TLVList =
             nfcSession
                 .transceive(
                     commandFactory.generalAuthenticate(
@@ -59,13 +59,8 @@ class PaceGetNonceUseCase(
                             )
                         },
                     ),
-                ).getOrElse { return Result.failure(it) }
-                .getData()
-                .getOrElse { return Result.failure(it) }
-
-        val dynAuth: TLVList =
-            response
-                .parseDynamicAuthData()
+                ).flatMap { it.getData() }
+                .flatMap { it.parseDynamicAuthData() }
                 .getOrElse { return Result.failure(it) }
 
         val encryptedNonce: UByteArray =

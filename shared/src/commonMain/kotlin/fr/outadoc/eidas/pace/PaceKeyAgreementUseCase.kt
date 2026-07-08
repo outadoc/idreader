@@ -12,6 +12,7 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.utils.toPrettyHex
 import io.github.rafaelrabeloit.bertlv.TLVList
@@ -53,8 +54,7 @@ class PaceKeyAgreementUseCase(
                             )
                         },
                     ),
-                ).getOrElse { return Result.failure(it) }
-                .getData()
+                ).flatMap { it.getData() }
                 .getOrElse { return Result.failure(it) }
 
         logger.d(TAG, "Step 3 raw response: ${response.toPrettyHex()}")

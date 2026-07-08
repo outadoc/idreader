@@ -5,6 +5,7 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.utils.flatMap
 import io.github.rafaelrabeloit.bertlv.TLV
 import io.github.rafaelrabeloit.bertlv.TLVList
 
@@ -20,8 +21,7 @@ class ReadComFileUseCase(
 
         nfcSession
             .transceive(commandFactory.selectFile(Iso7816.File.COM.fileId))
-            .getOrElse { return Result.failure(it) }
-            .getData()
+            .flatMap { it.getData() }
             .getOrElse { return Result.failure(it) }
 
         logger.i(TAG, "READ BINARY EF.COM")
@@ -29,8 +29,7 @@ class ReadComFileUseCase(
         val comBytes: UByteArray =
             nfcSession
                 .transceive(commandFactory.readBinary())
-                .getOrElse { return Result.failure(it) }
-                .getData()
+                .flatMap { it.getData() }
                 .getOrElse { return Result.failure(it) }
 
         val rootTagValue: TLV<ByteArray> = TLV.fromBinaryTlvBuffer(comBytes.toByteArray())

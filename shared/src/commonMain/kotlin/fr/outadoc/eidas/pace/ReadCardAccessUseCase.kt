@@ -7,6 +7,7 @@ import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.asn1.SecurityInfo
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.utils.flatMap
 
 private const val TAG = "ReadCardAccessUseCase"
 
@@ -21,8 +22,7 @@ class ReadCardAccessUseCase(
 
         nfcSession
             .transceive(commandFactory.selectFile(Iso7816.File.CardAccess.fileId))
-            .getOrElse { return Result.failure(it) }
-            .getData()
+            .flatMap { it.getData() }
             .getOrElse { return Result.failure(it) }
 
         logger.i(TAG, "READ BINARY EF.CardAccess")
@@ -30,8 +30,7 @@ class ReadCardAccessUseCase(
         val data: UByteArray =
             nfcSession
                 .transceive(commandFactory.readBinary())
-                .getOrElse { return Result.failure(it) }
-                .getData()
+                .flatMap { it.getData() }
                 .getOrElse { return Result.failure(it) }
 
         return securityInfosParser.parse(data)

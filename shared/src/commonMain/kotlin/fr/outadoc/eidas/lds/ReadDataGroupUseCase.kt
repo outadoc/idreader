@@ -4,6 +4,7 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.utils.toPrettyHex
 
 private val TAG = "ReadDataGroupUseCase"
@@ -21,8 +22,7 @@ class ReadDataGroupUseCase(
 
         nfcSession
             .transceive(commandFactory.selectFile(ubyteArrayOf(0x01u, dataGroupNumber)))
-            .getOrElse { return Result.failure(it) }
-            .getData()
+            .flatMap { it.getData() }
             .getOrElse { return Result.failure(it) }
 
         logger.i(TAG, "READ BINARY DG ${dataGroupNumber.toPrettyHex()}")
@@ -30,8 +30,7 @@ class ReadDataGroupUseCase(
         val comBytes: UByteArray =
             nfcSession
                 .transceive(commandFactory.readBinary())
-                .getOrElse { return Result.failure(it) }
-                .getData()
+                .flatMap { it.getData() }
                 .getOrElse { return Result.failure(it) }
 
         return Result.success(comBytes)

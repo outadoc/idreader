@@ -10,6 +10,7 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.utils.toPrettyHex
 import io.github.rafaelrabeloit.bertlv.TLVList
@@ -53,7 +54,7 @@ class PaceMutualAuthUseCase(
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 4: mutual authentication)")
 
-        val response =
+        val dynAuth: TLVList =
             nfcSession
                 .transceive(
                     commandFactory.generalAuthenticate(
@@ -71,13 +72,8 @@ class PaceMutualAuthUseCase(
                             },
                         chained = false,
                     ),
-                ).getOrElse { return Result.failure(it) }
-                .getData()
-                .getOrElse { return Result.failure(it) }
-
-        val dynAuth: TLVList =
-            response
-                .parseDynamicAuthData()
+                ).flatMap { it.getData() }
+                .flatMap { it.parseDynamicAuthData() }
                 .getOrElse { return Result.failure(it) }
 
         val chipToken =

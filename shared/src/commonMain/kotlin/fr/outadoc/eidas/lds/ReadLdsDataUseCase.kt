@@ -6,6 +6,7 @@ import fr.outadoc.eidas.logging.w
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.utils.toPrettyHex
 
 private val TAG = "ReadLdsDataUseCase"
@@ -25,8 +26,7 @@ class ReadLdsDataUseCase(
                 commandFactory.selectAid(
                     Iso7816.Aid.MRTD.hexToUByteArray(),
                 ),
-            ).getOrElse { return Result.failure(it) }
-            .getData()
+            ).flatMap { it.getData() }
             .getOrElse { return Result.failure(it) }
 
         val comData: ComData =
