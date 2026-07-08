@@ -38,6 +38,20 @@ Two Gradle modules:
 
 `CApdu` models a command APDU built via `CommandFactory`. `RApdu` exposes `sw1`/`sw2`, `isSuccess`, and `getData(): Result<UByteArray>` (returns `Result.failure` on non-90-00 status).
 
+`Iso7816` is a top-level constants object with nested objects:
+- `Aid` — AID hex strings (e.g. `MRTD`)
+- `File` — well-known file IDs (`CardAccess`, `COM`)
+- `DataGroup` — DG numbers 1–16 as `UByte` constants
+- `Tags` — BER-TLV tag constants; single-byte tags are `UByte`, multi-byte tags (e.g. `0x5F0E`) are `UInt`
+- `KeyRef` — PACE key references (`MRZ`, `CAN`, `PIN`, `PUK`)
+
+### TLV layer (`shared/.../tlv/`)
+
+- `TlvNode(tag: UInt, value: UByteArray)` — a parsed TLV node; `children()` re-parses `value` as a nested TLV list.
+- `UByteArray.parseTlv(): Result<List<TlvNode>>` — parses a flat byte array into a TLV list.
+- `List<TlvNode>.firstWithTag(tag: UInt/UByte): TlvNode?` — tag lookup; `UByte` overload widens to `UInt`.
+- `buildTlv { }` / `TlvBuilder` — DSL for constructing TLV-encoded byte arrays.
+
 ### Error handling convention
 
 All use cases and APDU-touching code follow a railway-oriented style using `kotlin.Result`:
@@ -68,10 +82,20 @@ BSI TR-03110 PACE in five steps, each a use case:
 
 ### LDS layer (`shared/.../lds/`)
 
-Post-PACE reads over the secure session:
+Post-PACE reads over the secure session. Models live in `lds/model/`.
 
-- `ReadDirUseCase` — SELECT EF.DIR + READ BINARY; returns raw bytes.
-- `ReadLdsDataUseCase` — selects the MRTD AID, calls `ReadDirUseCase`, then reads LDS data (in progress).
+**Reading pipeline:**
+
+1. `ReadLdsDataUseCase` — top-level orchestrator: selects the MRTD AID, reads EF.COM to discover available DGs, reads each DG, then parses known ones. Returns `LdsDump`.
+2. `ReadComFileUseCase` — SELECT + READ BINARY EF.COM; parses the TLV tag list (`0x5C`) to produce `ComData` (list of available DG numbers). Uses a local `DG_TAG_TO_NUMBER` map to convert LDS tags (e.g. `0x61` → DG1) to `Iso7816.DataGroup` numbers.
+3. `ReadDataGroupUseCase` — SELECT FILE `01xx` + READ BINARY for any DG number, returns raw bytes.
+
+**Parsing pipeline:**
+
+- `ParseDG1UseCase` — strips TLV wrapper (`0x61` → `0x5F1F`), delegates to `ParseMrzUseCase`.
+- `ParseMrzUseCase` — slices the MRZ string by TD1/TD2/TD3 field offsets, delegates name parsing to `ParseMrzNameUseCase`. Returns `MrzInfo`.
+- `ParseMrzNameUseCase` — splits `SURNAME<<GIVEN1<GIVEN2` into a `CardHolderName`.
+- `ParseDG11UseCase` — parses TLV wrapper (`0x6B`) and extracts optional fields from `Iso7816.Tags` into `AdditionalPersonalDetails`.
 
 ### Logging (`shared/.../logging/`)
 
@@ -88,7 +112,7 @@ Post-PACE reads over the secure session:
 Three Koin modules loaded in order:
 
 - **`androidModule`** (androidMain) — `AndroidLogger` (named `"platformLogger"`), `AndroidCryptoEngine`, `AndroidKeyGenerator`, `AndroidSettingsEncryptor` → `SettingsEncryptor`, `SecureSessionFactory`, `DataStore`.
-- **`sharedModule`** (commonMain) — `MemoryLogger` → `Logger`, all PACE use cases, `ReadDirUseCase`, `ReadLdsDataUseCase`, `SettingsRepository`, `SettingsViewModel`, `ReaderViewModel`.
+- **`sharedModule`** (commonMain) — `MemoryLogger` → `Logger`, all PACE use cases, `ReadComFileUseCase`, `ReadDataGroupUseCase`, `ReadLdsDataUseCase`, `ParseDG1UseCase`, `ParseDG11UseCase`, `ParseMrzUseCase`, `ParseMrzNameUseCase`, `SettingsRepository`, `SettingsViewModel`, `ReaderViewModel`.
 - **`activityScopedModule(activity)`** (androidMain) — `AndroidNfcTagReader` → `NfcTagReader` (activity-scoped because Android's reader mode API requires an `Activity`).
 
 ## Key Conventions
@@ -96,4 +120,6 @@ Three Koin modules loaded in order:
 - Never access `android.nfc` directly outside `androidMain`.
 - `NfcSession.transceive` never throws; use `.getOrElse { return Result.failure(it) }` to propagate errors.
 - Use `getData()` on `RApdu` to extract the payload; it returns `Result.failure` on non-9000 status.
-- Hex encoding/decoding utilities live in `utils/Hex.kt`.
+- Hex encoding/decoding utilities live in `utils/Hex.kt`; the AID is stored as a hex string and decoded via `hexToUByteArray()` at call sites.
+- TLV tag constants belong in `Iso7816.Tags`; single-byte tags use `UByte`, multi-byte tags use `UInt`.
+- LDS data models live in `lds/model/`, not alongside the use cases.
