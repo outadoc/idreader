@@ -10,6 +10,7 @@ import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.RApdu
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.pace.PaceCredentials
+import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.utils.toPrettyHex
 import io.github.rafaelrabeloit.bertlv.TLVList
 
@@ -34,8 +35,9 @@ class SecureMessagingSession(
         return nfcSession
             .transceive(
                 command = secureCApdu(command),
-            ).map { response -> decryptRApdu(response) }
-            .onSuccess { clearResponse ->
+            ).flatMap { response ->
+                decryptRApdu(response)
+            }.onSuccess { clearResponse ->
                 logger.d(TAG, "RECV << ${clearResponse.raw.toPrettyHex()}")
             }
     }
@@ -124,15 +126,13 @@ class SecureMessagingSession(
         )
     }
 
-    private fun decryptRApdu(response: RApdu): RApdu {
+    private fun decryptRApdu(response: RApdu): Result<RApdu> {
         incrementSsc()
 
         val body: UByteArray =
             response
                 .getData()
-                .getOrElse {
-                    throw IllegalStateException("SM response had non-success status")
-                }
+                .getOrElse { return Result.failure(it) }
 
         val tlvs = TLVList.fromTlvListBuffer(body.toByteArray())
 
@@ -143,11 +143,11 @@ class SecureMessagingSession(
 
         val do99Value: ByteArray =
             (tlvs.find(Iso7816.Tags.ProcessingStatus.toInt())?.value as? ByteArray)
-                ?: throw IllegalStateException("SM response missing DO'99' processing status")
+                ?: return Result.failure(IllegalStateException("SM response missing DO'99' processing status"))
 
         val do8eValue: ByteArray =
             (tlvs.find(Iso7816.Tags.CryptographicChecksum.toInt())?.value as? ByteArray)
-                ?: throw IllegalStateException("SM response missing DO'8E' checksum")
+                ?: return Result.failure(IllegalStateException("SM response missing DO'8E' checksum"))
 
         // Reconstruct TLV wire bytes for MAC verification
         val do87TlvBytes: UByteArray =
@@ -178,15 +178,15 @@ class SecureMessagingSession(
                     data = macInput,
                 ).copyOfRange(0, 8)
 
-        check(expectedMac.toByteArray().contentEquals(do8eValue)) {
-            "SM response MAC verification failed"
+        if (!expectedMac.toByteArray().contentEquals(do8eValue)) {
+            return Result.failure(IllegalStateException("SM response MAC verification failed"))
         }
 
         // Decrypt data if present
         val decryptedData: UByteArray =
             if (do87Value != null) {
-                check(do87Value[0] == 0x01.toByte()) {
-                    "Expected padding-content indicator 0x01"
+                if (do87Value[0] != 0x01.toByte()) {
+                    return Result.failure(IllegalStateException("Expected padding-content indicator 0x01"))
                 }
 
                 val encrypted =
@@ -210,7 +210,7 @@ class SecureMessagingSession(
                         iv = iv,
                         data = encrypted,
                     )
-                removeIsoPad(padded)
+                removeIsoPad(padded).getOrElse { return Result.failure(it) }
             } else {
                 ubyteArrayOf()
             }
@@ -218,7 +218,7 @@ class SecureMessagingSession(
         val sw1 = do99Value[0].toUByte()
         val sw2 = do99Value[1].toUByte()
 
-        return RApdu.parse(decryptedData + ubyteArrayOf(sw1, sw2))
+        return Result.success(RApdu.parse(decryptedData + ubyteArrayOf(sw1, sw2)))
     }
 
     private fun incrementSsc() {
@@ -244,13 +244,13 @@ class SecureMessagingSession(
         }
     }
 
-    private fun removeIsoPad(data: UByteArray): UByteArray {
+    private fun removeIsoPad(data: UByteArray): Result<UByteArray> {
         for (i in data.indices.reversed()) {
             if (data[i] == 0x80u.toUByte()) {
-                return data.copyOfRange(0, i)
+                return Result.success(data.copyOfRange(0, i))
             }
         }
 
-        throw IllegalStateException("ISO 7816-4 padding marker 0x80 not found")
+        return Result.failure(IllegalStateException("ISO 7816-4 padding marker 0x80 not found"))
     }
 }
