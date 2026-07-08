@@ -24,9 +24,11 @@ kotlin {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_11
         }
+
         androidResources {
             enable = true
         }
+
         withHostTest {
             isIncludeAndroidResources = true
         }
@@ -36,9 +38,9 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
         }
+
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.ber.tlv)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -54,6 +56,7 @@ kotlin {
             implementation(libs.koin.annotations)
             implementation(libs.signum.indispensable)
         }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)

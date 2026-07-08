@@ -18,7 +18,5 @@ data class NfcTag(
         return id.contentEquals(other.id) && description == other.description
     }
 
-    override fun hashCode(): Int {
-        return 31 * id.contentHashCode() + description.hashCode()
-    }
+    override fun hashCode(): Int = 31 * id.contentHashCode() + description.hashCode()
 }

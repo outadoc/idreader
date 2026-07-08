@@ -12,10 +12,11 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
-import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.nfc.tlvList
+import fr.outadoc.eidas.tlv.TlvNode
+import fr.outadoc.eidas.tlv.firstWithTag
+import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.utils.toPrettyHex
-import io.github.rafaelrabeloit.bertlv.TLVList
 
 private const val TAG = "PaceKeyAgreementUseCase"
 
@@ -59,15 +60,14 @@ class PaceKeyAgreementUseCase(
 
         logger.d(TAG, "Step 3 raw response: ${response.toPrettyHex()}")
 
-        val dynAuth: TLVList =
+        val dynAuth: List<TlvNode> =
             response
                 .parseDynamicAuthData()
                 .getOrElse { return Result.failure(it) }
 
         return runCatching {
-            val chipFinalPub =
-                (dynAuth.find(Iso7816.Tags.ChipPublicKey.toInt())?.value as? ByteArray)
-                    ?.toUByteArray()
+            val chipFinalPub: UByteArray =
+                dynAuth.firstWithTag(Iso7816.Tags.ChipPublicKey)?.value
                     ?: return Result.failure(
                         IllegalStateException("Could not find chip final public key in dynamic auth data"),
                     )

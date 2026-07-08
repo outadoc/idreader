@@ -1,21 +1,23 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package fr.outadoc.eidas.pace
 
 import fr.outadoc.eidas.nfc.Iso7816
-import io.github.rafaelrabeloit.bertlv.TLVList
+import fr.outadoc.eidas.tlv.TlvNode
+import fr.outadoc.eidas.tlv.firstWithTag
+import fr.outadoc.eidas.tlv.parseTlv
 
-@OptIn(ExperimentalUnsignedTypes::class)
-internal fun UByteArray.parseDynamicAuthData(): Result<TLVList> {
-    val outer =
-        TLVList
-            .fromTlvListBuffer(this.toByteArray())
-            .find(Iso7816.Tags.DynamicAuthenticationData.toInt())
-            ?.value as? TLVList
+internal fun UByteArray.parseDynamicAuthData(): Result<List<TlvNode>> {
+    val outer: List<TlvNode> =
+        parseTlv().getOrElse {
+            return Result.failure(it)
+        }
 
-    return if (outer == null) {
-        Result.failure(
-            IllegalStateException("Could not find dynamic auth data in response"),
-        )
-    } else {
-        Result.success(outer)
-    }
+    val node: TlvNode =
+        outer.firstWithTag(Iso7816.Tags.DynamicAuthenticationData)
+            ?: return Result.failure(
+                IllegalStateException("Could not find dynamic auth data in response"),
+            )
+
+    return node.children()
 }

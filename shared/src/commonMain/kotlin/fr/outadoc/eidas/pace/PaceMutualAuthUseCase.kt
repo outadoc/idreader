@@ -8,12 +8,13 @@ import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
-import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
-import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.nfc.tlvList
+import fr.outadoc.eidas.tlv.TlvNode
+import fr.outadoc.eidas.tlv.buildTlv
+import fr.outadoc.eidas.tlv.firstWithTag
+import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.utils.toPrettyHex
-import io.github.rafaelrabeloit.bertlv.TLVList
 
 private const val TAG = "PaceMutualAuthUseCase"
 
@@ -54,7 +55,7 @@ class PaceMutualAuthUseCase(
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 4: mutual authentication)")
 
-        val dynAuth: TLVList =
+        val dynAuth: List<TlvNode> =
             nfcSession
                 .transceive(
                     commandFactory.generalAuthenticate(
@@ -76,9 +77,8 @@ class PaceMutualAuthUseCase(
                 .flatMap { it.parseDynamicAuthData() }
                 .getOrElse { return Result.failure(it) }
 
-        val chipToken =
-            (dynAuth.find(Iso7816.Tags.ChipAuthenticationToken.toInt())?.value as? ByteArray)
-                ?.toUByteArray()
+        val chipToken: UByteArray =
+            dynAuth.firstWithTag(Iso7816.Tags.ChipAuthenticationToken)?.value
                 ?: return Result.failure(
                     IllegalStateException("Could not find chip authentication token"),
                 )
@@ -110,14 +110,14 @@ class PaceMutualAuthUseCase(
         return Result.success(Unit)
     }
 
-    // Builds the auth token input: 7F49 { 06 <oid>, 86 <pubKey> }
     private fun paceTokenInput(
         oid: UByteArray,
         pubKey: UByteArray,
-    ): UByteArray {
-        val oidTlv = ubyteArrayOf(0x06u, oid.size.toUByte(), *oid)
-        val pubKeyTlv = ubyteArrayOf(0x86u, pubKey.size.toUByte(), *pubKey)
-        val inner = oidTlv + pubKeyTlv
-        return ubyteArrayOf(0x7Fu, 0x49u, inner.size.toUByte(), *inner)
-    }
+    ): UByteArray =
+        buildTlv {
+            constructed(0x7F49u) {
+                tlv(0x06u, oid)
+                tlv(0x86u, pubKey)
+            }
+        }
 }

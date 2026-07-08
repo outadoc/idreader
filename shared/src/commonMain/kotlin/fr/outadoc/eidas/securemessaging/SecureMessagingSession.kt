@@ -10,9 +10,10 @@ import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.RApdu
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.pace.PaceCredentials
+import fr.outadoc.eidas.tlv.firstWithTag
+import fr.outadoc.eidas.tlv.parseTlv
 import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.utils.toPrettyHex
-import io.github.rafaelrabeloit.bertlv.TLVList
 
 private val TAG = "SecureSessionManager"
 
@@ -134,19 +135,20 @@ class SecureMessagingSession(
                 .getData()
                 .getOrElse { return Result.failure(it) }
 
-        val tlvs = TLVList.fromTlvListBuffer(body.toByteArray())
+        val tlvs =
+            body
+                .parseTlv()
+                .getOrElse { return Result.failure(it) }
 
-        val do87Value: ByteArray? =
-            tlvs
-                .find(Iso7816.Tags.PaddingContentIndicatorFollowedByCryptogram.toInt())
-                ?.value as? ByteArray
+        val do87Value: UByteArray? =
+            tlvs.firstWithTag(Iso7816.Tags.PaddingContentIndicatorFollowedByCryptogram)?.value
 
-        val do99Value: ByteArray =
-            (tlvs.find(Iso7816.Tags.ProcessingStatus.toInt())?.value as? ByteArray)
+        val do99Value: UByteArray =
+            tlvs.firstWithTag(Iso7816.Tags.ProcessingStatus)?.value
                 ?: return Result.failure(IllegalStateException("SM response missing DO'99' processing status"))
 
-        val do8eValue: ByteArray =
-            (tlvs.find(Iso7816.Tags.CryptographicChecksum.toInt())?.value as? ByteArray)
+        val do8eValue: UByteArray =
+            tlvs.firstWithTag(Iso7816.Tags.CryptographicChecksum)?.value
                 ?: return Result.failure(IllegalStateException("SM response missing DO'8E' checksum"))
 
         // Reconstruct TLV wire bytes for MAC verification
@@ -178,22 +180,18 @@ class SecureMessagingSession(
                     data = macInput,
                 ).copyOfRange(0, 8)
 
-        if (!expectedMac.toByteArray().contentEquals(do8eValue)) {
+        if (!expectedMac.contentEquals(do8eValue)) {
             return Result.failure(IllegalStateException("SM response MAC verification failed"))
         }
 
         // Decrypt data if present
         val decryptedData: UByteArray =
             if (do87Value != null) {
-                if (do87Value[0] != 0x01.toByte()) {
+                if (do87Value[0] != 0x01u.toUByte()) {
                     return Result.failure(IllegalStateException("Expected padding-content indicator 0x01"))
                 }
 
-                val encrypted =
-                    do87Value
-                        .drop(1)
-                        .toByteArray()
-                        .toUByteArray()
+                val encrypted = do87Value.copyOfRange(1, do87Value.size)
 
                 val iv: UByteArray =
                     cryptoEngine.encryptSymmetric(
@@ -215,8 +213,8 @@ class SecureMessagingSession(
                 ubyteArrayOf()
             }
 
-        val sw1 = do99Value[0].toUByte()
-        val sw2 = do99Value[1].toUByte()
+        val sw1 = do99Value[0]
+        val sw2 = do99Value[1]
 
         return Result.success(RApdu.parse(decryptedData + ubyteArrayOf(sw1, sw2)))
     }

@@ -21,8 +21,11 @@ class ReadDataGroupUseCase(
         logger.i(TAG, "SELECT FILE DG ${dataGroupNumber.toPrettyHex()}")
 
         nfcSession
-            .transceive(commandFactory.selectFile(ubyteArrayOf(0x01u, dataGroupNumber)))
-            .flatMap { it.getData() }
+            .transceive(
+                commandFactory.selectFile(
+                    ubyteArrayOf(FID_RANGE_START, dataGroupNumber),
+                ),
+            ).flatMap { it.getData() }
             .getOrElse { return Result.failure(it) }
 
         logger.i(TAG, "READ BINARY DG ${dataGroupNumber.toPrettyHex()}")
@@ -34,5 +37,9 @@ class ReadDataGroupUseCase(
                 .getOrElse { return Result.failure(it) }
 
         return Result.success(comBytes)
+    }
+
+    private companion object {
+        const val FID_RANGE_START: UByte = 0x01u
     }
 }

@@ -1,33 +1,28 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package fr.outadoc.eidas.nfc
 
-import io.github.rafaelrabeloit.bertlv.TLV
-import io.github.rafaelrabeloit.bertlv.TLVList
+import fr.outadoc.eidas.tlv.TlvBuilder
 
 fun tlvList(block: TlvListBuilder.() -> Unit): UByteArray = TlvListBuilder().apply(block).build()
 
 class TlvListBuilder {
-    private val tlvs = mutableListOf<TLV<*>>()
+    private val inner = TlvBuilder()
 
     fun tlv(
         tag: UByte,
         value: UByteArray,
-    ) {
-        tlvs += TLV.fromTagAndBinaryValue(tag.toInt(), value.toByteArray())
-    }
+    ) = inner.tlv(tag, value)
 
     fun tlv(
         tag: UByte,
         value: ByteArray,
-    ) {
-        tlvs += TLV.fromTagAndBinaryValue(tag.toInt(), value)
-    }
+    ) = inner.tlv(tag, value.toUByteArray())
 
     fun tlv(
         tag: UByte,
         value: UByte,
-    ) {
-        tlvs += TLV.fromTagAndBinaryValue(tag.toInt(), byteArrayOf(value.toByte()))
-    }
+    ) = inner.tlv(tag, value)
 
-    fun build(): UByteArray = TLVList.fromTlvs(tlvs).bytes.toUByteArray()
+    fun build(): UByteArray = inner.build()
 }

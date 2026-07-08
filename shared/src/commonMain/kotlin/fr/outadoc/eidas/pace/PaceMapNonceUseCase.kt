@@ -12,12 +12,12 @@ import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
-import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
-import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.nfc.tlvList
+import fr.outadoc.eidas.tlv.TlvNode
+import fr.outadoc.eidas.tlv.firstWithTag
+import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.utils.toPrettyHex
-import io.github.rafaelrabeloit.bertlv.TLVList
 
 private const val TAG = "PaceMapNonceUseCase"
 
@@ -39,7 +39,7 @@ class PaceMapNonceUseCase(
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 2: generic mapping)")
 
-        val dynAuth: TLVList =
+        val dynAuth: List<TlvNode> =
             nfcSession
                 .transceive(
                     commandFactory.generalAuthenticate(
@@ -60,8 +60,7 @@ class PaceMapNonceUseCase(
                 .getOrElse { return Result.failure(it) }
 
         val chipMappingData: UByteArray =
-            (dynAuth.find(Iso7816.Tags.ChipMappingData.toInt())?.value as? ByteArray)
-                ?.toUByteArray()
+            dynAuth.firstWithTag(Iso7816.Tags.ChipMappingData)?.value
                 ?: return Result.failure(
                     IllegalStateException("Could not find mapping data in dynamic auth data"),
                 )

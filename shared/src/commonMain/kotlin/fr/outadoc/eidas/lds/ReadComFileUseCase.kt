@@ -5,9 +5,10 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.tlv.TlvNode
+import fr.outadoc.eidas.tlv.firstWithTag
+import fr.outadoc.eidas.tlv.parseTlv
 import fr.outadoc.eidas.utils.flatMap
-import io.github.rafaelrabeloit.bertlv.TLV
-import io.github.rafaelrabeloit.bertlv.TLVList
 
 private const val TAG = "ReadComUseCase"
 
@@ -32,11 +33,19 @@ class ReadComFileUseCase(
                 .flatMap { it.getData() }
                 .getOrElse { return Result.failure(it) }
 
-        val rootTagValue: TLV<ByteArray> = TLV.fromBinaryTlvBuffer(comBytes.toByteArray())
-        val rootList: TLVList = TLVList.fromTlvListBuffer(rootTagValue.value)
+        val rootNode: TlvNode =
+            comBytes
+                .parseTlv()
+                .getOrElse { return Result.failure(it) }
+                .firstOrNull()
+                ?: return Result.failure(IllegalStateException("EF.COM is empty"))
 
         val dgList: UByteArray =
-            (rootList.find(0x5C)?.value as ByteArray?)?.toUByteArray()
+            rootNode
+                .children()
+                .getOrElse { return Result.failure(it) }
+                .firstWithTag(0x5Cu)
+                ?.value
                 ?: return Result.failure(
                     IllegalStateException("Could not find DG list in EF.COM"),
                 )
@@ -52,7 +61,6 @@ class ReadComFileUseCase(
     }
 
     private companion object {
-        val FID_RANGE_START = 0x0100
         val DG_TAG_TO_NUMBER: Map<UInt, UByte> =
             mapOf(
                 0x61u to 0x01u,

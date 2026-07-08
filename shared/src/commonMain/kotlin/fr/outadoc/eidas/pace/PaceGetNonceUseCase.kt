@@ -9,11 +9,12 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
-import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.settings.AuthenticationMethod
+import fr.outadoc.eidas.tlv.TlvNode
+import fr.outadoc.eidas.tlv.firstWithTag
+import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.utils.toPrettyHex
-import io.github.rafaelrabeloit.bertlv.TLVList
 
 private const val TAG = "PaceGetNonceUseCase"
 
@@ -48,7 +49,7 @@ class PaceGetNonceUseCase(
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 1: encrypted nonce)")
 
-        val dynAuth: TLVList =
+        val dynAuth: List<TlvNode> =
             nfcSession
                 .transceive(
                     commandFactory.generalAuthenticate(
@@ -64,7 +65,7 @@ class PaceGetNonceUseCase(
                 .getOrElse { return Result.failure(it) }
 
         val encryptedNonce: UByteArray =
-            (dynAuth.find(Iso7816.Tags.Nonce.toInt())?.value as? ByteArray)?.toUByteArray()
+            dynAuth.firstWithTag(Iso7816.Tags.Nonce)?.value
                 ?: return Result.failure(
                     IllegalStateException("Could not find nonce in dynamic auth data"),
                 )
