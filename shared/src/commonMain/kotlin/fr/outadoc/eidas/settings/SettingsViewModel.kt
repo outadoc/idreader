@@ -2,6 +2,8 @@ package fr.outadoc.eidas.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import fr.outadoc.eidas.settings.model.AppSettings
+import fr.outadoc.eidas.settings.model.AuthenticationMethod
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

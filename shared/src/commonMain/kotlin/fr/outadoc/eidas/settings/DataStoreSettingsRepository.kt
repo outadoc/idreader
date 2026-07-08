@@ -6,6 +6,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.e
+import fr.outadoc.eidas.settings.model.AppSettings
+import fr.outadoc.eidas.settings.model.AuthenticationMethod
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

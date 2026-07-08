@@ -1,5 +1,6 @@
 package fr.outadoc.eidas.lds
 
+import fr.outadoc.eidas.lds.model.MrzInfo
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

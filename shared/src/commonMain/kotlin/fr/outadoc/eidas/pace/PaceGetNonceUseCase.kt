@@ -10,7 +10,7 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
-import fr.outadoc.eidas.settings.AuthenticationMethod
+import fr.outadoc.eidas.settings.model.AuthenticationMethod
 import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.utils.flatMap

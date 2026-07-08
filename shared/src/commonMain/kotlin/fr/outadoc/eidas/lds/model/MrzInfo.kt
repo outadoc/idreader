@@ -1,6 +1,4 @@
-package fr.outadoc.eidas.lds
-
-import kotlinx.datetime.LocalDate
+package fr.outadoc.eidas.lds.model
 
 data class MrzInfo(
     val format: String,

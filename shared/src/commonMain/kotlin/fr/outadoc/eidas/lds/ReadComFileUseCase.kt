@@ -1,5 +1,6 @@
 package fr.outadoc.eidas.lds
 
+import fr.outadoc.eidas.lds.model.ComData
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816

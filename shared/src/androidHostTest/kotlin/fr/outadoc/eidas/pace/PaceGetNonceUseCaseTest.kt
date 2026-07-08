@@ -7,7 +7,7 @@ import fr.outadoc.eidas.crypto.Protocol
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
-import fr.outadoc.eidas.settings.AuthenticationMethod
+import fr.outadoc.eidas.settings.model.AuthenticationMethod
 import kotlinx.coroutines.test.runTest
 import org.bouncycastle.crypto.engines.AESEngine
 import org.bouncycastle.crypto.modes.CBCBlockCipher

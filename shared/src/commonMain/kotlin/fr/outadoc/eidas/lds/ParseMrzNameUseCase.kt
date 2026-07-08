@@ -1,5 +1,7 @@
 package fr.outadoc.eidas.lds
 
+import fr.outadoc.eidas.lds.model.CardHolderName
+
 class ParseMrzNameUseCase {
     operator fun invoke(rawName: String): CardHolderName {
         // Format: SURNAME<<GIVEN1<GIVEN2<...

@@ -1,4 +1,4 @@
-package fr.outadoc.eidas.lds
+package fr.outadoc.eidas.lds.model
 
 data class LdsDump(
     val mrzInfo: MrzInfo?,

@@ -1,4 +1,4 @@
-package fr.outadoc.eidas.pace
+package fr.outadoc.eidas.pace.model
 
 import fr.outadoc.eidas.crypto.Algorithm
 

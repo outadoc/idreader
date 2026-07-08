@@ -3,7 +3,7 @@ package fr.outadoc.eidas.securemessaging
 import fr.outadoc.eidas.crypto.CryptoEngine
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.nfc.NfcSession
-import fr.outadoc.eidas.pace.PaceCredentials
+import fr.outadoc.eidas.pace.model.PaceCredentials
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class SecureSessionFactory(

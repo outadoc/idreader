@@ -1,11 +1,4 @@
-package fr.outadoc.eidas.settings
-
-enum class AuthenticationMethod {
-    CAN,
-    MRZ,
-    PIN,
-    PUK,
-}
+package fr.outadoc.eidas.settings.model
 
 data class AppSettings(
     val password: String = "",

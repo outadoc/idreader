@@ -1,5 +1,6 @@
 package fr.outadoc.eidas.lds
 
+import fr.outadoc.eidas.lds.model.AdditionalPersonalDetails
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.firstWithTag

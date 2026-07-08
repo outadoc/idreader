@@ -9,7 +9,9 @@ import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.asn1.SecurityInfo
-import fr.outadoc.eidas.settings.AuthenticationMethod
+import fr.outadoc.eidas.pace.model.PaceCredentials
+import fr.outadoc.eidas.pace.model.PaceKeyAgreementResult
+import fr.outadoc.eidas.settings.model.AuthenticationMethod
 
 private const val TAG = "PaceAuthenticateUseCase"
 

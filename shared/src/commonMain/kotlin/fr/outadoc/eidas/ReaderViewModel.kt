@@ -2,15 +2,15 @@ package fr.outadoc.eidas
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import fr.outadoc.eidas.lds.LdsDump
 import fr.outadoc.eidas.lds.ReadLdsDataUseCase
+import fr.outadoc.eidas.lds.model.LdsDump
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
-import fr.outadoc.eidas.pace.PaceCredentials
+import fr.outadoc.eidas.pace.model.PaceCredentials
 import fr.outadoc.eidas.securemessaging.SecureMessagingSession
 import fr.outadoc.eidas.securemessaging.SecureSessionFactory
 import fr.outadoc.eidas.settings.SettingsRepository

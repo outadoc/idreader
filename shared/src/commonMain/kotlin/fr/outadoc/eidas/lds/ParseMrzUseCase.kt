@@ -1,5 +1,7 @@
 package fr.outadoc.eidas.lds
 
+import fr.outadoc.eidas.lds.model.MrzInfo
+
 class ParseMrzUseCase(
     private val parseMrzName: ParseMrzNameUseCase,
 ) {

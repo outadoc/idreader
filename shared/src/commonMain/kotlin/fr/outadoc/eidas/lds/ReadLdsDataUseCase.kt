@@ -1,5 +1,9 @@
 package fr.outadoc.eidas.lds
 
+import fr.outadoc.eidas.lds.model.AdditionalPersonalDetails
+import fr.outadoc.eidas.lds.model.ComData
+import fr.outadoc.eidas.lds.model.LdsDump
+import fr.outadoc.eidas.lds.model.MrzInfo
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.logging.w

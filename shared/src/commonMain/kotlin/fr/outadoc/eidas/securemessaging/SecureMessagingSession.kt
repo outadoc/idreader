@@ -9,7 +9,7 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.RApdu
 import fr.outadoc.eidas.nfc.tlvList
-import fr.outadoc.eidas.pace.PaceCredentials
+import fr.outadoc.eidas.pace.model.PaceCredentials
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
 import fr.outadoc.eidas.utils.flatMap
