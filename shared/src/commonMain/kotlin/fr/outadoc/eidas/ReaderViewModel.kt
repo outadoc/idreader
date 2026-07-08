@@ -1,5 +1,6 @@
 package fr.outadoc.eidas
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.outadoc.eidas.lds.ReadCardDataUseCase
@@ -31,6 +32,7 @@ class ReaderViewModel(
     private val secureSessionFactory: SecureSessionFactory,
     private val readCardData: ReadCardDataUseCase,
 ) : ViewModel() {
+    @Immutable
     data class State(
         val isReading: Boolean = false,
         val cardDump: CardDump? = null,

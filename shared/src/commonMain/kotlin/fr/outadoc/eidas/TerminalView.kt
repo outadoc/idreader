@@ -19,10 +19,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.outadoc.eidas.logging.LogEntry
 import fr.outadoc.eidas.logging.LogLevel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun TerminalView(
-    entries: List<LogEntry>,
+    entries: ImmutableList<LogEntry>,
     modifier: Modifier = Modifier,
     insets: PaddingValues = PaddingValues(),
 ) {
@@ -72,7 +74,7 @@ fun TerminalView(
 private fun TerminalViewPreview() {
     AppTheme {
         TerminalView(
-            listOf(
+            persistentListOf(
                 LogEntry(
                     level = LogLevel.DEBUG,
                     tag = "LoremIpsum",

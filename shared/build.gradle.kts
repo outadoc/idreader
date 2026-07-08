@@ -41,6 +41,7 @@ kotlin {
         }
 
         commonMain.dependencies {
+            implementation(libs.kotlinx.collections.immutable)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.io.core)
             implementation(libs.compose.runtime)

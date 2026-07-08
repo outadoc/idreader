@@ -1,5 +1,8 @@
 package fr.outadoc.eidas.lds.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class MrzInfo(
     val format: String,
     val documentCode: String,

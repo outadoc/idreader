@@ -17,6 +17,7 @@ import fr.outadoc.eidas.lds.model.AdditionalPersonalDetails
 import fr.outadoc.eidas.lds.model.CardDump
 import fr.outadoc.eidas.lds.model.CardHolderName
 import fr.outadoc.eidas.lds.model.MrzInfo
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun CardInfo(
@@ -225,7 +226,12 @@ private fun CardInfoPreview() {
                             cardHolderName =
                                 CardHolderName(
                                     surname = "MARTIN",
-                                    givenNames = listOf("MAELYS", "GAELLE", "MARIE"),
+                                    givenNames =
+                                        persistentListOf(
+                                            "MAELYS",
+                                            "GAELLE",
+                                            "MARIE",
+                                        ),
                                 ),
                             birthDate = "900713",
                             sex = "F",
@@ -239,8 +245,13 @@ private fun CardInfoPreview() {
                             fullNameNationalCharacters =
                                 CardHolderName(
                                     surname = "Martin",
-                                    givenNames = listOf("Maëlys", "Gaëlle", "Marie"),
-                                ),
+                                    givenNames =
+                                        persistentListOf(
+                                            "Maëlys",
+                                            "Gaëlle",
+                                            "Marie"
+                                    ),
+                                        ),
                             personalNumber = "1234567890",
                             fullDateOfBirth = "19900713",
                             placeOfBirth = "Paris",
