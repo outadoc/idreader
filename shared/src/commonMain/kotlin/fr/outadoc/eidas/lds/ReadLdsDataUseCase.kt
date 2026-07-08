@@ -26,12 +26,17 @@ class ReadLdsDataUseCase(
             .getData()
             .getOrElse { return Result.failure(it) }
 
-        readComFile(
-            nfcSession = nfcSession,
-        ).getOrElse {
-            return Result.failure(it)
-        }
+        val comData: ComData =
+            readComFile(
+                nfcSession = nfcSession,
+            ).getOrElse {
+                return Result.failure(it)
+            }
 
-        return Result.failure(NotImplementedError())
+        logger.i(TAG, "COM data: $comData")
+
+        return Result.success(
+            LdsDump(),
+        )
     }
 }
