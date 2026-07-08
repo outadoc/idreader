@@ -1,6 +1,7 @@
 package fr.outadoc.eidas.media
 
-import android.util.Log
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import coil3.ImageLoader
 import coil3.asImage
 import coil3.decode.DataSource
@@ -10,17 +11,24 @@ import coil3.fetch.ImageFetchResult
 import coil3.request.Options
 import com.gemalto.jp2.JP2Decoder
 import fr.outadoc.eidas.lds.model.DocumentPicture
-import kotlin.io.encoding.Base64
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class DocumentPictureFetcher(
     private val picture: DocumentPicture,
 ) : Fetcher {
-    override suspend fun fetch(): FetchResult? {
+    override suspend fun fetch(): FetchResult {
         val bytes = picture.bytes.toByteArray()
-        val bitmap = JP2Decoder(bytes).decode()
 
-        Log.d("trx", Base64.encode(bytes))
+        val bitmap: Bitmap =
+            when (picture.format) {
+                DocumentPicture.Format.Jpeg -> {
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                }
+
+                DocumentPicture.Format.Jpeg2000 -> {
+                    JP2Decoder(bytes).decode()
+                }
+            } ?: error("Failed to decode document picture as ${picture.format}")
 
         return ImageFetchResult(
             image = bitmap.asImage(),
