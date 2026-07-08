@@ -5,6 +5,8 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.utils.flatMap
+import kotlinx.io.Buffer
+import kotlinx.io.readByteArray
 
 private val TAG = "ReadDataGroupUseCase"
 
@@ -35,34 +37,35 @@ class ReadDataGroupUseCase(
                 .flatMap { it.getData() }
                 .getOrElse { return Result.failure(it) }
 
-        // Parse outer BER-TLV length to know the full file size.
         val totalLength: Int =
             runCatching { parseTotalLength(firstChunk) }
                 .getOrElse { return Result.failure(it) }
 
-        if (firstChunk.size >= totalLength) {
-            return Result.success(firstChunk)
-        }
+        val buffer = Buffer()
+        buffer.write(firstChunk.toByteArray())
 
-        val buffer = mutableListOf<UByte>()
-        buffer.addAll(firstChunk.toList())
-
-        while (buffer.size < totalLength) {
-            val offset = buffer.size
+        while (buffer.size.toInt() < totalLength) {
+            val offset = buffer.size.toInt()
             val remaining = totalLength - offset
 
             logger.i(TAG, "READ BINARY DG$dataGroupNumber offset=$offset remaining=$remaining")
 
             val chunk: UByteArray =
                 nfcSession
-                    .transceive(commandFactory.readBinary(offset = offset, length = minOf(remaining, MAX_READ)))
-                    .flatMap { it.getData() }
+                    .transceive(
+                        commandFactory.readBinary(
+                            offset = offset,
+                            length = minOf(remaining, MAX_READ),
+                        ),
+                    ).flatMap { it.getData() }
                     .getOrElse { return Result.failure(it) }
 
-            buffer.addAll(chunk.toList())
+            buffer.write(chunk.toByteArray())
         }
 
-        return Result.success(buffer.toUByteArray())
+        return Result.success(
+            buffer.readByteArray().toUByteArray(),
+        )
     }
 
     // Parses the outer BER-TLV tag + length to return the total encoded byte count.
@@ -71,11 +74,21 @@ class ReadDataGroupUseCase(
         val lengthByte = data[pos++].toInt() and 0xFF
         val contentLength =
             when {
-                lengthByte <= 0x7F -> lengthByte
-                lengthByte == 0x81 -> data[pos++].toInt() and 0xFF
-                lengthByte == 0x82 ->
+                lengthByte <= 0x7F -> {
+                    lengthByte
+                }
+
+                lengthByte == 0x81 -> {
+                    data[pos++].toInt() and 0xFF
+                }
+
+                lengthByte == 0x82 -> {
                     ((data[pos++].toInt() and 0xFF) shl 8) or (data[pos++].toInt() and 0xFF)
-                else -> error("Unsupported BER-TLV length: 0x${lengthByte.toString(16)}")
+                }
+
+                else -> {
+                    error("Unsupported BER-TLV length: 0x${lengthByte.toString(16)}")
+                }
             }
         return pos + contentLength
     }
