@@ -28,7 +28,10 @@ class RApdu private constructor(
             Result.success(data)
         } else {
             Result.failure(
-                IllegalStateException("Non-success APDU"),
+                ApduException(
+                    sw1 = sw1,
+                    sw2 = sw2,
+                ),
             )
         }
 
