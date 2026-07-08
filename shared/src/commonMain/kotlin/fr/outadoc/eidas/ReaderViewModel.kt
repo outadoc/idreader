@@ -39,6 +39,14 @@ class ReaderViewModel(
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
 
+    fun dismissCardInfo() {
+        _state.update { state ->
+            state.copy(
+                cardDump = null,
+            )
+        }
+    }
+
     fun startListening() {
         viewModelScope.launch {
             try {
