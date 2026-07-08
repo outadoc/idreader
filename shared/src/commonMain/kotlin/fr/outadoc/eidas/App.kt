@@ -1,6 +1,7 @@
 package fr.outadoc.eidas
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import fr.outadoc.eidas.icons.AppIcons
 import fr.outadoc.eidas.icons.settings
 import fr.outadoc.eidas.logging.MemoryLogger
@@ -38,6 +40,8 @@ fun App(
         LaunchedEffect(viewModel) {
             viewModel.startListening()
         }
+
+        val state by viewModel.state.collectAsState()
 
         Scaffold(
             topBar = {
@@ -61,6 +65,18 @@ fun App(
                 entries = entries,
                 insets = insets,
             )
+        }
+
+        state.cardDump?.let { cardDump ->
+            ModalBottomSheet(
+                onDismissRequest = {},
+                sheetState = sheetState,
+            ) {
+                CardInfo(
+                    modifier = Modifier.padding(16.dp),
+                    cardDump = cardDump,
+                )
+            }
         }
 
         if (showSettings) {
