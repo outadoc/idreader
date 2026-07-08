@@ -65,5 +65,76 @@ object Iso7816 {
         val ProtectedLe: UByte = 0x97u
         val ProcessingStatus: UByte = 0x99u
         val CryptographicChecksum: UByte = 0x8Eu
+
+        /**
+         * Full name of document holder in national characters. Encoded per Doc 9303 rules.
+         */
+        val FullNameNationalCharacters: UInt = 0x5F0Eu
+
+        /**
+         * Content-specific class. Contains:
+         * - Tag `02`, length `01`: Number of other names.
+         * - Tag `5F0F` (repeating): Other name, once per name counted by `02`.
+         */
+        val ContentSpecificClass: UByte = 0xA0u
+
+        /** Other name formatted per Doc 9303. Repeats as many times as indicated by tag `02`.
+         */
+        val OtherName: UInt = 0x5F0Fu
+
+        /**
+         *  Personal number.
+         */
+        val PersonalNumber: UInt = 0x5F10u
+
+        /**
+         *  Full date of birth, encoded as yyyymmdd.
+         */
+        val FullDateOfBirth: UInt = 0x5F2Bu
+
+        /**
+         * Place of birth. Fields separated by `<`.
+         */
+        val PlaceOfBirth: UInt = 0x5F11u
+
+        /**
+         * Permanent address. Fields separated by `<`.
+         */
+        val PermanentAddress: UInt = 0x5F42u
+
+        /**
+         * Telephone.
+         */
+        val Telephone: UInt = 0x5F12u
+
+        /**
+         *  Profession.
+         */
+        val Profession: UInt = 0x5F13u
+
+        /**
+         * Title.
+         */
+        val Title: UInt = 0x5F14u
+
+        /**
+         * Personal summary.
+         */
+        val PersonalSummary: UInt = 0x5F15u
+
+        /**
+         * Proof of citizenship. Compressed image per [ISO/IEC 10918].
+         */
+        val ProofOfCitizenship: UInt = 0x5F16u
+
+        /**
+         * Other valid TD numbers. Separated by `<`.
+         */
+        val OtherValidTdNumbers: UInt = 0x5F17u
+
+        /**
+         * Custody information.
+         */
+        val CustodyInformation: UInt = 0x5F18u
     }
 }
