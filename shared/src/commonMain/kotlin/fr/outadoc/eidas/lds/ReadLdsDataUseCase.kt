@@ -7,7 +7,6 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.utils.flatMap
-import fr.outadoc.eidas.utils.toPrettyHex
 
 private val TAG = "ReadLdsDataUseCase"
 
@@ -46,7 +45,7 @@ class ReadLdsDataUseCase(
                         nfcSession = nfcSession,
                         dataGroupNumber = dgNumber,
                     ).onFailure {
-                        logger.w(TAG, "Failed to read DG #${dgNumber.toPrettyHex()}")
+                        logger.w(TAG, "Failed to read DG$dgNumber")
                     }.getOrNull()
                 }
 
