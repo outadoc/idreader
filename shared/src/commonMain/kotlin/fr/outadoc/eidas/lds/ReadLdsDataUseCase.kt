@@ -4,6 +4,7 @@ import fr.outadoc.eidas.lds.model.AdditionalPersonalDetails
 import fr.outadoc.eidas.lds.model.ComData
 import fr.outadoc.eidas.lds.model.LdsDump
 import fr.outadoc.eidas.lds.model.MrzInfo
+import fr.outadoc.eidas.lds.model.Picture
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.logging.w
@@ -66,10 +67,16 @@ class ReadLdsDataUseCase(
                 parseDG11(fileBytes).getOrNull()
             }
 
+        val picture: Picture? =
+            dataGroupContents[Iso7816.DataGroup.DG2]?.let { fileBytes ->
+                parseDG2(fileBytes).getOrNull()
+            }
+
         return Result.success(
             LdsDump(
                 mrzInfo = mrzInfo,
                 additionalPersonalDetails = additionalPersonalDetails,
+                picture = picture,
             ),
         )
     }
