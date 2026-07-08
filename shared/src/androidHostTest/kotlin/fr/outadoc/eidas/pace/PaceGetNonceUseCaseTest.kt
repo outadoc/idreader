@@ -7,6 +7,7 @@ import fr.outadoc.eidas.crypto.Protocol
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.settings.AuthenticationMethod
 import kotlinx.coroutines.test.runTest
 import org.bouncycastle.crypto.engines.AESEngine
 import org.bouncycastle.crypto.modes.CBCBlockCipher
@@ -66,7 +67,7 @@ class PaceGetNonceUseCaseTest {
                     logger = MemoryLogger(),
                 )
 
-            val result = useCase(nfcSession, algorithm, testCan).getOrThrow()
+            val result = useCase(nfcSession, algorithm, AuthenticationMethod.CAN, testCan).getOrThrow()
             assertContentEquals(plainNonce.toUByteArray(), result)
         }
 
