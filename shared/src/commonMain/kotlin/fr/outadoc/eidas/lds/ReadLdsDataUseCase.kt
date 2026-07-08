@@ -50,8 +50,8 @@ class ReadLdsDataUseCase(
                     readDataGroup(
                         nfcSession = nfcSession,
                         dataGroupNumber = dgNumber,
-                    ).onFailure {
-                        logger.w(TAG, "Failed to read DG$dgNumber")
+                    ).onFailure { e ->
+                        logger.w(TAG, "Failed to read DG$dgNumber", e)
                     }.getOrNull()
                 }
 

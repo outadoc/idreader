@@ -35,13 +35,14 @@ class CommandFactory {
             le = null,
         )
 
-    fun readBinary(): CApdu =
+    fun readBinary(offset: Int = 0, length: Int = 256): CApdu =
         CApdu(
             cla = 0x00u,
             ins = 0xB0u,
-            p1 = 0x00u,
-            p2 = 0x00u,
-            le = 0x00u,
+            p1 = ((offset shr 8) and 0x7F).toUByte(),
+            p2 = (offset and 0xFF).toUByte(),
+            // Le=0x00 encodes Ne=256 in short-form APDUs (ISO 7816-4)
+            le = if (length >= 256) 0x00u else length.toUByte(),
         )
 
     fun selectAid(aid: UByteArray): CApdu =

@@ -27,18 +27,61 @@ class ReadDataGroupUseCase(
             ).flatMap { it.getData() }
             .getOrElse { return Result.failure(it) }
 
-        logger.i(TAG, "READ BINARY DG$dataGroupNumber")
+        logger.i(TAG, "READ BINARY DG$dataGroupNumber offset=0")
 
-        val comBytes: UByteArray =
+        val firstChunk: UByteArray =
             nfcSession
-                .transceive(commandFactory.readBinary())
+                .transceive(commandFactory.readBinary(offset = 0))
                 .flatMap { it.getData() }
                 .getOrElse { return Result.failure(it) }
 
-        return Result.success(comBytes)
+        // Parse outer BER-TLV length to know the full file size.
+        val totalLength: Int =
+            runCatching { parseTotalLength(firstChunk) }
+                .getOrElse { return Result.failure(it) }
+
+        if (firstChunk.size >= totalLength) {
+            return Result.success(firstChunk)
+        }
+
+        val buffer = mutableListOf<UByte>()
+        buffer.addAll(firstChunk.toList())
+
+        while (buffer.size < totalLength) {
+            val offset = buffer.size
+            val remaining = totalLength - offset
+
+            logger.i(TAG, "READ BINARY DG$dataGroupNumber offset=$offset remaining=$remaining")
+
+            val chunk: UByteArray =
+                nfcSession
+                    .transceive(commandFactory.readBinary(offset = offset, length = minOf(remaining, MAX_READ)))
+                    .flatMap { it.getData() }
+                    .getOrElse { return Result.failure(it) }
+
+            buffer.addAll(chunk.toList())
+        }
+
+        return Result.success(buffer.toUByteArray())
+    }
+
+    // Parses the outer BER-TLV tag + length to return the total encoded byte count.
+    private fun parseTotalLength(data: UByteArray): Int {
+        var pos = 1 // skip single-byte outer tag
+        val lengthByte = data[pos++].toInt() and 0xFF
+        val contentLength =
+            when {
+                lengthByte <= 0x7F -> lengthByte
+                lengthByte == 0x81 -> data[pos++].toInt() and 0xFF
+                lengthByte == 0x82 ->
+                    ((data[pos++].toInt() and 0xFF) shl 8) or (data[pos++].toInt() and 0xFF)
+                else -> error("Unsupported BER-TLV length: 0x${lengthByte.toString(16)}")
+            }
+        return pos + contentLength
     }
 
     private companion object {
         const val FID_RANGE_START: UByte = 0x01u
+        const val MAX_READ = 256
     }
 }
