@@ -3,8 +3,8 @@ package fr.outadoc.eidas.lds
 import fr.outadoc.eidas.lds.model.AdditionalPersonalDetails
 import fr.outadoc.eidas.lds.model.CardDump
 import fr.outadoc.eidas.lds.model.ComData
+import fr.outadoc.eidas.lds.model.DocumentPicture
 import fr.outadoc.eidas.lds.model.MrzInfo
-import fr.outadoc.eidas.lds.model.Picture
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.logging.w
@@ -64,7 +64,7 @@ class ReadCardDataUseCase(
                     .getOrNull()
             }
 
-        val picture: Picture? =
+        val picture: DocumentPicture? =
             dataGroupContents[Iso7816.DataGroup.DG2]?.let { fileBytes ->
                 parseDG2(fileBytes)
                     .onFailure { e -> logger.w(TAG, "Failed to parse DG2", e) }

@@ -37,6 +37,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
+            implementation(files("libs/jp2-android-1.0.3.aar"))
         }
 
         commonMain.dependencies {
@@ -56,6 +57,7 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.annotations)
             implementation(libs.signum.indispensable)
+            implementation(libs.coil.compose)
         }
 
         commonTest.dependencies {

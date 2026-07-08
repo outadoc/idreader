@@ -1,6 +1,6 @@
 package fr.outadoc.eidas.lds
 
-import fr.outadoc.eidas.lds.model.Picture
+import fr.outadoc.eidas.lds.model.DocumentPicture
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.firstWithTag
@@ -8,7 +8,7 @@ import fr.outadoc.eidas.tlv.parseTlv
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class ParseDG2UseCase {
-    operator fun invoke(rawData: UByteArray): Result<Picture> {
+    operator fun invoke(rawData: UByteArray): Result<DocumentPicture> {
         val tagList: List<TlvNode> =
             rawData
                 .parseTlv()
@@ -40,7 +40,7 @@ class ParseDG2UseCase {
                 ?: return Result.failure(IllegalStateException("Missing 0x5F2E tag"))
 
         return Result.success(
-            Picture(
+            DocumentPicture(
                 biometricData.value,
             ),
         )

@@ -1,5 +1,5 @@
 package fr.outadoc.eidas.lds.model
 
-data class Picture(
+data class DocumentPicture(
     val bytes: UByteArray,
 )

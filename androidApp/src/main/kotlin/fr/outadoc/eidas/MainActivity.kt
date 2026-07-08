@@ -4,13 +4,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import coil3.ImageLoader
+import coil3.compose.setSingletonImageLoaderFactory
+import coil3.request.crossfade
 import fr.outadoc.eidas.di.activityScopedModule
 import fr.outadoc.eidas.di.androidModule
 import fr.outadoc.eidas.di.sharedModule
 import fr.outadoc.eidas.logging.Logger
+import fr.outadoc.eidas.media.CoilLogger
+import fr.outadoc.eidas.media.DocumentPictureFetcher
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.KoinApplication
+import org.koin.compose.koinInject
 import org.koin.compose.module.rememberKoinModules
 import org.koin.dsl.koinConfiguration
 
@@ -38,6 +44,18 @@ class MainActivity : ComponentActivity() {
                         listOf(
                             activityScopedModule(this),
                         )
+                    }
+
+                    val logger: Logger = koinInject()
+
+                    setSingletonImageLoaderFactory { context ->
+                        ImageLoader
+                            .Builder(context)
+                            .crossfade(true)
+                            .logger(CoilLogger(logger))
+                            .components {
+                                add(DocumentPictureFetcher.Factory())
+                            }.build()
                     }
 
                     App()

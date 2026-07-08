@@ -1,5 +1,6 @@
 [versions]
 agp = "9.0.1"
+coil = "3.1.0"
 android-compileSdk = "36"
 android-minSdk = "31"
 android-targetSdk = "36"
@@ -41,6 +42,7 @@ koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", ver
 koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koinAnnotations" }
 koin-ksp-compiler = { module = "io.insert-koin:koin-ksp-compiler", version.ref = "koinAnnotations" }
 signum-indispensable = { module = "at.asitplus.signum:indispensable", version = "3.24.0" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

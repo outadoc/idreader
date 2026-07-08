@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -11,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import fr.outadoc.eidas.lds.model.AdditionalPersonalDetails
 import fr.outadoc.eidas.lds.model.CardDump
 import fr.outadoc.eidas.lds.model.CardHolderName
@@ -25,6 +27,12 @@ fun CardInfo(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        AsyncImage(
+            modifier = Modifier.size(200.dp),
+            model = cardDump.picture,
+            contentDescription = "Photo of document holder",
+        )
+
         cardDump.mrzInfo?.let { mrz ->
             InfoSection(title = "Document") {
                 InfoField(
