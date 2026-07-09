@@ -158,21 +158,84 @@ object Iso7816 {
     }
 
     object DataGroup {
+        /**
+         * Machine Readable Zone Information
+         */
         val DG1: UByte = 1u
+
+        /**
+         * Encoded Identification Features (Face)
+         */
         val DG2: UByte = 2u
+
+        /**
+         * Additional Identification Feature (Finger(s))
+         */
         val DG3: UByte = 3u
+
+        /**
+         * Additional Identification Feature (Iris(es))
+         */
         val DG4: UByte = 4u
+
+        /**
+         * Displayed Portrait
+         */
         val DG5: UByte = 5u
+
+        /**
+         * RFU
+         */
         val DG6: UByte = 6u
+
+        /**
+         * Displayed Signature or Usual Mark
+         */
         val DG7: UByte = 7u
+
+        /**
+         * Data Features
+         */
         val DG8: UByte = 8u
+
+        /**
+         * Structure Feature(s)
+         */
         val DG9: UByte = 9u
+
+        /**
+         * Substance Feature(s)
+         */
         val DG10: UByte = 10u
+
+        /**
+         * Additional Personal Detail(s)
+         */
         val DG11: UByte = 11u
+
+        /**
+         * Additional Document Detail(s)
+         */
         val DG12: UByte = 12u
+
+        /**
+         * Optional Detail(s)
+         */
         val DG13: UByte = 13u
+
+        /**
+         * Security Options
+         */
         val DG14: UByte = 14u
+
+        /**
+         * Active Authentication PKI
+         */
         val DG15: UByte = 15u
+
+        /**
+         * Person(s) to Notify
+         */
         val DG16: UByte = 16u
     }
 }
