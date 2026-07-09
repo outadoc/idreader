@@ -14,14 +14,16 @@ import fr.outadoc.eidas.securemessaging.SecureSessionFactory
 import fr.outadoc.eidas.settings.AndroidSettingsEncryptor
 import fr.outadoc.eidas.settings.SettingsEncryptor
 import okio.Path.Companion.toPath
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val androidModule =
     module {
+        single { BouncyCastleProvider() }
         single<Logger>(named("platformLogger")) { AndroidLogger() }
         single<CryptoEngine> { AndroidCryptoEngine() }
-        single<KeyGenerator> { AndroidKeyGenerator() }
+        single<KeyGenerator> { AndroidKeyGenerator(get()) }
         factory<SettingsEncryptor> { AndroidSettingsEncryptor() }
         factory { SecureSessionFactory(get(), get()) }
         single<DataStore<Preferences>> {

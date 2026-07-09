@@ -9,11 +9,13 @@ import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
 
 @OptIn(ExperimentalUnsignedTypes::class)
-class AndroidKeyGenerator : KeyGenerator {
+class AndroidKeyGenerator(
+    private val bouncyCastleProvider: BouncyCastleProvider,
+) : KeyGenerator {
     override fun generateKeyPair(algorithm: Algorithm): KeyPair {
         val kp =
             KeyPairGenerator
-                .getInstance("EC", BouncyCastleProvider())
+                .getInstance("EC", bouncyCastleProvider)
                 .apply {
                     initialize(
                         ECGenParameterSpec(
