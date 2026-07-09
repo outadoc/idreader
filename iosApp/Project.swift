@@ -7,7 +7,7 @@ let project = Project(
             name: "iosApp",
             destinations: .iOS,
             product: .app,
-            bundleId: "dev.tuist.iosApp",
+            bundleId: "fr.outadoc.eidas",
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [
@@ -59,7 +59,7 @@ let project = Project(
             name: "iosAppTests",
             destinations: .iOS,
             product: .unitTests,
-            bundleId: "dev.tuist.iosAppTests",
+            bundleId: "fr.outadoc.eidas.tests",
             infoPlist: .default,
             buildableFolders: [
                 "iosApp/Tests"
