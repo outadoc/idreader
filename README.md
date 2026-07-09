@@ -1,6 +1,6 @@
 # eIDAS
 
-This project will contain an application for reading an EU passport or ID card via NFC using a
+This project contains an application capable of reading an EU passport or ID card via NFC using a
 smartphone.
 
 All the business logic is contained within the `shared` module. The `androidApp` module only
@@ -11,9 +11,9 @@ the future.
 
 ### References
 
-This application relies on
-the [BSI TR-03110 Technical Guideline Advanced Security Mechanisms for Machine Readable Travel Documents and eIDAS Token][bsi-tr-03110]
-standard.
+- [ICAO Doc 9303][icao-9303]
+- [BSI TR-03110][bsi-tr-03110]
+- [hufon/cnie-python-tools][cnie-python-tools]
 
 ### Structure
 
@@ -42,4 +42,8 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
 - Android tests: `./gradlew :shared:testAndroidHostTest`
 
-[bsi-tr-03110]: https://www.bsi.bund.de/EN/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/Technische-Richtlinien/TR-nach-Thema-sortiert/tr03110/TR-03110_node.html
+[icao-9303]: https://www.icao.int/publications/doc-series/doc-9303
+
+[bsi-tr-03110]: https://www.bsi.bund.de/EN/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/Technische-Richtlinien/TR-nach-Thema-sortiert/tr03110/tr-03110.html
+
+[cnie-python-tools]: https://github.com/hufon/cnie-python-tools/tree/main/cnie
