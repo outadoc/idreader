@@ -10,6 +10,6 @@ class IosLogger : Logger {
         throwable: Throwable?,
     ) {
         val suffix = throwable?.let { "\n${it.stackTraceToString()}" } ?: ""
-        NSLog("%@", "[${level.name}] trx/$tag: $message$suffix")
+        // NSLog("%@", "[${level.name}] trx/$tag: $message$suffix")
     }
 }

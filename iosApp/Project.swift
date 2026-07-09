@@ -7,7 +7,7 @@ let project = Project(
             name: "iosApp",
             destinations: .iOS,
             product: .app,
-            bundleId: "fr.outadoc.eidas",
+            bundleId: "fr.outadoc.idreader",
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchScreen": [
@@ -15,6 +15,7 @@ let project = Project(
                         "UIImageName": "",
                     ],
                     "NFCReaderUsageDescription": "This app reads your identity document over NFC.",
+                    "CADisableMinimumFrameDurationOnPhone": true,
                     // Despite the prefix, this is an Info.plist key, not an
                     // entitlement. ISO 7816 tags are only reported for the
                     // AIDs listed here (A0000002471001 = MRTD).

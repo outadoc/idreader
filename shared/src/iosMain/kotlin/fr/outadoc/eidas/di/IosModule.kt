@@ -13,8 +13,14 @@ import fr.outadoc.eidas.nfc.IosNfcTagReader
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.settings.IosSettingsEncryptor
 import fr.outadoc.eidas.settings.SettingsEncryptor
+import kotlinx.cinterop.ExperimentalForeignApi
+import okio.Path
+import okio.Path.Companion.toPath
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSUserDomainMask
 
 val iosModule =
     module {
@@ -27,8 +33,21 @@ val iosModule =
         single<DataStore<Preferences>> {
             PreferenceDataStoreFactory.createWithPath(
                 produceFile = {
-                    TODO()
+                    getDocumentsDirectory().resolve("fr.outadoc.eidas.preferences_pb")
                 },
             )
         }
     }
+
+@OptIn(ExperimentalForeignApi::class)
+private fun getDocumentsDirectory(): Path =
+    NSFileManager.defaultManager
+        .URLForDirectory(
+            directory = NSDocumentDirectory,
+            inDomain = NSUserDomainMask,
+            appropriateForURL = null,
+            create = false,
+            error = null,
+        )?.path
+        ?.toPath()
+        ?: error("Could not get document directory")
