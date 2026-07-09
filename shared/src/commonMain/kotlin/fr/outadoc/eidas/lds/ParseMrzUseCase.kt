@@ -4,6 +4,7 @@ import fr.outadoc.eidas.lds.model.MrzInfo
 
 class ParseMrzUseCase(
     private val parseMrzName: ParseMrzNameUseCase,
+    private val parse6DigitDate: Parse6DigitDateUseCase,
 ) {
     operator fun invoke(mrz: String): Result<MrzInfo> {
         val format: String =
@@ -50,9 +51,21 @@ class ParseMrzUseCase(
                 issuingState = issuingState,
                 nationality = nationality,
                 cardHolderName = cardHolderName,
-                birthDate = birthDateRaw,
+                birthDate =
+                    parse6DigitDate(
+                        birthDateRaw,
+                        Parse6DigitDateUseCase.DateIsIn.PAST,
+                    ).getOrElse {
+                        return Result.failure(it)
+                    },
                 sex = sex,
-                expiryDate = expiryDateRaw,
+                expiryDate =
+                    parse6DigitDate(
+                        expiryDateRaw,
+                        Parse6DigitDateUseCase.DateIsIn.FUTURE,
+                    ).getOrElse {
+                        return Result.failure(it)
+                    },
                 optionalData1 = optionalData1,
                 optionalData2 = optionalData2,
             ),

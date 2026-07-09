@@ -17,6 +17,7 @@ import fr.outadoc.eidas.lds.model.AdditionalPersonalDetails
 import fr.outadoc.eidas.lds.model.CardDump
 import fr.outadoc.eidas.lds.model.CardHolderName
 import fr.outadoc.eidas.lds.model.Centimeters
+import fr.outadoc.eidas.lds.model.Date
 import fr.outadoc.eidas.lds.model.MrzInfo
 import fr.outadoc.eidas.lds.model.OptionalDetails
 import kotlinx.collections.immutable.persistentListOf
@@ -56,7 +57,7 @@ fun CardInfo(
                 )
                 InfoField(
                     label = "Expiry date",
-                    value = mrz.expiryDate,
+                    value = mrz.expiryDate.toString(),
                 )
                 mrz.optionalData1?.let {
                     InfoField(
@@ -87,7 +88,7 @@ fun CardInfo(
                 )
                 InfoField(
                     label = "Date of birth",
-                    value = mrz.birthDate,
+                    value = mrz.birthDate.toString(),
                 )
                 InfoField(
                     label = "Sex",
@@ -123,7 +124,7 @@ fun CardInfo(
                 details.fullDateOfBirth?.let {
                     InfoField(
                         label = "Date of birth",
-                        value = it,
+                        value = it.toString(),
                     )
                 }
                 details.placeOfBirth?.let {
@@ -245,9 +246,9 @@ private fun CardInfoPreview() {
                                             "MARIE",
                                         ),
                                 ),
-                            birthDate = "900713",
+                            birthDate = Date.from(1990, 7, 13),
                             sex = "F",
-                            expiryDate = "300211",
+                            expiryDate = Date.from(2030, 2, 11),
                             optionalData1 = null,
                             optionalData2 = null,
                         ),
@@ -265,7 +266,7 @@ private fun CardInfoPreview() {
                                         ),
                                 ),
                             personalNumber = "1234567890",
-                            fullDateOfBirth = "19900713",
+                            fullDateOfBirth = Date.from(1990, 7, 13),
                             placeOfBirth = listOf("Paris"),
                             permanentAddress =
                                 listOf(

@@ -9,6 +9,7 @@ import fr.outadoc.eidas.tlv.parseTlv
 @OptIn(ExperimentalUnsignedTypes::class)
 class ParseDG11UseCase(
     private val parseMrzName: ParseMrzNameUseCase,
+    private val parse8DigitDate: Parse8DigitDateUseCase,
 ) {
     operator fun invoke(rawData: UByteArray): Result<AdditionalPersonalDetails> {
         val tagList: List<TlvNode> =
@@ -47,7 +48,8 @@ class ParseDG11UseCase(
                         .firstWithTag(Iso7816.Tags.FullDateOfBirth)
                         ?.value
                         ?.toByteArray()
-                        ?.decodeToString(),
+                        ?.decodeToString()
+                        ?.let { parse8DigitDate(it).getOrNull() },
                 placeOfBirth =
                     info
                         .firstWithTag(Iso7816.Tags.PlaceOfBirth)
