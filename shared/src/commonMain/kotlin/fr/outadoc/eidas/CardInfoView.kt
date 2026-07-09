@@ -13,19 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import fr.outadoc.eidas.lds.model.AdditionalPersonalDetails
-import fr.outadoc.eidas.lds.model.CardDump
-import fr.outadoc.eidas.lds.model.CardHolderName
-import fr.outadoc.eidas.lds.model.Centimeters
-import fr.outadoc.eidas.lds.model.Date
-import fr.outadoc.eidas.lds.model.MrzInfo
-import fr.outadoc.eidas.lds.model.OptionalDetails
-import kotlinx.collections.immutable.persistentListOf
+import fr.outadoc.eidas.presentation.CardInfoUiModel
 
 @Composable
 fun CardInfo(
     modifier: Modifier = Modifier,
-    cardDump: CardDump,
+    cardInfo: CardInfoUiModel,
 ) {
     Column(
         modifier = modifier,
@@ -33,170 +26,74 @@ fun CardInfo(
     ) {
         AsyncImage(
             modifier = Modifier.height(160.dp),
-            model = cardDump.picture,
+            model = cardInfo.picture,
             contentDescription = "Photo of document holder",
         )
 
-        cardDump.mrzInfo?.let { mrz ->
-            InfoSection(title = "Document") {
-                InfoField(
-                    label = "Format",
-                    value = mrz.format,
-                )
-                InfoField(
-                    label = "Document code",
-                    value = mrz.documentCode,
-                )
-                InfoField(
-                    label = "Document number",
-                    value = mrz.documentNumber,
-                )
-                InfoField(
-                    label = "Issuing state",
-                    value = mrz.issuingState,
-                )
-                InfoField(
-                    label = "Expiry date",
-                    value = mrz.expiryDate.toString(),
-                )
-                mrz.optionalData1?.let {
-                    InfoField(
-                        label = "Optional data 1",
-                        value = it,
-                    )
-                }
-                mrz.optionalData2?.let {
-                    InfoField(
-                        label = "Optional data 2",
-                        value = it,
-                    )
-                }
-            }
+        InfoSection(
+            title = "Document",
+            fields =
+                listOf(
+                    "Format" to cardInfo.format,
+                    "Document code" to cardInfo.documentCode,
+                    "Document number" to cardInfo.documentNumber,
+                    "Issuing state" to cardInfo.issuingState,
+                    "Expiry date" to cardInfo.expiryDate,
+                    "Optional data 1" to cardInfo.optionalData1,
+                    "Optional data 2" to cardInfo.optionalData2,
+                ),
+        )
 
-            InfoSection(title = "Holder") {
-                InfoField(
-                    label = "Surname",
-                    value = mrz.cardHolderName.surname,
-                )
-                InfoField(
-                    label = "Given Names",
-                    value = mrz.cardHolderName.givenNames.joinToString(", "),
-                )
-                InfoField(
-                    label = "Nationality",
-                    value = mrz.nationality,
-                )
-                InfoField(
-                    label = "Date of birth",
-                    value = mrz.birthDate.toString(),
-                )
-                InfoField(
-                    label = "Sex",
-                    value = mrz.sex,
-                )
-            }
-        }
-
-        cardDump.additionalPersonalDetails?.let { details ->
-            InfoSection(title = "Additional details") {
-                details.title?.let {
-                    InfoField(
-                        label = "Title",
-                        value = it,
-                    )
-                }
-                details.fullNameNationalCharacters?.let {
-                    InfoField(
-                        label = "Surname (national characters)",
-                        value = it.surname,
-                    )
-                    InfoField(
-                        label = "Given Names (national characters)",
-                        value = it.givenNames.joinToString(", "),
-                    )
-                }
-                details.personalNumber?.let {
-                    InfoField(
-                        label = "Personal number",
-                        value = it,
-                    )
-                }
-                details.fullDateOfBirth?.let {
-                    InfoField(
-                        label = "Date of birth",
-                        value = it.toString(),
-                    )
-                }
-                details.placeOfBirth?.let {
-                    InfoField(
-                        label = "Place of birth",
-                        value = it.joinToString(", "),
-                    )
-                }
-                details.permanentAddress?.let {
-                    InfoField(
-                        label = "Permanent address",
-                        value = it.joinToString("\n"),
-                    )
-                }
-                details.telephone?.let {
-                    InfoField(
-                        label = "Telephone",
-                        value = it,
-                    )
-                }
-                details.profession?.let {
-                    InfoField(
-                        label = "Profession",
-                        value = it,
-                    )
-                }
-                details.personalSummary?.let {
-                    InfoField(
-                        label = "Personal summary",
-                        value = it,
-                    )
-                }
-                details.otherValidTdNumbers?.let {
-                    InfoField(
-                        label = "Other valid TD numbers",
-                        value = it,
-                    )
-                }
-                details.custodyInformation?.let {
-                    InfoField(
-                        label = "Custody information",
-                        value = it,
-                    )
-                }
-            }
-        }
-
-        cardDump.optionalDetails?.let { details ->
-            InfoSection(title = "Optional details") {
-                details.height?.let {
-                    InfoField(
-                        label = "Height",
-                        value = "${it.cm} cm",
-                    )
-                }
-            }
-        }
+        InfoSection(
+            title = "Holder",
+            fields =
+                listOf(
+                    "Title" to cardInfo.title,
+                    "Surname" to cardInfo.surname,
+                    "Given Names" to cardInfo.givenNames,
+                    "Nationality" to cardInfo.nationality,
+                    "Date of birth" to cardInfo.birthDate,
+                    "Place of birth" to cardInfo.placeOfBirth,
+                    "Sex" to cardInfo.sex,
+                    "Height" to cardInfo.height,
+                    "Personal number" to cardInfo.personalNumber,
+                    "Permanent address" to cardInfo.permanentAddress,
+                    "Telephone" to cardInfo.telephone,
+                    "Profession" to cardInfo.profession,
+                    "Personal summary" to cardInfo.personalSummary,
+                    "Other valid TD numbers" to cardInfo.otherValidTdNumbers,
+                    "Custody information" to cardInfo.custodyInformation,
+                ),
+        )
     }
 }
 
 @Composable
 private fun InfoSection(
     title: String,
-    content: @Composable () -> Unit,
+    fields: List<Pair<String, String?>>,
 ) {
+    val filledFields =
+        fields.mapNotNull { (label, value) ->
+            value?.let { label to it }
+        }
+
+    if (filledFields.isEmpty()) {
+        return
+    }
+
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
         )
         HorizontalDivider()
-        content()
+        filledFields.forEach { (label, value) ->
+            InfoField(
+                label = label,
+                value = value,
+            )
+        }
     }
 }
 
@@ -227,63 +124,31 @@ private fun CardInfoPreview() {
     MaterialTheme {
         CardInfo(
             modifier = Modifier.padding(16.dp),
-            cardDump =
-                CardDump(
-                    mrzInfo =
-                        MrzInfo(
-                            format = "TD1",
-                            documentCode = "ID",
-                            documentNumber = "X4RTBPFW4",
-                            issuingState = "FRA",
-                            nationality = "FRA",
-                            cardHolderName =
-                                CardHolderName(
-                                    surname = "MARTIN",
-                                    givenNames =
-                                        persistentListOf(
-                                            "MAELYS",
-                                            "GAELLE",
-                                            "MARIE",
-                                        ),
-                                ),
-                            birthDate = Date.from(1990, 7, 13),
-                            sex = "F",
-                            expiryDate = Date.from(2030, 2, 11),
-                            optionalData1 = null,
-                            optionalData2 = null,
-                        ),
-                    additionalPersonalDetails =
-                        AdditionalPersonalDetails(
-                            title = null,
-                            fullNameNationalCharacters =
-                                CardHolderName(
-                                    surname = "Martin",
-                                    givenNames =
-                                        persistentListOf(
-                                            "Maëlys",
-                                            "Gaëlle",
-                                            "Marie",
-                                        ),
-                                ),
-                            personalNumber = "1234567890",
-                            fullDateOfBirth = Date.from(1990, 7, 13),
-                            placeOfBirth = listOf("Paris"),
-                            permanentAddress =
-                                listOf(
-                                    "1 rue de la Paix",
-                                    "75001 Paris",
-                                ),
-                            telephone = "+33612345678",
-                            profession = "Engineer",
-                            personalSummary = null,
-                            otherValidTdNumbers = null,
-                            custodyInformation = null,
-                        ),
+            cardInfo =
+                CardInfoUiModel(
                     picture = null,
-                    optionalDetails =
-                        OptionalDetails(
-                            height = Centimeters(182),
-                        ),
+                    format = "TD1",
+                    documentCode = "ID",
+                    documentNumber = "X4RTBPFW4",
+                    issuingState = "FRA",
+                    expiryDate = "2030-02-11",
+                    optionalData1 = null,
+                    optionalData2 = null,
+                    title = null,
+                    surname = "Martin",
+                    givenNames = "Maëlys, Gaëlle, Marie",
+                    nationality = "FRA",
+                    birthDate = "1990-07-13",
+                    placeOfBirth = "Paris",
+                    sex = "F",
+                    height = "182 cm",
+                    personalNumber = "1234567890",
+                    permanentAddress = "1 rue de la Paix\n75001 Paris",
+                    telephone = "+33612345678",
+                    profession = "Engineer",
+                    personalSummary = null,
+                    otherValidTdNumbers = null,
+                    custodyInformation = null,
                 ),
         )
     }

@@ -1,21 +1,35 @@
 package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.lds.model.CardHolderName
+import fr.outadoc.eidas.lds.model.Date
 import fr.outadoc.eidas.lds.model.MrzInfo
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.datetime.TimeZone
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 class ParseMrzUseCaseTest {
+    private val fixedClock =
+        object : Clock {
+            override fun now(): Instant = Instant.parse("2010-01-01T00:00:00Z")
+        }
+
+    private val parseMrz =
+        ParseMrzUseCase(
+            parseMrzName = ParseMrzNameUseCase(),
+            parse6DigitDate =
+                Parse6DigitDateUseCase(
+                    clock = fixedClock,
+                    timeZone = TimeZone.UTC,
+                ),
+        )
+
     @Test
     fun `Parse TD1 MRZ from FR specimen`() {
         val mrz =
             "IDFRAX4RTBPFW46<<<<<<<<<<<<<<<9007138F3002119FRA<<<<<<<<<<<6MARTIN<<MAELYS<GAELLE<MARIE<<<"
-
-        val parseMrz =
-            ParseMrzUseCase(
-                parseMrzName = ParseMrzNameUseCase(),
-            )
 
         val parsed = parseMrz(mrz).getOrThrow()
 
@@ -37,9 +51,19 @@ class ParseMrzUseCaseTest {
                                     "MARIE",
                                 ),
                         ),
-                    birthDate = "900713",
+                    birthDate =
+                        Date.from(
+                            year = 1990,
+                            month = 7,
+                            day = 13,
+                        ),
                     sex = "F",
-                    expiryDate = "300211",
+                    expiryDate =
+                        Date.from(
+                            year = 2030,
+                            month = 2,
+                            day = 11,
+                        ),
                     optionalData1 = null,
                     optionalData2 = null,
                 ),
@@ -51,11 +75,6 @@ class ParseMrzUseCaseTest {
     fun `Parse TD1 MRZ from ISAO example`() {
         val mrz =
             "I<NLDXI85935F86999999990<<<<<<7208148F1108268NLD<<<<<<<<<<<4VAN<DER<STEEN<<MARIANNE<LOUISE"
-
-        val parseMrz =
-            ParseMrzUseCase(
-                parseMrzName = ParseMrzNameUseCase(),
-            )
 
         val parsed = parseMrz(mrz).getOrThrow()
 
@@ -76,9 +95,19 @@ class ParseMrzUseCaseTest {
                                     "LOUISE",
                                 ),
                         ),
-                    birthDate = "720814",
+                    birthDate =
+                        Date.from(
+                            year = 1972,
+                            month = 8,
+                            day = 14,
+                        ),
                     sex = "F",
-                    expiryDate = "110826",
+                    expiryDate =
+                        Date.from(
+                            year = 2011,
+                            month = 8,
+                            day = 26,
+                        ),
                     optionalData1 = "999999990",
                     optionalData2 = null,
                 ),

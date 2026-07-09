@@ -4,13 +4,14 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.outadoc.eidas.lds.ReadCardDataUseCase
-import fr.outadoc.eidas.lds.model.CardDump
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
 import fr.outadoc.eidas.pace.model.PaceCredentials
+import fr.outadoc.eidas.presentation.CardInfoUiModel
+import fr.outadoc.eidas.presentation.toCardInfoUiModel
 import fr.outadoc.eidas.securemessaging.SecureMessagingSession
 import fr.outadoc.eidas.securemessaging.SecureSessionFactory
 import fr.outadoc.eidas.settings.SettingsRepository
@@ -35,7 +36,7 @@ class ReaderViewModel(
     @Immutable
     data class State(
         val isReading: Boolean = false,
-        val cardDump: CardDump? = null,
+        val cardInfo: CardInfoUiModel? = null,
     )
 
     private val _state = MutableStateFlow(State())
@@ -44,7 +45,7 @@ class ReaderViewModel(
     fun dismissCardInfo() {
         _state.update { state ->
             state.copy(
-                cardDump = null,
+                cardInfo = null,
             )
         }
     }
@@ -84,7 +85,7 @@ class ReaderViewModel(
                         _state.update { state ->
                             state.copy(
                                 isReading = false,
-                                cardDump = cardDump,
+                                cardInfo = cardDump.toCardInfoUiModel(),
                             )
                         }
                     }.onFailure { e ->

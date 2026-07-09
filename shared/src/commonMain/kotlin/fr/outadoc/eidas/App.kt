@@ -69,7 +69,7 @@ fun App(
             )
         }
 
-        state.cardDump?.let { cardDump ->
+        state.cardInfo?.let { cardInfo ->
             AlertDialog(
                 onDismissRequest = viewModel::dismissCardInfo,
                 confirmButton = {
@@ -80,7 +80,7 @@ fun App(
                 text = {
                     CardInfo(
                         modifier = Modifier.verticalScroll(rememberScrollState()),
-                        cardDump = cardDump,
+                        cardInfo = cardInfo,
                     )
                 },
             )
