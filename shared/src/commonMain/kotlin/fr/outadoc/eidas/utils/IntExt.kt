@@ -1,5 +1,10 @@
 package fr.outadoc.eidas.utils
 
-expect fun Int.toByteArrayBe(byteCount: Int = 4): UByteArray
-
-expect fun UInt.toByteArrayBe(byteCount: Int = 4): UByteArray
+@OptIn(ExperimentalUnsignedTypes::class)
+fun Int.toByteArrayBe(byteCount: Int = 4): UByteArray {
+    val result = UByteArray(byteCount)
+    for (i in 0 until byteCount) {
+        result[byteCount - 1 - i] = ((this shr (i * 8)) and 0xFF).toUByte()
+    }
+    return result
+}

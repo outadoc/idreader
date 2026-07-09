@@ -2,6 +2,7 @@ package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.lds.model.CardHolderName
 import fr.outadoc.eidas.lds.model.MrzInfo
+import kotlinx.collections.immutable.persistentListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -29,7 +30,12 @@ class ParseMrzUseCaseTest {
                     cardHolderName =
                         CardHolderName(
                             surname = "MARTIN",
-                            givenNames = listOf("MAELYS", "GAELLE", "MARIE"),
+                            givenNames =
+                                persistentListOf(
+                                    "MAELYS",
+                                    "GAELLE",
+                                    "MARIE",
+                                ),
                         ),
                     birthDate = "900713",
                     sex = "F",
@@ -43,7 +49,8 @@ class ParseMrzUseCaseTest {
 
     @Test
     fun `Parse TD1 MRZ from ISAO example`() {
-        val mrz = "I<NLDXI85935F86999999990<<<<<<7208148F1108268NLD<<<<<<<<<<<4VAN<DER<STEEN<<MARIANNE<LOUISE"
+        val mrz =
+            "I<NLDXI85935F86999999990<<<<<<7208148F1108268NLD<<<<<<<<<<<4VAN<DER<STEEN<<MARIANNE<LOUISE"
 
         val parseMrz =
             ParseMrzUseCase(
@@ -63,7 +70,11 @@ class ParseMrzUseCaseTest {
                     cardHolderName =
                         CardHolderName(
                             surname = "VAN DER STEEN",
-                            givenNames = listOf("MARIANNE", "LOUISE"),
+                            givenNames =
+                                persistentListOf(
+                                    "MARIANNE",
+                                    "LOUISE",
+                                ),
                         ),
                     birthDate = "720814",
                     sex = "F",
