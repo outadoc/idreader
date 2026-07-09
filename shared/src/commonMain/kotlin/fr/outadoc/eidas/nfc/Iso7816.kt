@@ -139,6 +139,8 @@ object Iso7816 {
 
         val MRZ: UInt = 0x5F1Fu
 
+        val Height: UInt = 0x9F01u
+
         val DG1: UInt = 0x61u
         val DG2: UInt = 0x75u
         val DG3: UInt = 0x63u

@@ -5,6 +5,7 @@ import fr.outadoc.eidas.lds.model.CardDump
 import fr.outadoc.eidas.lds.model.ComData
 import fr.outadoc.eidas.lds.model.DocumentPicture
 import fr.outadoc.eidas.lds.model.MrzInfo
+import fr.outadoc.eidas.lds.model.OptionalDetails
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.logging.w
@@ -24,6 +25,7 @@ class ReadCardDataUseCase(
     private val parseDG1: ParseDG1UseCase,
     private val parseDG2: ParseDG2UseCase,
     private val parseDG11: ParseDG11UseCase,
+    private val parseDG13: ParseDG13UseCase,
 ) {
     suspend operator fun invoke(nfcSession: NfcSession): Result<CardDump> {
         logger.i(TAG, "Select MRTD application")
@@ -77,11 +79,18 @@ class ReadCardDataUseCase(
                     .onFailure { e -> logger.w(TAG, "Failed to parse DG11", e) }
                     .getOrNull()
             }
+        val optionalDetails: OptionalDetails? =
+            dataGroupContents[Iso7816.DataGroup.DG13]?.let { fileBytes ->
+                parseDG13(fileBytes)
+                    .onFailure { e -> logger.w(TAG, "Failed to parse DG13", e) }
+                    .getOrNull()
+            }
 
         return Result.success(
             CardDump(
                 mrzInfo = mrzInfo,
                 additionalPersonalDetails = additionalPersonalDetails,
+                optionalDetails = optionalDetails,
                 picture = picture,
             ),
         )

@@ -16,7 +16,9 @@ import coil3.compose.AsyncImage
 import fr.outadoc.eidas.lds.model.AdditionalPersonalDetails
 import fr.outadoc.eidas.lds.model.CardDump
 import fr.outadoc.eidas.lds.model.CardHolderName
+import fr.outadoc.eidas.lds.model.Centimeters
 import fr.outadoc.eidas.lds.model.MrzInfo
+import fr.outadoc.eidas.lds.model.OptionalDetails
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
@@ -168,6 +170,17 @@ fun CardInfo(
                 }
             }
         }
+
+        cardDump.optionalDetails?.let { details ->
+            InfoSection(title = "Optional details") {
+                details.height?.let {
+                    InfoField(
+                        label = "Height",
+                        value = "${it.cm} cm",
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -266,6 +279,10 @@ private fun CardInfoPreview() {
                             custodyInformation = null,
                         ),
                     picture = null,
+                    optionalDetails =
+                        OptionalDetails(
+                            height = Centimeters(182),
+                        ),
                 ),
         )
     }
