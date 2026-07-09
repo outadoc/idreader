@@ -20,7 +20,26 @@ let project = Project(
                 "iosApp/Sources",
                 "iosApp/Resources",
             ],
-            dependencies: []
+            scripts: [
+                .pre(
+                    script: """
+                        if [ "YES" = "$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED" ]; then
+                            echo "Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\"YES\\""
+                            exit 0
+                        fi
+                        cd "$SRCROOT/.."
+                        ./gradlew :shared:embedAndSignAppleFrameworkForXcode
+                        """,
+                    name: "Build Shared KMP Module",
+                    basedOnDependencyAnalysis: false
+                )
+            ],
+            dependencies: [],
+            settings: .settings(
+                base: [
+                    "ENABLE_USER_SCRIPT_SANDBOXING": "NO"
+                ]
+            )
         ),
         .target(
             name: "iosAppTests",
