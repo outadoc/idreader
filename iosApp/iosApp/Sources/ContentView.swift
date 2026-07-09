@@ -1,17 +1,18 @@
+import UIKit
 import SwiftUI
+import Shared
 
-public struct ContentView: View {
-    public init() {}
-
-    public var body: some View {
-        Text("Hello, World!")
-            .padding()
+struct ComposeView: UIViewControllerRepresentable {
+    func makeUIViewController(context: Self.Context) -> UIViewController {
+        MainViewControllerKt.MainViewController()
     }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Self.Context) {}
 }
 
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
+struct ContentView: View {
+    var body: some View {
+        ComposeView()
+            .ignoresSafeArea()
     }
 }
