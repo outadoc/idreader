@@ -31,6 +31,8 @@ class Parse6DigitDateUseCase(
             )
         }
 
+        val today: LocalDate = clock.now().toLocalDateTime(timeZone).date
+
         val yearWithoutCentury: Int? =
             date
                 .substring(0..1)
@@ -49,15 +51,27 @@ class Parse6DigitDateUseCase(
                 .toInt()
                 .takeIf { it > 0 }
 
-        val today: LocalDate = clock.now().toLocalDateTime(timeZone).date
-
         val year: Int? =
             yearWithoutCentury?.let { twoDigitYear ->
-                val currentYear = today.year
-                val candidate = (currentYear / 100) * 100 + twoDigitYear
+                val currentYear: Int = today.year
+                val candidate: Int = (currentYear / 100) * 100 + twoDigitYear
+
                 when (dateIsIn) {
-                    DateIsIn.PAST -> if (candidate > currentYear) candidate - 100 else candidate
-                    DateIsIn.FUTURE -> if (candidate < currentYear) candidate + 100 else candidate
+                    DateIsIn.PAST -> {
+                        if (candidate > currentYear) {
+                            candidate - 100
+                        } else {
+                            candidate
+                        }
+                    }
+
+                    DateIsIn.FUTURE -> {
+                        if (candidate < currentYear) {
+                            candidate + 100
+                        } else {
+                            candidate
+                        }
+                    }
                 }
             }
 
