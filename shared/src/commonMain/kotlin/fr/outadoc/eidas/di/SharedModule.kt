@@ -19,6 +19,7 @@ import fr.outadoc.eidas.pace.PaceKeyAgreementUseCase
 import fr.outadoc.eidas.pace.PaceMapNonceUseCase
 import fr.outadoc.eidas.pace.PaceMutualAuthUseCase
 import fr.outadoc.eidas.pace.ReadCardAccessUseCase
+import fr.outadoc.eidas.securemessaging.SecureSessionFactory
 import fr.outadoc.eidas.settings.DataStoreSettingsRepository
 import fr.outadoc.eidas.settings.SettingsRepository
 import fr.outadoc.eidas.settings.SettingsViewModel
@@ -35,6 +36,7 @@ val sharedModule =
         factory { CommandFactory() }
 
         single<SettingsRepository> { DataStoreSettingsRepository(get(), get(), get()) }
+        factory { SecureSessionFactory(get(), get()) }
 
         factory { ReadComFileUseCase(get(), get()) }
         factory { ReadDataGroupUseCase(get(), get()) }
