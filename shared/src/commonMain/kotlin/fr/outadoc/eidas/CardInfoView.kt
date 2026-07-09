@@ -3,8 +3,8 @@ package fr.outadoc.eidas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,7 +29,7 @@ fun CardInfo(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         AsyncImage(
-            modifier = Modifier.size(200.dp),
+            modifier = Modifier.height(160.dp),
             model = cardDump.picture,
             contentDescription = "Photo of document holder",
         )
@@ -208,7 +208,7 @@ private fun CardHolderName.formatted(): String =
         }
     }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun CardInfoPreview() {
     MaterialTheme {
@@ -249,9 +249,9 @@ private fun CardInfoPreview() {
                                         persistentListOf(
                                             "Maëlys",
                                             "Gaëlle",
-                                            "Marie"
-                                    ),
+                                            "Marie",
                                         ),
+                                ),
                             personalNumber = "1234567890",
                             fullDateOfBirth = "19900713",
                             placeOfBirth = "Paris",
