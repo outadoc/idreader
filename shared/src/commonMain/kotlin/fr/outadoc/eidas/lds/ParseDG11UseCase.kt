@@ -53,13 +53,17 @@ class ParseDG11UseCase(
                         .firstWithTag(Iso7816.Tags.PlaceOfBirth)
                         ?.value
                         ?.toByteArray()
-                        ?.decodeToString(),
+                        ?.decodeToString()
+                        ?.split('<')
+                        ?.filterNot { it.isEmpty() },
                 permanentAddress =
                     info
                         .firstWithTag(Iso7816.Tags.PermanentAddress)
                         ?.value
                         ?.toByteArray()
-                        ?.decodeToString(),
+                        ?.decodeToString()
+                        ?.split('<')
+                        ?.filterNot { it.isEmpty() },
                 telephone =
                     info
                         .firstWithTag(Iso7816.Tags.Telephone)

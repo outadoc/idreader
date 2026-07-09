@@ -77,7 +77,7 @@ fun CardInfo(
                 )
                 InfoField(
                     label = "Given Names",
-                    value = mrz.cardHolderName.givenNames.joinToString(" "),
+                    value = mrz.cardHolderName.givenNames.joinToString(", "),
                 )
                 InfoField(
                     label = "Nationality",
@@ -109,7 +109,7 @@ fun CardInfo(
                     )
                     InfoField(
                         label = "Given Names (national characters)",
-                        value = it.givenNames.joinToString(" "),
+                        value = it.givenNames.joinToString(", "),
                     )
                 }
                 details.personalNumber?.let {
@@ -127,13 +127,13 @@ fun CardInfo(
                 details.placeOfBirth?.let {
                     InfoField(
                         label = "Place of birth",
-                        value = it,
+                        value = it.joinToString(", "),
                     )
                 }
                 details.permanentAddress?.let {
                     InfoField(
                         label = "Permanent address",
-                        value = it,
+                        value = it.joinToString("\n"),
                     )
                 }
                 details.telephone?.let {
@@ -253,8 +253,12 @@ private fun CardInfoPreview() {
                                 ),
                             personalNumber = "1234567890",
                             fullDateOfBirth = "19900713",
-                            placeOfBirth = "Paris",
-                            permanentAddress = "1 rue de la Paix<75001 Paris",
+                            placeOfBirth = listOf("Paris"),
+                            permanentAddress =
+                                listOf(
+                                    "1 rue de la Paix",
+                                    "75001 Paris",
+                                ),
                             telephone = "+33612345678",
                             profession = "Engineer",
                             personalSummary = null,
