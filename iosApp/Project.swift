@@ -14,12 +14,22 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
+                    "NFCReaderUsageDescription": "This app reads your identity document over NFC.",
+                    // Despite the prefix, this is an Info.plist key, not an
+                    // entitlement. ISO 7816 tags are only reported for the
+                    // AIDs listed here (A0000002471001 = MRTD).
+                    "com.apple.developer.nfc.readersession.iso7816.select-identifiers": [
+                        "A0000002471001",
+                    ],
                 ]
             ),
             buildableFolders: [
                 "iosApp/Sources",
                 "iosApp/Resources",
             ],
+            entitlements: .dictionary([
+                "com.apple.developer.nfc.readersession.formats": .array([.string("TAG")]),
+            ]),
             scripts: [
                 .pre(
                     script: """
@@ -34,7 +44,11 @@ let project = Project(
                     basedOnDependencyAnalysis: false
                 )
             ],
-            dependencies: [],
+            dependencies: [
+                // The static Shared framework doesn't autolink CoreNFC;
+                // link it explicitly at the app level.
+                .sdk(name: "CoreNFC", type: .framework, status: .required),
+            ],
             settings: .settings(
                 base: [
                     "ENABLE_USER_SCRIPT_SANDBOXING": "NO"

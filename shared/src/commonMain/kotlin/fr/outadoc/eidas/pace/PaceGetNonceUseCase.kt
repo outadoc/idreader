@@ -74,7 +74,7 @@ class PaceGetNonceUseCase(
 
         val passwordBytes: UByteArray =
             password
-                .toByteArray(Charsets.US_ASCII)
+                .encodeToByteArray()
                 .toUByteArray()
 
         val kPi: UByteArray =
