@@ -72,8 +72,12 @@ fun CardInfo(
 
             InfoSection(title = "Holder") {
                 InfoField(
-                    label = "Name",
-                    value = mrz.cardHolderName.formatted(),
+                    label = "Surname",
+                    value = mrz.cardHolderName.surname,
+                )
+                InfoField(
+                    label = "Given Names",
+                    value = mrz.cardHolderName.givenNames.joinToString(" "),
                 )
                 InfoField(
                     label = "Nationality",
@@ -100,8 +104,12 @@ fun CardInfo(
                 }
                 details.fullNameNationalCharacters?.let {
                     InfoField(
-                        label = "Name (national characters)",
-                        value = it.formatted(),
+                        label = "Surname (national characters)",
+                        value = it.surname,
+                    )
+                    InfoField(
+                        label = "Given Names (national characters)",
+                        value = it.givenNames.joinToString(" "),
                     )
                 }
                 details.personalNumber?.let {
@@ -198,15 +206,6 @@ private fun InfoField(
         )
     }
 }
-
-private fun CardHolderName.formatted(): String =
-    buildString {
-        append(surname)
-        givenNames.forEach { givenName ->
-            append(" ")
-            append(givenName)
-        }
-    }
 
 @Preview(showBackground = true)
 @Composable
