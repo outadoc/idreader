@@ -34,6 +34,15 @@ kotlin {
         }
     }
 
+    iosArm64 {
+        binaries {
+            framework {
+                baseName = "Shared"
+                isStatic = true
+            }
+        }
+    }
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
