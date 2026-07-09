@@ -12,7 +12,7 @@ import okio.BufferedSource
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
 
-class CoilJpeg2000Decoder(
+class Jpeg2000Decoder(
     private val source: ImageSource,
 ) : Decoder {
     override suspend fun decode(): DecodeResult {
@@ -36,7 +36,7 @@ class CoilJpeg2000Decoder(
                 return null
             }
 
-            return CoilJpeg2000Decoder(
+            return Jpeg2000Decoder(
                 source = result.source,
             )
         }

@@ -11,10 +11,10 @@ import fr.outadoc.eidas.di.activityScopedModule
 import fr.outadoc.eidas.di.androidModule
 import fr.outadoc.eidas.di.sharedModule
 import fr.outadoc.eidas.logging.Logger
-import fr.outadoc.eidas.media.CoilJpeg2000Decoder
 import fr.outadoc.eidas.media.CoilLogger
 import fr.outadoc.eidas.media.DocumentPictureFetcher
 import fr.outadoc.eidas.media.DocumentPictureKeyer
+import fr.outadoc.eidas.media.Jpeg2000Decoder
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.KoinApplication
@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
                             .components {
                                 add(DocumentPictureKeyer())
                                 add(DocumentPictureFetcher.Factory())
-                                add(CoilJpeg2000Decoder.Factory())
+                                add(Jpeg2000Decoder.Factory())
                             }.build()
                     }
 
