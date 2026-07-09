@@ -2,7 +2,6 @@
 
 package fr.outadoc.eidas.crypto
 
-import fr.outadoc.eidas.utils.toByteArrayBe
 import org.bouncycastle.crypto.engines.AESEngine
 import org.bouncycastle.crypto.macs.CMac
 import org.bouncycastle.crypto.modes.CBCBlockCipher
