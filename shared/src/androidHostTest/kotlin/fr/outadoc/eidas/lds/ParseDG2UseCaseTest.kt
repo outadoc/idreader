@@ -40,7 +40,7 @@ class ParseDG2UseCaseTest {
 
         val dg2 =
             buildTlv {
-                constructed(tag = Icao9303.Tags.DG2) {
+                constructed(tag = Icao9303.DataGroup.DG2.tag) {
                     constructed(tag = 0x7F61u) {
                         constructed(tag = 0x7F60u) {
                             tlv(tag = 0x5F2Eu, value = facialRecord)
@@ -65,7 +65,7 @@ class ParseDG2UseCaseTest {
     fun `Fails on a biometric data block without a facial record signature`() {
         val dg2 =
             buildTlv {
-                constructed(tag = Icao9303.Tags.DG2) {
+                constructed(tag = Icao9303.DataGroup.DG2.tag) {
                     constructed(tag = 0x7F61u) {
                         constructed(tag = 0x7F60u) {
                             tlv(tag = 0x5F2Eu, value = ubyteArrayOf(0xFFu, 0x4Fu, 0xFFu, 0x51u))
