@@ -68,6 +68,8 @@ fun ReaderScreen(
             contentAlignment = Alignment.Center,
         ) {
             if (state.isReading) {
+                // TODO Display error on failure
+                // TODO Display graphics card -> phone with moving data on read
                 CircularProgressIndicator()
             } else {
                 IdleReaderContent(
