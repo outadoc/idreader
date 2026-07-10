@@ -1,4 +1,4 @@
-package fr.outadoc.eidas
+package fr.outadoc.eidas.screen.logs
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +17,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import fr.outadoc.eidas.AppTheme
+import fr.outadoc.eidas.extendedColorScheme
 import fr.outadoc.eidas.logging.LogEntry
 import fr.outadoc.eidas.logging.LogLevel
 import kotlinx.collections.immutable.ImmutableList
@@ -122,7 +124,7 @@ private fun formatEntry(entry: LogEntry): String {
 
 private fun colorForLevel(
     level: LogLevel,
-    colors: ExtendedColorScheme,
+    colors: fr.outadoc.eidas.ExtendedColorScheme,
 ): Color =
     when (level) {
         LogLevel.DEBUG -> colors.logDebug

@@ -1,4 +1,4 @@
-package fr.outadoc.eidas
+package fr.outadoc.eidas.screen.reader
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

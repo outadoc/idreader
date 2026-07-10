@@ -1,4 +1,4 @@
-package fr.outadoc.eidas.settings
+package fr.outadoc.eidas.screen.reader
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem

@@ -1,6 +1,5 @@
 package fr.outadoc.eidas.di
 
-import fr.outadoc.eidas.ReaderViewModel
 import fr.outadoc.eidas.lds.Parse6DigitDateUseCase
 import fr.outadoc.eidas.lds.Parse8DigitDateUseCase
 import fr.outadoc.eidas.lds.ParseDG11UseCase
@@ -22,6 +21,7 @@ import fr.outadoc.eidas.pace.PaceKeyAgreementUseCase
 import fr.outadoc.eidas.pace.PaceMapNonceUseCase
 import fr.outadoc.eidas.pace.PaceMutualAuthUseCase
 import fr.outadoc.eidas.pace.ReadCardAccessUseCase
+import fr.outadoc.eidas.screen.reader.ReaderViewModel
 import fr.outadoc.eidas.securemessaging.SecureSessionFactory
 import fr.outadoc.eidas.settings.DataStoreSettingsRepository
 import fr.outadoc.eidas.settings.SettingsRepository

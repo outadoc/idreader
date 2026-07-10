@@ -7,6 +7,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import fr.outadoc.eidas.navigation.Screen
+import fr.outadoc.eidas.screen.reader.ReaderScreen
+import fr.outadoc.eidas.screen.result.ScanResultScreen
+import fr.outadoc.eidas.screen.logs.LogsScreen
 
 @Composable
 fun App() {

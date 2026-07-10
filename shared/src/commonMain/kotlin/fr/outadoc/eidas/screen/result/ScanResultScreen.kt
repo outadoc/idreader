@@ -1,4 +1,4 @@
-package fr.outadoc.eidas
+package fr.outadoc.eidas.screen.result
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding

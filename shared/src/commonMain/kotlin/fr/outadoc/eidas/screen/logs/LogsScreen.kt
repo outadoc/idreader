@@ -1,4 +1,4 @@
-package fr.outadoc.eidas
+package fr.outadoc.eidas.screen.logs
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api

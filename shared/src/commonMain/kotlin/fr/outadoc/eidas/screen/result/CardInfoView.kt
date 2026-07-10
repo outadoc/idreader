@@ -1,4 +1,4 @@
-package fr.outadoc.eidas
+package fr.outadoc.eidas.screen.result
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
