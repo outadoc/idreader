@@ -12,6 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,15 +24,32 @@ import fr.outadoc.eidas.icons.settings
 import fr.outadoc.eidas.navigation.MainNavigationBar
 import fr.outadoc.eidas.navigation.Screen
 import fr.outadoc.eidas.settings.SettingsScreen
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReaderScreen(
-    onSelectTab: (Screen) -> Unit,
     modifier: Modifier = Modifier,
+    navigate: (Screen) -> Unit = {},
+    viewModel: ReaderViewModel = koinInject(),
 ) {
     var showSettings by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
+
+    LaunchedEffect(viewModel) {
+        viewModel.startListening()
+    }
+
+    val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(state.cardInfo) {
+        state.cardInfo?.let { cardInfo ->
+            navigate(
+                Screen.ScanResult(cardInfo = cardInfo),
+            )
+            viewModel.dismissCardInfo()
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -52,7 +71,7 @@ fun ReaderScreen(
         bottomBar = {
             MainNavigationBar(
                 selected = Screen.Reader,
-                onSelect = onSelectTab,
+                navigate = navigate,
             )
         },
     ) { insets ->

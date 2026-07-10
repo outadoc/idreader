@@ -17,8 +17,8 @@ import org.koin.compose.koinInject
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LogsScreen(
-    onSelectTab: (Screen) -> Unit,
     modifier: Modifier = Modifier,
+    navigate: (Screen) -> Unit = {},
     memoryLogger: MemoryLogger = koinInject(),
 ) {
     val entries by memoryLogger.entries.collectAsState()
@@ -33,7 +33,7 @@ fun LogsScreen(
         bottomBar = {
             MainNavigationBar(
                 selected = Screen.Logs,
-                onSelect = onSelectTab,
+                navigate = navigate,
             )
         },
     ) { insets ->

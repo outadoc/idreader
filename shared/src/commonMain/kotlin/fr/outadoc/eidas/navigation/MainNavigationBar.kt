@@ -13,13 +13,13 @@ import fr.outadoc.eidas.icons.terminal
 @Composable
 fun MainNavigationBar(
     selected: Screen,
-    onSelect: (Screen) -> Unit,
+    navigate: (Screen) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     NavigationBar(modifier = modifier) {
         NavigationBarItem(
             selected = selected == Screen.Reader,
-            onClick = { onSelect(Screen.Reader) },
+            onClick = { navigate(Screen.Reader) },
             icon = {
                 Icon(
                     imageVector = AppIcons.contactless,
@@ -31,7 +31,7 @@ fun MainNavigationBar(
 
         NavigationBarItem(
             selected = selected == Screen.Logs,
-            onClick = { onSelect(Screen.Logs) },
+            onClick = { navigate(Screen.Logs) },
             icon = {
                 Icon(
                     imageVector = AppIcons.terminal,

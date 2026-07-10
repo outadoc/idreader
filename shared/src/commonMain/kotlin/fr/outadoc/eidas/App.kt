@@ -1,42 +1,25 @@
 package fr.outadoc.eidas
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import fr.outadoc.eidas.navigation.Screen
-import org.koin.compose.koinInject
 
 @Composable
-fun App(viewModel: ReaderViewModel = koinInject()) {
+fun App() {
     AppTheme {
-        LaunchedEffect(viewModel) {
-            viewModel.startListening()
-        }
+        val backStack = remember { mutableStateListOf<Screen>(Screen.DEFAULT) }
 
-        val state by viewModel.state.collectAsState()
-
-        val backStack = remember { mutableStateListOf<Screen>(Screen.Reader) }
-
-        val onSelectTab: (Screen) -> Unit = { screen ->
+        val navigate: (Screen) -> Unit = { screen ->
             if (backStack.lastOrNull() != screen) {
-                when (screen) {
-                    Screen.Reader -> backStack.removeAll { it != Screen.Reader }
-                    Screen.Logs -> backStack.add(Screen.Logs)
-                    is Screen.ScanResult -> Unit
+                if (screen == Screen.DEFAULT) {
+                    backStack.removeAll { it != Screen.Reader }
+                } else {
+                    backStack.add(screen)
                 }
-            }
-        }
-
-        LaunchedEffect(state.cardInfo) {
-            state.cardInfo?.let { cardInfo ->
-                backStack.add(Screen.ScanResult(cardInfo = cardInfo))
-                viewModel.dismissCardInfo()
             }
         }
 
@@ -46,11 +29,15 @@ fun App(viewModel: ReaderViewModel = koinInject()) {
             entryProvider =
                 entryProvider {
                     entry<Screen.Reader> {
-                        ReaderScreen(onSelectTab = onSelectTab)
+                        ReaderScreen(
+                            navigate = navigate,
+                        )
                     }
 
                     entry<Screen.Logs> {
-                        LogsScreen(onSelectTab = onSelectTab)
+                        LogsScreen(
+                            navigate = navigate,
+                        )
                     }
 
                     entry<Screen.ScanResult> { screen ->

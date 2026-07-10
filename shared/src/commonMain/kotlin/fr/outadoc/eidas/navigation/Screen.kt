@@ -10,4 +10,8 @@ sealed class Screen {
     data class ScanResult(
         val cardInfo: CardInfoUiModel,
     ) : Screen()
+
+    companion object {
+        val DEFAULT = Reader
+    }
 }
