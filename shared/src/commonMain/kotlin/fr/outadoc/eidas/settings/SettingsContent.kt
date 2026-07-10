@@ -14,26 +14,26 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import fr.outadoc.eidas.ReaderViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel = koinViewModel()) {
+fun SettingsContent(
+    modifier: Modifier = Modifier,
+    viewModel: ReaderViewModel = koinViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    DisposableEffect(Unit) {
-        onDispose { viewModel.onDismiss() }
-    }
-
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = modifier.padding(16.dp)) {
         AuthenticationMethodDropdown(
             modifier = Modifier.fillMaxWidth(),
-            selected = state.authenticationMethod,
+            selected = state.settings.authenticationMethod,
             onSelected = viewModel::onAuthenticationMethodChanged,
         )
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
-            value = state.password,
+            value = state.settings.password,
             onValueChange = viewModel::onPasswordChanged,
             label = { Text("Password for the selected method") },
             singleLine = true,
