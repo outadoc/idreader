@@ -1,17 +1,11 @@
 package fr.outadoc.eidas
 
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -34,7 +28,15 @@ fun App(viewModel: ReaderViewModel = koinInject()) {
                 when (screen) {
                     Screen.Reader -> backStack.removeAll { it != Screen.Reader }
                     Screen.Logs -> backStack.add(Screen.Logs)
+                    is Screen.ScanResult -> Unit
                 }
+            }
+        }
+
+        LaunchedEffect(state.cardInfo) {
+            state.cardInfo?.let { cardInfo ->
+                backStack.add(Screen.ScanResult(cardInfo = cardInfo))
+                viewModel.dismissCardInfo()
             }
         }
 
@@ -50,25 +52,15 @@ fun App(viewModel: ReaderViewModel = koinInject()) {
                     entry<Screen.Logs> {
                         LogsScreen(onSelectTab = onSelectTab)
                     }
-                },
-        )
 
-        state.cardInfo?.let { cardInfo ->
-            AlertDialog(
-                onDismissRequest = viewModel::dismissCardInfo,
-                confirmButton = {
-                    Button(onClick = viewModel::dismissCardInfo) {
-                        Text("OK")
+                    entry<Screen.ScanResult> { screen ->
+                        ScanResultScreen(
+                            cardInfo = screen.cardInfo,
+                            onBack = { backStack.removeLastOrNull() },
+                        )
                     }
                 },
-                text = {
-                    CardInfo(
-                        modifier = Modifier.verticalScroll(rememberScrollState()),
-                        cardInfo = cardInfo,
-                    )
-                },
-            )
-        }
+        )
     }
 }
 
