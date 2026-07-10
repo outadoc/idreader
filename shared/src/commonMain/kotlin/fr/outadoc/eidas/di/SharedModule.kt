@@ -25,7 +25,6 @@ import fr.outadoc.eidas.pace.ReadCardAccessUseCase
 import fr.outadoc.eidas.securemessaging.SecureSessionFactory
 import fr.outadoc.eidas.settings.DataStoreSettingsRepository
 import fr.outadoc.eidas.settings.SettingsRepository
-import fr.outadoc.eidas.settings.SettingsViewModel
 import kotlinx.datetime.TimeZone
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
@@ -63,6 +62,5 @@ val sharedModule =
         factory<Clock> { Clock.System }
         factory<TimeZone> { TimeZone.UTC }
 
-        viewModel { SettingsViewModel(get()) }
         viewModel { ReaderViewModel(get(), get(), get(), get(), get(), get()) }
     }

@@ -52,23 +52,22 @@ fun ReaderScreen(
             )
         },
     ) { insets ->
-        if (state.isReading) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(insets),
-                contentAlignment = Alignment.Center,
-            ) {
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(insets),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (state.isReading) {
                 CircularProgressIndicator()
+            } else {
+                SettingsContent(
+                    settings = state.settings,
+                    onAuthenticationMethodChanged = viewModel::onAuthenticationMethodChanged,
+                    onPasswordChanged = viewModel::onPasswordChanged,
+                )
             }
-        } else {
-            SettingsContent(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(insets),
-            )
         }
     }
 }

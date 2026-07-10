@@ -7,34 +7,31 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import fr.outadoc.eidas.ReaderViewModel
-import org.koin.compose.viewmodel.koinViewModel
+import fr.outadoc.eidas.settings.model.AppSettings
+import fr.outadoc.eidas.settings.model.AuthenticationMethod
 
 @Composable
 fun SettingsContent(
     modifier: Modifier = Modifier,
-    viewModel: ReaderViewModel = koinViewModel(),
+    settings: AppSettings,
+    onAuthenticationMethodChanged: (AuthenticationMethod) -> Unit,
+    onPasswordChanged: (String) -> Unit,
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-
     Column(modifier = modifier.padding(16.dp)) {
         AuthenticationMethodDropdown(
             modifier = Modifier.fillMaxWidth(),
-            selected = state.settings.authenticationMethod,
-            onSelected = viewModel::onAuthenticationMethodChanged,
+            selected = settings.authenticationMethod,
+            onSelected = onAuthenticationMethodChanged,
         )
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
-            value = state.settings.password,
-            onValueChange = viewModel::onPasswordChanged,
+            value = settings.password,
+            onValueChange = onPasswordChanged,
             label = { Text("Password for the selected method") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
