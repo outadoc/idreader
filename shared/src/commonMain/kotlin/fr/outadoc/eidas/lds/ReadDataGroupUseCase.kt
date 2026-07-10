@@ -2,9 +2,11 @@ package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.utils.flatMap
+import fr.outadoc.eidas.utils.toByteArrayBe
 import kotlinx.io.Buffer
 import kotlinx.io.readByteArray
 
@@ -17,19 +19,19 @@ class ReadDataGroupUseCase(
 ) {
     suspend operator fun invoke(
         nfcSession: NfcSession,
-        dataGroupNumber: UByte,
+        dataGroup: Icao9303.DataGroup,
     ): Result<UByteArray> {
-        logger.i(TAG, "SELECT FILE DG$dataGroupNumber")
+        logger.i(TAG, "SELECT FILE $dataGroup")
 
         nfcSession
             .transceive(
                 commandFactory.selectFile(
-                    ubyteArrayOf(FID_RANGE_START, dataGroupNumber),
+                    dataGroup.fid.toByteArrayBe(2),
                 ),
             ).flatMap { it.getData() }
             .getOrElse { return Result.failure(it) }
 
-        logger.i(TAG, "READ BINARY DG$dataGroupNumber offset=0")
+        logger.i(TAG, "READ BINARY $dataGroup offset=0")
 
         val firstChunk: UByteArray =
             nfcSession
@@ -48,7 +50,7 @@ class ReadDataGroupUseCase(
             val offset = buffer.size.toInt()
             val remaining = totalLength - offset
 
-            logger.i(TAG, "READ BINARY DG$dataGroupNumber offset=$offset remaining=$remaining")
+            logger.i(TAG, "READ BINARY $dataGroup offset=$offset remaining=$remaining")
 
             val chunk: UByteArray =
                 nfcSession
@@ -94,7 +96,6 @@ class ReadDataGroupUseCase(
     }
 
     private companion object {
-        const val FID_RANGE_START: UByte = 0x01u
         const val MAX_READ = 256
     }
 }

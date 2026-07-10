@@ -12,7 +12,7 @@ class ParseDG13UseCase {
     operator fun invoke(rawData: UByteArray): Result<OptionalDetails> =
         rawData
             .parseTlv()
-            .flatMap { tagList -> tagList.firstWithTag(Icao9303.Tags.DG13) }
+            .flatMap { tagList -> tagList.firstWithTag(Icao9303.DataGroup.DG13.tag) }
             .flatMap { rootNode -> rootNode.value.parseTlv() }
             .mapCatching { info ->
                 OptionalDetails(

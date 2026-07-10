@@ -42,15 +42,15 @@ class ReadCardDataUseCase(
 
         logger.i(TAG, "COM data: $comData")
 
-        val dataGroupContents: Map<UByte, UByteArray?> =
+        val dataGroupContents: Map<Icao9303.DataGroup, UByteArray?> =
             comData
-                .dataGroupNumbers
-                .associateWith { dgNumber ->
+                .dataGroups
+                .associateWith { dataGroup ->
                     readDataGroup(
                         nfcSession = nfcSession,
-                        dataGroupNumber = dgNumber,
+                        dataGroup = dataGroup,
                     ).onFailure { e ->
-                        logger.w(TAG, "Failed to read DG$dgNumber", e)
+                        logger.w(TAG, "Failed to read DG$dataGroup", e)
                     }.getOrNull()
                 }
 

@@ -13,7 +13,7 @@ class ParseDG1UseCase(
     operator fun invoke(rawData: UByteArray): Result<MrzInfo> =
         rawData
             .parseTlv()
-            .flatMap { tagList -> tagList.firstWithTag(Icao9303.Tags.DG1) }
+            .flatMap { tagList -> tagList.firstWithTag(Icao9303.DataGroup.DG1.tag) }
             .flatMap { rootNode -> rootNode.value.parseTlv() }
             .flatMap { nodes -> nodes.firstWithTag(Icao9303.Tags.MRZ) }
             .flatMap { mrzNode ->

@@ -31,42 +31,15 @@ class ReadComFileUseCase(
             .transceive(commandFactory.readBinary())
             .flatMap { rApdu -> rApdu.getData() }
             .flatMap { comBytes -> comBytes.parseTlv() }
-            .flatMap { nodes ->
-                nodes
-                    .firstOrNull()
-                    ?.let { rootNode -> Result.success(rootNode) }
-                    ?: Result.failure(IllegalStateException("EF.COM is empty"))
-            }.flatMap { rootNode -> rootNode.children() }
-            .flatMap { children -> children.firstWithTag(0x5Cu) }
+            .flatMap { rootNode -> rootNode.first().children() }
+            .flatMap { children -> children.firstWithTag(Icao9303.Tags.TagList) }
             .map { dgListNode ->
                 ComData(
-                    dataGroupNumbers =
+                    dataGroups =
                         dgListNode.value.mapNotNull { tag ->
-                            DG_TAG_TO_NUMBER[tag.toUInt()]
+                            Icao9303.DataGroup.fromTag(tag.toUInt())
                         },
                 )
             }
-    }
-
-    private companion object {
-        val DG_TAG_TO_NUMBER: Map<UInt, UByte> =
-            mapOf(
-                Icao9303.Tags.DG1 to Icao9303.DataGroup.DG1,
-                Icao9303.Tags.DG2 to Icao9303.DataGroup.DG2,
-                Icao9303.Tags.DG3 to Icao9303.DataGroup.DG3,
-                Icao9303.Tags.DG4 to Icao9303.DataGroup.DG4,
-                Icao9303.Tags.DG5 to Icao9303.DataGroup.DG5,
-                Icao9303.Tags.DG6 to Icao9303.DataGroup.DG6,
-                Icao9303.Tags.DG7 to Icao9303.DataGroup.DG7,
-                Icao9303.Tags.DG8 to Icao9303.DataGroup.DG8,
-                Icao9303.Tags.DG9 to Icao9303.DataGroup.DG9,
-                Icao9303.Tags.DG10 to Icao9303.DataGroup.DG10,
-                Icao9303.Tags.DG11 to Icao9303.DataGroup.DG11,
-                Icao9303.Tags.DG12 to Icao9303.DataGroup.DG12,
-                Icao9303.Tags.DG13 to Icao9303.DataGroup.DG13,
-                Icao9303.Tags.DG14 to Icao9303.DataGroup.DG14,
-                Icao9303.Tags.DG15 to Icao9303.DataGroup.DG15,
-                Icao9303.Tags.DG16 to Icao9303.DataGroup.DG16,
-            )
     }
 }

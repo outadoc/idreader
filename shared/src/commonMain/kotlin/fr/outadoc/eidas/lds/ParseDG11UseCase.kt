@@ -16,7 +16,7 @@ class ParseDG11UseCase(
         val info: List<TlvNode> =
             rawData
                 .parseTlv()
-                .flatMap { tagList -> tagList.firstWithTag(Icao9303.Tags.DG11) }
+                .flatMap { tagList -> tagList.firstWithTag(Icao9303.DataGroup.DG11.tag) }
                 .flatMap { rootNode -> rootNode.value.parseTlv() }
                 .getOrElse { return Result.failure(it) }
 

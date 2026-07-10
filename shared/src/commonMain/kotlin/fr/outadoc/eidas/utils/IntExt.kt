@@ -1,6 +1,7 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package fr.outadoc.eidas.utils
 
-@OptIn(ExperimentalUnsignedTypes::class)
 fun Int.toByteArrayBe(byteCount: Int = 4): UByteArray {
     val result = UByteArray(byteCount)
     for (i in 0 until byteCount) {
@@ -8,3 +9,5 @@ fun Int.toByteArrayBe(byteCount: Int = 4): UByteArray {
     }
     return result
 }
+
+fun UInt.toByteArrayBe(byteCount: Int = 4): UByteArray = toInt().toByteArrayBe(byteCount)

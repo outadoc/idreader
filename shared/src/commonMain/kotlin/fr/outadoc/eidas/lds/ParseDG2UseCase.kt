@@ -11,7 +11,7 @@ class ParseDG2UseCase {
     operator fun invoke(rawData: UByteArray): Result<DocumentPicture> =
         rawData
             .parseTlv()
-            .flatMap { tagList -> tagList.firstWithTag(Icao9303.Tags.DG2) }
+            .flatMap { tagList -> tagList.firstWithTag(Icao9303.DataGroup.DG2.tag) }
             .flatMap { rootNode -> rootNode.value.parseTlv() }
             .flatMap { nodes -> nodes.firstWithTag(Icao9303.Tags.BiometricInformationTemplateGroupTemplate) }
             .flatMap { templateNode -> templateNode.value.parseTlv() }

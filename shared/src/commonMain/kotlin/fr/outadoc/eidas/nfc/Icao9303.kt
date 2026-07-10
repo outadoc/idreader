@@ -147,103 +147,99 @@ object Icao9303 {
 
         val BiometricData: UInt = 0x5F2Eu
 
-        val DG1: UInt = 0x61u
-        val DG2: UInt = 0x75u
-        val DG3: UInt = 0x63u
-        val DG4: UInt = 0x76u
-        val DG5: UInt = 0x65u
-        val DG6: UInt = 0x66u
-        val DG7: UInt = 0x67u
-        val DG8: UInt = 0x68u
-        val DG9: UInt = 0x69u
-        val DG10: UInt = 0x6Au
-        val DG11: UInt = 0x6Bu
-        val DG12: UInt = 0x6Cu
-        val DG13: UInt = 0x6Du
-        val DG14: UInt = 0x6Eu
-        val DG15: UInt = 0x6Fu
-        val DG16: UInt = 0x70u
+        val TagList: UInt = 0x5Cu
     }
 
-    object DataGroup {
+    enum class DataGroup(
+        val fid: UInt,
+        val tag: UInt,
+    ) {
         /**
          * Machine Readable Zone Information
          */
-        val DG1: UByte = 1u
+        DG1(0x0101u, 0x61u),
 
         /**
          * Encoded Identification Features (Face)
          */
-        val DG2: UByte = 2u
+        DG2(0x0102u, 0x75u),
 
         /**
          * Additional Identification Feature (Finger(s))
          */
-        val DG3: UByte = 3u
+        DG3(0x0103u, 0x63u),
 
         /**
          * Additional Identification Feature (Iris(es))
          */
-        val DG4: UByte = 4u
+        DG4(0x0104u, 0x76u),
 
         /**
          * Displayed Portrait
          */
-        val DG5: UByte = 5u
+        DG5(0x0105u, 0x65u),
 
         /**
          * RFU
          */
-        val DG6: UByte = 6u
+        DG6(0x0106u, 0x66u),
 
         /**
          * Displayed Signature or Usual Mark
          */
-        val DG7: UByte = 7u
+        DG7(0x0107u, 0x67u),
 
         /**
          * Data Features
          */
-        val DG8: UByte = 8u
+        DG8(0x0108u, 0x68u),
 
         /**
          * Structure Feature(s)
          */
-        val DG9: UByte = 9u
+        DG9(0x0109u, 0x69u),
 
         /**
          * Substance Feature(s)
          */
-        val DG10: UByte = 10u
+        DG10(0x010Au, 0x6Au),
 
         /**
          * Additional Personal Detail(s)
          */
-        val DG11: UByte = 11u
+        DG11(0x010Bu, 0x6Bu),
 
         /**
          * Additional Document Detail(s)
          */
-        val DG12: UByte = 12u
+        DG12(0x010Cu, 0x6Cu),
 
         /**
          * Optional Detail(s)
          */
-        val DG13: UByte = 13u
+        DG13(0x010Du, 0x6Du),
 
         /**
          * Security Options
          */
-        val DG14: UByte = 14u
+        DG14(0x010Eu, 0x6Eu),
 
         /**
          * Active Authentication PKI
          */
-        val DG15: UByte = 15u
+        DG15(0x010Fu, 0x6Fu),
 
         /**
          * Person(s) to Notify
          */
-        val DG16: UByte = 16u
+        DG16(0x0110u, 0x70u),
+        ;
+
+        companion object {
+            fun fromTag(tag: UInt): DataGroup? =
+                entries.firstOrNull { entry ->
+                    entry.tag == tag
+                }
+        }
     }
 }
