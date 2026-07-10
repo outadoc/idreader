@@ -5,8 +5,6 @@ package fr.outadoc.eidas.tlv
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class TlvParserTest {
@@ -64,8 +62,7 @@ class TlvParserTest {
     fun firstWithTagUIntFound() {
         val bytes = ubyteArrayOf(0x80u, 0x01u, 0xAAu, 0x83u, 0x01u, 0xBBu)
         val nodes = bytes.parseTlv().getOrThrow()
-        val node = nodes.firstWithTag(0x83u)
-        assertNotNull(node)
+        val node = nodes.firstWithTag(0x83u).getOrThrow()
         assertContentEquals(ubyteArrayOf(0xBBu), node.value)
     }
 
@@ -73,21 +70,21 @@ class TlvParserTest {
     fun firstWithTagUIntNotFound() {
         val bytes = ubyteArrayOf(0x80u, 0x01u, 0xAAu)
         val nodes = bytes.parseTlv().getOrThrow()
-        assertNull(nodes.firstWithTag(0x99u))
+        assertTrue(nodes.firstWithTag(0x99u).isFailure)
     }
 
     @Test
     fun firstWithTagUByteFound() {
         val bytes = ubyteArrayOf(0x82u, 0x02u, 0x01u, 0x02u)
         val nodes = bytes.parseTlv().getOrThrow()
-        assertNotNull(nodes.firstWithTag(0x82u.toUByte()))
+        assertTrue(nodes.firstWithTag(0x82u.toUByte()).isSuccess)
     }
 
     @Test
     fun firstWithTagUByteNotFound() {
         val bytes = ubyteArrayOf(0x80u, 0x01u, 0xAAu)
         val nodes = bytes.parseTlv().getOrThrow()
-        assertNull(nodes.firstWithTag(0x81u.toUByte()))
+        assertTrue(nodes.firstWithTag(0x81u.toUByte()).isFailure)
     }
 
     @Test

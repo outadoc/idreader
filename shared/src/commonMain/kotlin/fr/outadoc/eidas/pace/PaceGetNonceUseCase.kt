@@ -65,10 +65,10 @@ class PaceGetNonceUseCase(
                 .getOrElse { return Result.failure(it) }
 
         val encryptedNonce: UByteArray =
-            dynAuth.firstWithTag(Iso7816.Tags.Nonce)?.value
-                ?: return Result.failure(
-                    IllegalStateException("Could not find nonce in dynamic auth data"),
-                )
+            dynAuth
+                .firstWithTag(Iso7816.Tags.Nonce)
+                .getOrElse { return Result.failure(it) }
+                .value
 
         logger.d(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
 

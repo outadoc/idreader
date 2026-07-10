@@ -5,6 +5,7 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
+import fr.outadoc.eidas.utils.flatMap
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class ParseDG2UseCase {
@@ -15,29 +16,19 @@ class ParseDG2UseCase {
                 .getOrElse { return Result.failure(it) }
 
         val rootNode: TlvNode =
-            tagList.firstWithTag(Iso7816.Tags.DG2)
-                ?: return Result.failure(IllegalStateException("Missing 0x7F61 tag"))
-
-        val templateNode: TlvNode =
-            rootNode.value
-                .parseTlv()
+            tagList
+                .firstWithTag(Iso7816.Tags.DG2)
                 .getOrElse { return Result.failure(it) }
-                .firstWithTag(0x7F61u)
-                ?: return Result.failure(IllegalStateException("Missing 0x7F61 tag"))
-
-        val biometricInformation: TlvNode =
-            templateNode.value
-                .parseTlv()
-                .getOrElse { return Result.failure(it) }
-                .firstWithTag(0x7F60u)
-                ?: return Result.failure(IllegalStateException("Missing 0x7F60 tag"))
 
         val biometricData: TlvNode =
-            biometricInformation.value
+            rootNode.value
                 .parseTlv()
+                .flatMap { nodes -> nodes.firstWithTag(0x7F61u) }
+                .flatMap { templateNode -> templateNode.value.parseTlv() }
+                .flatMap { nodes -> nodes.firstWithTag(0x7F60u) }
+                .flatMap { biometricInformation -> biometricInformation.value.parseTlv() }
+                .flatMap { nodes -> nodes.firstWithTag(0x5F2Eu) }
                 .getOrElse { return Result.failure(it) }
-                .firstWithTag(0x5F2Eu)
-                ?: return Result.failure(IllegalStateException("Missing 0x5F2E tag"))
 
         return parseFacialRecord(record = biometricData.value)
     }

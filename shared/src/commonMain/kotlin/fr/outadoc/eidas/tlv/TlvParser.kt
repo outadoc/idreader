@@ -23,9 +23,18 @@ fun UByteArray.parseTlv(): Result<List<TlvNode>> =
         nodes
     }
 
-fun List<TlvNode>.firstWithTag(tag: UInt): TlvNode? = firstOrNull { it.tag == tag }
+fun List<TlvNode>.firstWithTag(tag: UInt): Result<TlvNode> {
+    val node = firstOrNull { it.tag == tag }
+    return if (node == null) {
+        Result.failure(
+            NoSuchElementException("No TLV node with tag 0x${tag.toString(16)}"),
+        )
+    } else {
+        Result.success(node)
+    }
+}
 
-fun List<TlvNode>.firstWithTag(tag: UByte): TlvNode? = firstWithTag(tag.toUInt())
+fun List<TlvNode>.firstWithTag(tag: UByte): Result<TlvNode> = firstWithTag(tag.toUInt())
 
 private fun UByteArray.readTag(offset: Int): Pair<UInt, Int> {
     val first = this[offset].toUInt()

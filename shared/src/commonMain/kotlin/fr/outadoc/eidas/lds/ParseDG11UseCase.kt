@@ -20,8 +20,9 @@ class ParseDG11UseCase(
                 }
 
         val rootNode: TlvNode =
-            tagList.firstWithTag(Iso7816.Tags.DG11)
-                ?: return Result.failure(IllegalStateException("Missing 0x6B tag"))
+            tagList
+                .firstWithTag(Iso7816.Tags.DG11)
+                .getOrElse { return Result.failure(it) }
 
         val info: List<TlvNode> =
             rootNode.value
@@ -33,6 +34,7 @@ class ParseDG11UseCase(
                 fullNameNationalCharacters =
                     info
                         .firstWithTag(Iso7816.Tags.FullNameNationalCharacters)
+                        .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString()
@@ -40,12 +42,14 @@ class ParseDG11UseCase(
                 personalNumber =
                     info
                         .firstWithTag(Iso7816.Tags.PersonalNumber)
+                        .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),
                 fullDateOfBirth =
                     info
                         .firstWithTag(Iso7816.Tags.FullDateOfBirth)
+                        .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString()
@@ -53,6 +57,7 @@ class ParseDG11UseCase(
                 placeOfBirth =
                     info
                         .firstWithTag(Iso7816.Tags.PlaceOfBirth)
+                        .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString()
@@ -61,6 +66,7 @@ class ParseDG11UseCase(
                 permanentAddress =
                     info
                         .firstWithTag(Iso7816.Tags.PermanentAddress)
+                        .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString()
@@ -69,36 +75,42 @@ class ParseDG11UseCase(
                 telephone =
                     info
                         .firstWithTag(Iso7816.Tags.Telephone)
+                        .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),
                 profession =
                     info
                         .firstWithTag(Iso7816.Tags.Profession)
+                        .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),
                 title =
                     info
                         .firstWithTag(Iso7816.Tags.Title)
+                        .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),
                 personalSummary =
                     info
                         .firstWithTag(Iso7816.Tags.PersonalSummary)
+                        .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),
                 otherValidTdNumbers =
                     info
                         .firstWithTag(Iso7816.Tags.OtherValidTdNumbers)
+                        .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),
                 custodyInformation =
                     info
                         .firstWithTag(Iso7816.Tags.CustodyInformation)
+                        .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),

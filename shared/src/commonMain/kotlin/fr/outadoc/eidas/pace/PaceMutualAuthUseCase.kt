@@ -78,10 +78,10 @@ class PaceMutualAuthUseCase(
                 .getOrElse { return Result.failure(it) }
 
         val chipToken: UByteArray =
-            dynAuth.firstWithTag(Iso7816.Tags.ChipAuthenticationToken)?.value
-                ?: return Result.failure(
-                    IllegalStateException("Could not find chip authentication token"),
-                )
+            dynAuth
+                .firstWithTag(Iso7816.Tags.ChipAuthenticationToken)
+                .getOrElse { return Result.failure(it) }
+                .value
 
         val expectedChipToken: UByteArray =
             runCatching {

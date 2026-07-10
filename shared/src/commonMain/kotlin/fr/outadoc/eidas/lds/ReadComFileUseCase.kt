@@ -44,12 +44,9 @@ class ReadComFileUseCase(
         val dgList: UByteArray =
             rootNode
                 .children()
+                .flatMap { nodes -> nodes.firstWithTag(0x5Cu) }
                 .getOrElse { return Result.failure(it) }
-                .firstWithTag(0x5Cu)
-                ?.value
-                ?: return Result.failure(
-                    IllegalStateException("Could not find DG list in EF.COM"),
-                )
+                .value
 
         return Result.success(
             ComData(

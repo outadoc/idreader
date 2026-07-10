@@ -60,10 +60,10 @@ class PaceMapNonceUseCase(
                 .getOrElse { return Result.failure(it) }
 
         val chipMappingData: UByteArray =
-            dynAuth.firstWithTag(Iso7816.Tags.ChipMappingData)?.value
-                ?: return Result.failure(
-                    IllegalStateException("Could not find mapping data in dynamic auth data"),
-                )
+            dynAuth
+                .firstWithTag(Iso7816.Tags.ChipMappingData)
+                .getOrElse { return Result.failure(it) }
+                .value
 
         logger.d(TAG, "Chip mapping point: ${chipMappingData.toPrettyHex()}")
 

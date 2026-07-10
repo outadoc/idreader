@@ -18,8 +18,9 @@ class ParseDG13UseCase {
                 }
 
         val rootNode: TlvNode =
-            tagList.firstWithTag(Iso7816.Tags.DG13)
-                ?: return Result.failure(IllegalStateException("Missing ${Iso7816.Tags.DG13} tag"))
+            tagList
+                .firstWithTag(Iso7816.Tags.DG13)
+                .getOrElse { return Result.failure(it) }
 
         val info: List<TlvNode> =
             rootNode.value
@@ -31,6 +32,7 @@ class ParseDG13UseCase {
                 height =
                     info
                         .firstWithTag(Iso7816.Tags.Height)
+                        .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString()

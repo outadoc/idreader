@@ -141,15 +141,22 @@ class SecureMessagingSession(
                 .getOrElse { return Result.failure(it) }
 
         val do87Value: UByteArray? =
-            tlvs.firstWithTag(Iso7816.Tags.PaddingContentIndicatorFollowedByCryptogram)?.value
+            tlvs
+                .firstWithTag(Iso7816.Tags.PaddingContentIndicatorFollowedByCryptogram)
+                .getOrNull()
+                ?.value
 
         val do99Value: UByteArray =
-            tlvs.firstWithTag(Iso7816.Tags.ProcessingStatus)?.value
-                ?: return Result.failure(IllegalStateException("SM response missing DO'99' processing status"))
+            tlvs
+                .firstWithTag(Iso7816.Tags.ProcessingStatus)
+                .getOrElse { return Result.failure(it) }
+                .value
 
         val do8eValue: UByteArray =
-            tlvs.firstWithTag(Iso7816.Tags.CryptographicChecksum)?.value
-                ?: return Result.failure(IllegalStateException("SM response missing DO'8E' checksum"))
+            tlvs
+                .firstWithTag(Iso7816.Tags.CryptographicChecksum)
+                .getOrElse { return Result.failure(it) }
+                .value
 
         // Reconstruct TLV wire bytes for MAC verification
         val do87TlvBytes: UByteArray =

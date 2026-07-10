@@ -68,10 +68,10 @@ class PaceKeyAgreementUseCase(
 
         return runCatching {
             val chipFinalPub: UByteArray =
-                dynAuth.firstWithTag(Iso7816.Tags.ChipPublicKey)?.value
-                    ?: return Result.failure(
-                        IllegalStateException("Could not find chip final public key in dynamic auth data"),
-                    )
+                dynAuth
+                    .firstWithTag(Iso7816.Tags.ChipPublicKey)
+                    .getOrThrow()
+                    .value
 
             logger.d(TAG, "Terminal final pub: ${terminalFinalPub.toPrettyHex()}")
             logger.d(TAG, "Chip final pub: ${chipFinalPub.toPrettyHex()}")

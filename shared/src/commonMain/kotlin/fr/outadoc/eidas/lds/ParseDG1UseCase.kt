@@ -5,6 +5,7 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
+import fr.outadoc.eidas.utils.flatMap
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class ParseDG1UseCase(
@@ -19,17 +20,16 @@ class ParseDG1UseCase(
                 }
 
         val rootNode: TlvNode =
-            tagList.firstWithTag(Iso7816.Tags.DG1)
-                ?: return Result.failure(IllegalStateException("Missing 0x61 tag"))
+            tagList
+                .firstWithTag(Iso7816.Tags.DG1)
+                .getOrElse { return Result.failure(it) }
 
         val mrzBytes: UByteArray =
-            (
-                rootNode.value
-                    .parseTlv()
-                    .getOrElse { return Result.failure(it) }
-                    .firstWithTag(Iso7816.Tags.MRZ)
-                    ?: return Result.failure(IllegalStateException("Missing 0x5F1F tag"))
-            ).value
+            rootNode.value
+                .parseTlv()
+                .flatMap { nodes -> nodes.firstWithTag(Iso7816.Tags.MRZ) }
+                .getOrElse { return Result.failure(it) }
+                .value
 
         val mrz: String = mrzBytes.toByteArray().decodeToString()
 
