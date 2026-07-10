@@ -141,6 +141,12 @@ object Iso7816 {
 
         val Height: UInt = 0x9F01u
 
+        val BiometricInformationTemplateGroupTemplate: UInt = 0x7F61u
+
+        val BiometricInformationTemplate: UInt = 0x7F60u
+
+        val BiometricData: UInt = 0x5F2Eu
+
         val DG1: UInt = 0x61u
         val DG2: UInt = 0x75u
         val DG3: UInt = 0x63u

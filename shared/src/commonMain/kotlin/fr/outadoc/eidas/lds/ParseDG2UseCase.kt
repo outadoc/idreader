@@ -13,11 +13,11 @@ class ParseDG2UseCase {
             .parseTlv()
             .flatMap { tagList -> tagList.firstWithTag(Iso7816.Tags.DG2) }
             .flatMap { rootNode -> rootNode.value.parseTlv() }
-            .flatMap { nodes -> nodes.firstWithTag(0x7F61u) }
+            .flatMap { nodes -> nodes.firstWithTag(Iso7816.Tags.BiometricInformationTemplateGroupTemplate) }
             .flatMap { templateNode -> templateNode.value.parseTlv() }
-            .flatMap { nodes -> nodes.firstWithTag(0x7F60u) }
+            .flatMap { nodes -> nodes.firstWithTag(Iso7816.Tags.BiometricInformationTemplate) }
             .flatMap { biometricInformation -> biometricInformation.value.parseTlv() }
-            .flatMap { nodes -> nodes.firstWithTag(0x5F2Eu) }
+            .flatMap { nodes -> nodes.firstWithTag(Iso7816.Tags.BiometricData) }
             .flatMap { biometricData -> parseFacialRecord(record = biometricData.value) }
 
     /**
