@@ -1,7 +1,7 @@
 package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.lds.model.MrzInfo
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
 import fr.outadoc.eidas.utils.flatMap
@@ -13,9 +13,9 @@ class ParseDG1UseCase(
     operator fun invoke(rawData: UByteArray): Result<MrzInfo> =
         rawData
             .parseTlv()
-            .flatMap { tagList -> tagList.firstWithTag(Iso7816.Tags.DG1) }
+            .flatMap { tagList -> tagList.firstWithTag(Icao9303.Tags.DG1) }
             .flatMap { rootNode -> rootNode.value.parseTlv() }
-            .flatMap { nodes -> nodes.firstWithTag(Iso7816.Tags.MRZ) }
+            .flatMap { nodes -> nodes.firstWithTag(Icao9303.Tags.MRZ) }
             .flatMap { mrzNode ->
                 parseMrzUseCase(
                     mrz =

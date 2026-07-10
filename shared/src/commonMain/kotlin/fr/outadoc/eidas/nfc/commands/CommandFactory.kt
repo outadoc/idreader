@@ -1,7 +1,7 @@
 package fr.outadoc.eidas.nfc.commands
 
 import fr.outadoc.eidas.nfc.CApdu
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.nfc.tlvList
 
 class CommandFactory {
@@ -29,13 +29,16 @@ class CommandFactory {
             p2 = 0xA4u,
             data =
                 tlvList {
-                    tlv(Iso7816.Tags.CryptographicMechanismReference, algorithm)
-                    tlv(Iso7816.Tags.ReferenceOfAPublicKeySecretKey, keyReference)
+                    tlv(Icao9303.Tags.CryptographicMechanismReference, algorithm)
+                    tlv(Icao9303.Tags.ReferenceOfAPublicKeySecretKey, keyReference)
                 },
             le = null,
         )
 
-    fun readBinary(offset: Int = 0, length: Int = 256): CApdu =
+    fun readBinary(
+        offset: Int = 0,
+        length: Int = 256,
+    ): CApdu =
         CApdu(
             cla = 0x00u,
             ins = 0xB0u,

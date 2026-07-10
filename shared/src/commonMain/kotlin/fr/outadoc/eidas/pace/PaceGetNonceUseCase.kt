@@ -6,7 +6,7 @@ import fr.outadoc.eidas.crypto.oidBytes
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
@@ -37,10 +37,10 @@ class PaceGetNonceUseCase(
                     algorithm = algorithm.protocol.oidBytes,
                     keyReference =
                         when (authenticationMethod) {
-                            AuthenticationMethod.CAN -> Iso7816.KeyRef.CAN
-                            AuthenticationMethod.MRZ -> Iso7816.KeyRef.MRZ
-                            AuthenticationMethod.PIN -> Iso7816.KeyRef.PIN
-                            AuthenticationMethod.PUK -> Iso7816.KeyRef.PUK
+                            AuthenticationMethod.CAN -> Icao9303.KeyRef.CAN
+                            AuthenticationMethod.MRZ -> Icao9303.KeyRef.MRZ
+                            AuthenticationMethod.PIN -> Icao9303.KeyRef.PIN
+                            AuthenticationMethod.PUK -> Icao9303.KeyRef.PUK
                         },
                 ),
             ).flatMap { it.getData() }
@@ -53,14 +53,14 @@ class PaceGetNonceUseCase(
                 commandFactory.generalAuthenticate(
                     tlvList {
                         tlv(
-                            Iso7816.Tags.DynamicAuthenticationData,
+                            Icao9303.Tags.DynamicAuthenticationData,
                             ubyteArrayOf(),
                         )
                     },
                 ),
             ).flatMap { rApdu -> rApdu.getData() }
             .flatMap { data -> data.parseDynamicAuthData() }
-            .flatMap { dynAuth -> dynAuth.firstWithTag(Iso7816.Tags.Nonce) }
+            .flatMap { dynAuth -> dynAuth.firstWithTag(Icao9303.Tags.Nonce) }
             .mapCatching { nonceNode ->
                 val encryptedNonce: UByteArray = nonceNode.value
 

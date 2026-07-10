@@ -9,7 +9,7 @@ import fr.outadoc.eidas.lds.model.OptionalDetails
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.logging.w
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.utils.flatMap
@@ -34,7 +34,7 @@ class ReadCardDataUseCase(
             nfcSession
                 .transceive(
                     commandFactory.selectAid(
-                        Iso7816.Aid.MRTD.hexToUByteArray(),
+                        Icao9303.Aid.MRTD.hexToUByteArray(),
                     ),
                 ).flatMap { rApdu -> rApdu.getData() }
                 .flatMap { readComFile(nfcSession = nfcSession) }
@@ -55,27 +55,27 @@ class ReadCardDataUseCase(
                 }
 
         val mrzInfo: MrzInfo? =
-            dataGroupContents[Iso7816.DataGroup.DG1]?.let { fileBytes ->
+            dataGroupContents[Icao9303.DataGroup.DG1]?.let { fileBytes ->
                 parseDG1(fileBytes)
                     .onFailure { e -> logger.w(TAG, "Failed to parse DG1", e) }
                     .getOrNull()
             }
 
         val picture: DocumentPicture? =
-            dataGroupContents[Iso7816.DataGroup.DG2]?.let { fileBytes ->
+            dataGroupContents[Icao9303.DataGroup.DG2]?.let { fileBytes ->
                 parseDG2(fileBytes)
                     .onFailure { e -> logger.w(TAG, "Failed to parse DG2", e) }
                     .getOrNull()
             }
 
         val additionalPersonalDetails: AdditionalPersonalDetails? =
-            dataGroupContents[Iso7816.DataGroup.DG11]?.let { fileBytes ->
+            dataGroupContents[Icao9303.DataGroup.DG11]?.let { fileBytes ->
                 parseDG11(fileBytes)
                     .onFailure { e -> logger.w(TAG, "Failed to parse DG11", e) }
                     .getOrNull()
             }
         val optionalDetails: OptionalDetails? =
-            dataGroupContents[Iso7816.DataGroup.DG13]?.let { fileBytes ->
+            dataGroupContents[Icao9303.DataGroup.DG13]?.let { fileBytes ->
                 parseDG13(fileBytes)
                     .onFailure { e -> logger.w(TAG, "Failed to parse DG13", e) }
                     .getOrNull()

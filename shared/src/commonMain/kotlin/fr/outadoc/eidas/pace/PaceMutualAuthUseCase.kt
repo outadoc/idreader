@@ -6,7 +6,7 @@ import fr.outadoc.eidas.crypto.oidBytes
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
@@ -60,10 +60,10 @@ class PaceMutualAuthUseCase(
                     data =
                         tlvList {
                             tlv(
-                                Iso7816.Tags.DynamicAuthenticationData,
+                                Icao9303.Tags.DynamicAuthenticationData,
                                 tlvList {
                                     tlv(
-                                        Iso7816.Tags.AuthenticationToken,
+                                        Icao9303.Tags.AuthenticationToken,
                                         terminalToken,
                                     )
                                 },
@@ -73,7 +73,7 @@ class PaceMutualAuthUseCase(
                 ),
             ).flatMap { rApdu -> rApdu.getData() }
             .flatMap { data -> data.parseDynamicAuthData() }
-            .flatMap { dynAuth -> dynAuth.firstWithTag(Iso7816.Tags.ChipAuthenticationToken) }
+            .flatMap { dynAuth -> dynAuth.firstWithTag(Icao9303.Tags.ChipAuthenticationToken) }
             .mapCatching { chipTokenNode ->
                 val chipToken: UByteArray = chipTokenNode.value
 

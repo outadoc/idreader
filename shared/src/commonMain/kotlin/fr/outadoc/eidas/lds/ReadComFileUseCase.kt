@@ -3,7 +3,7 @@ package fr.outadoc.eidas.lds
 import fr.outadoc.eidas.lds.model.ComData
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.tlv.firstWithTag
@@ -21,7 +21,7 @@ class ReadComFileUseCase(
         logger.i(TAG, "SELECT FILE EF.COM")
 
         nfcSession
-            .transceive(commandFactory.selectFile(Iso7816.File.COM.fileId))
+            .transceive(commandFactory.selectFile(Icao9303.File.COM.fileId))
             .flatMap { it.getData() }
             .getOrElse { return Result.failure(it) }
 
@@ -32,7 +32,8 @@ class ReadComFileUseCase(
             .flatMap { rApdu -> rApdu.getData() }
             .flatMap { comBytes -> comBytes.parseTlv() }
             .flatMap { nodes ->
-                nodes.firstOrNull()
+                nodes
+                    .firstOrNull()
                     ?.let { rootNode -> Result.success(rootNode) }
                     ?: Result.failure(IllegalStateException("EF.COM is empty"))
             }.flatMap { rootNode -> rootNode.children() }
@@ -50,22 +51,22 @@ class ReadComFileUseCase(
     private companion object {
         val DG_TAG_TO_NUMBER: Map<UInt, UByte> =
             mapOf(
-                Iso7816.Tags.DG1 to Iso7816.DataGroup.DG1,
-                Iso7816.Tags.DG2 to Iso7816.DataGroup.DG2,
-                Iso7816.Tags.DG3 to Iso7816.DataGroup.DG3,
-                Iso7816.Tags.DG4 to Iso7816.DataGroup.DG4,
-                Iso7816.Tags.DG5 to Iso7816.DataGroup.DG5,
-                Iso7816.Tags.DG6 to Iso7816.DataGroup.DG6,
-                Iso7816.Tags.DG7 to Iso7816.DataGroup.DG7,
-                Iso7816.Tags.DG8 to Iso7816.DataGroup.DG8,
-                Iso7816.Tags.DG9 to Iso7816.DataGroup.DG9,
-                Iso7816.Tags.DG10 to Iso7816.DataGroup.DG10,
-                Iso7816.Tags.DG11 to Iso7816.DataGroup.DG11,
-                Iso7816.Tags.DG12 to Iso7816.DataGroup.DG12,
-                Iso7816.Tags.DG13 to Iso7816.DataGroup.DG13,
-                Iso7816.Tags.DG14 to Iso7816.DataGroup.DG14,
-                Iso7816.Tags.DG15 to Iso7816.DataGroup.DG15,
-                Iso7816.Tags.DG16 to Iso7816.DataGroup.DG16,
+                Icao9303.Tags.DG1 to Icao9303.DataGroup.DG1,
+                Icao9303.Tags.DG2 to Icao9303.DataGroup.DG2,
+                Icao9303.Tags.DG3 to Icao9303.DataGroup.DG3,
+                Icao9303.Tags.DG4 to Icao9303.DataGroup.DG4,
+                Icao9303.Tags.DG5 to Icao9303.DataGroup.DG5,
+                Icao9303.Tags.DG6 to Icao9303.DataGroup.DG6,
+                Icao9303.Tags.DG7 to Icao9303.DataGroup.DG7,
+                Icao9303.Tags.DG8 to Icao9303.DataGroup.DG8,
+                Icao9303.Tags.DG9 to Icao9303.DataGroup.DG9,
+                Icao9303.Tags.DG10 to Icao9303.DataGroup.DG10,
+                Icao9303.Tags.DG11 to Icao9303.DataGroup.DG11,
+                Icao9303.Tags.DG12 to Icao9303.DataGroup.DG12,
+                Icao9303.Tags.DG13 to Icao9303.DataGroup.DG13,
+                Icao9303.Tags.DG14 to Icao9303.DataGroup.DG14,
+                Icao9303.Tags.DG15 to Icao9303.DataGroup.DG15,
+                Icao9303.Tags.DG16 to Icao9303.DataGroup.DG16,
             )
     }
 }

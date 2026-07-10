@@ -10,7 +10,7 @@ import fr.outadoc.eidas.crypto.serializeUncompressed
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
@@ -43,10 +43,10 @@ class PaceMapNonceUseCase(
                 commandFactory.generalAuthenticate(
                     tlvList {
                         tlv(
-                            Iso7816.Tags.DynamicAuthenticationData,
+                            Icao9303.Tags.DynamicAuthenticationData,
                             tlvList {
                                 tlv(
-                                    Iso7816.Tags.MappingData,
+                                    Icao9303.Tags.MappingData,
                                     mappingKeyPair.publicKey.uncompressedPublicPoint,
                                 )
                             },
@@ -55,7 +55,7 @@ class PaceMapNonceUseCase(
                 ),
             ).flatMap { rApdu -> rApdu.getData() }
             .flatMap { data -> data.parseDynamicAuthData() }
-            .flatMap { dynAuth -> dynAuth.firstWithTag(Iso7816.Tags.ChipMappingData) }
+            .flatMap { dynAuth -> dynAuth.firstWithTag(Icao9303.Tags.ChipMappingData) }
             .mapCatching { chipMappingNode ->
                 val chipMappingData: UByteArray = chipMappingNode.value
 

@@ -5,7 +5,7 @@ import fr.outadoc.eidas.crypto.CryptoEngine
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.nfc.CApdu
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.RApdu
 import fr.outadoc.eidas.nfc.tlvList
@@ -74,7 +74,7 @@ class SecureMessagingSession(
 
                 tlvList {
                     tlv(
-                        Iso7816.Tags.PaddingContentIndicatorFollowedByCryptogram,
+                        Icao9303.Tags.PaddingContentIndicatorFollowedByCryptogram,
                         ubyteArrayOf(0x01u) + ciphertext,
                     )
                 }
@@ -86,7 +86,7 @@ class SecureMessagingSession(
         val do97Bytes: UByteArray =
             if (command.le != null) {
                 tlvList {
-                    tlv(Iso7816.Tags.ProtectedLe, command.le)
+                    tlv(Icao9303.Tags.ProtectedLe, command.le)
                 }
             } else {
                 ubyteArrayOf()
@@ -114,7 +114,7 @@ class SecureMessagingSession(
 
         val do8eBytes =
             tlvList {
-                tlv(Iso7816.Tags.CryptographicChecksum, mac)
+                tlv(Icao9303.Tags.CryptographicChecksum, mac)
             }
 
         return CApdu(
@@ -138,19 +138,19 @@ class SecureMessagingSession(
 
         val do87Value: UByteArray? =
             tlvs
-                .firstWithTag(Iso7816.Tags.PaddingContentIndicatorFollowedByCryptogram)
+                .firstWithTag(Icao9303.Tags.PaddingContentIndicatorFollowedByCryptogram)
                 .getOrNull()
                 ?.value
 
         val do99Value: UByteArray =
             tlvs
-                .firstWithTag(Iso7816.Tags.ProcessingStatus)
+                .firstWithTag(Icao9303.Tags.ProcessingStatus)
                 .getOrElse { return Result.failure(it) }
                 .value
 
         val do8eValue: UByteArray =
             tlvs
-                .firstWithTag(Iso7816.Tags.CryptographicChecksum)
+                .firstWithTag(Icao9303.Tags.CryptographicChecksum)
                 .getOrElse { return Result.failure(it) }
                 .value
 
@@ -159,7 +159,7 @@ class SecureMessagingSession(
             if (do87Value != null) {
                 tlvList {
                     tlv(
-                        Iso7816.Tags.PaddingContentIndicatorFollowedByCryptogram,
+                        Icao9303.Tags.PaddingContentIndicatorFollowedByCryptogram,
                         do87Value,
                     )
                 }
@@ -169,7 +169,7 @@ class SecureMessagingSession(
 
         val do99TlvBytes: UByteArray =
             tlvList {
-                tlv(Iso7816.Tags.ProcessingStatus, do99Value)
+                tlv(Icao9303.Tags.ProcessingStatus, do99Value)
             }
 
         // Verify MAC: CMAC(K_mac, iso_pad(SSC || [DO'87' TLV] || DO'99' TLV))[0..7]

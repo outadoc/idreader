@@ -1,7 +1,7 @@
 package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.lds.model.DocumentPicture
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
 import fr.outadoc.eidas.utils.flatMap
@@ -11,13 +11,13 @@ class ParseDG2UseCase {
     operator fun invoke(rawData: UByteArray): Result<DocumentPicture> =
         rawData
             .parseTlv()
-            .flatMap { tagList -> tagList.firstWithTag(Iso7816.Tags.DG2) }
+            .flatMap { tagList -> tagList.firstWithTag(Icao9303.Tags.DG2) }
             .flatMap { rootNode -> rootNode.value.parseTlv() }
-            .flatMap { nodes -> nodes.firstWithTag(Iso7816.Tags.BiometricInformationTemplateGroupTemplate) }
+            .flatMap { nodes -> nodes.firstWithTag(Icao9303.Tags.BiometricInformationTemplateGroupTemplate) }
             .flatMap { templateNode -> templateNode.value.parseTlv() }
-            .flatMap { nodes -> nodes.firstWithTag(Iso7816.Tags.BiometricInformationTemplate) }
+            .flatMap { nodes -> nodes.firstWithTag(Icao9303.Tags.BiometricInformationTemplate) }
             .flatMap { biometricInformation -> biometricInformation.value.parseTlv() }
-            .flatMap { nodes -> nodes.firstWithTag(Iso7816.Tags.BiometricData) }
+            .flatMap { nodes -> nodes.firstWithTag(Icao9303.Tags.BiometricData) }
             .flatMap { biometricData -> parseFacialRecord(record = biometricData.value) }
 
     /**

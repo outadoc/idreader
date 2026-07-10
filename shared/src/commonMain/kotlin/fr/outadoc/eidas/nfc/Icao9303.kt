@@ -1,7 +1,7 @@
 package fr.outadoc.eidas.nfc
 
 @OptIn(ExperimentalUnsignedTypes::class)
-object Iso7816 {
+object Icao9303 {
     object Aid {
         /**
          * Machine Readable Travel Documents (MRTD)	Electronic (Biometric) Passport.

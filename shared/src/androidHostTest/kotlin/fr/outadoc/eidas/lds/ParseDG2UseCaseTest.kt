@@ -1,7 +1,7 @@
 package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.lds.model.DocumentPicture
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.tlv.buildTlv
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -40,7 +40,7 @@ class ParseDG2UseCaseTest {
 
         val dg2 =
             buildTlv {
-                constructed(tag = Iso7816.Tags.DG2) {
+                constructed(tag = Icao9303.Tags.DG2) {
                     constructed(tag = 0x7F61u) {
                         constructed(tag = 0x7F60u) {
                             tlv(tag = 0x5F2Eu, value = facialRecord)
@@ -65,7 +65,7 @@ class ParseDG2UseCaseTest {
     fun `Fails on a biometric data block without a facial record signature`() {
         val dg2 =
             buildTlv {
-                constructed(tag = Iso7816.Tags.DG2) {
+                constructed(tag = Icao9303.Tags.DG2) {
                     constructed(tag = 0x7F61u) {
                         constructed(tag = 0x7F60u) {
                             tlv(tag = 0x5F2Eu, value = ubyteArrayOf(0xFFu, 0x4Fu, 0xFFu, 0x51u))

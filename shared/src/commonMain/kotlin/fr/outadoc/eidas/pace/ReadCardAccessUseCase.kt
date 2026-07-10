@@ -2,7 +2,7 @@ package fr.outadoc.eidas.pace
 
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.asn1.SecurityInfo
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
@@ -21,7 +21,7 @@ class ReadCardAccessUseCase(
         logger.i(TAG, "SELECT FILE EF.CardAccess")
 
         nfcSession
-            .transceive(commandFactory.selectFile(Iso7816.File.CardAccess.fileId))
+            .transceive(commandFactory.selectFile(Icao9303.File.CardAccess.fileId))
             .flatMap { it.getData() }
             .getOrElse { return Result.failure(it) }
 

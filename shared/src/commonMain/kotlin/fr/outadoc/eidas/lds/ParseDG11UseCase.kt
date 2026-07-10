@@ -1,7 +1,7 @@
 package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.lds.model.AdditionalPersonalDetails
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
@@ -16,7 +16,7 @@ class ParseDG11UseCase(
         val info: List<TlvNode> =
             rawData
                 .parseTlv()
-                .flatMap { tagList -> tagList.firstWithTag(Iso7816.Tags.DG11) }
+                .flatMap { tagList -> tagList.firstWithTag(Icao9303.Tags.DG11) }
                 .flatMap { rootNode -> rootNode.value.parseTlv() }
                 .getOrElse { return Result.failure(it) }
 
@@ -24,7 +24,7 @@ class ParseDG11UseCase(
             AdditionalPersonalDetails(
                 fullNameNationalCharacters =
                     info
-                        .firstWithTag(Iso7816.Tags.FullNameNationalCharacters)
+                        .firstWithTag(Icao9303.Tags.FullNameNationalCharacters)
                         .getOrNull()
                         ?.value
                         ?.toByteArray()
@@ -32,14 +32,14 @@ class ParseDG11UseCase(
                         ?.let { parseMrzName(it) },
                 personalNumber =
                     info
-                        .firstWithTag(Iso7816.Tags.PersonalNumber)
+                        .firstWithTag(Icao9303.Tags.PersonalNumber)
                         .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),
                 fullDateOfBirth =
                     info
-                        .firstWithTag(Iso7816.Tags.FullDateOfBirth)
+                        .firstWithTag(Icao9303.Tags.FullDateOfBirth)
                         .getOrNull()
                         ?.value
                         ?.toByteArray()
@@ -47,7 +47,7 @@ class ParseDG11UseCase(
                         ?.let { parse8DigitDate(it).getOrNull() },
                 placeOfBirth =
                     info
-                        .firstWithTag(Iso7816.Tags.PlaceOfBirth)
+                        .firstWithTag(Icao9303.Tags.PlaceOfBirth)
                         .getOrNull()
                         ?.value
                         ?.toByteArray()
@@ -56,7 +56,7 @@ class ParseDG11UseCase(
                         ?.filterNot { it.isEmpty() },
                 permanentAddress =
                     info
-                        .firstWithTag(Iso7816.Tags.PermanentAddress)
+                        .firstWithTag(Icao9303.Tags.PermanentAddress)
                         .getOrNull()
                         ?.value
                         ?.toByteArray()
@@ -65,42 +65,42 @@ class ParseDG11UseCase(
                         ?.filterNot { it.isEmpty() },
                 telephone =
                     info
-                        .firstWithTag(Iso7816.Tags.Telephone)
+                        .firstWithTag(Icao9303.Tags.Telephone)
                         .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),
                 profession =
                     info
-                        .firstWithTag(Iso7816.Tags.Profession)
+                        .firstWithTag(Icao9303.Tags.Profession)
                         .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),
                 title =
                     info
-                        .firstWithTag(Iso7816.Tags.Title)
+                        .firstWithTag(Icao9303.Tags.Title)
                         .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),
                 personalSummary =
                     info
-                        .firstWithTag(Iso7816.Tags.PersonalSummary)
+                        .firstWithTag(Icao9303.Tags.PersonalSummary)
                         .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),
                 otherValidTdNumbers =
                     info
-                        .firstWithTag(Iso7816.Tags.OtherValidTdNumbers)
+                        .firstWithTag(Icao9303.Tags.OtherValidTdNumbers)
                         .getOrNull()
                         ?.value
                         ?.toByteArray()
                         ?.decodeToString(),
                 custodyInformation =
                     info
-                        .firstWithTag(Iso7816.Tags.CustodyInformation)
+                        .firstWithTag(Icao9303.Tags.CustodyInformation)
                         .getOrNull()
                         ?.value
                         ?.toByteArray()

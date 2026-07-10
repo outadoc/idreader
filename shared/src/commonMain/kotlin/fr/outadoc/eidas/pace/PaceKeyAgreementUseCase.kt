@@ -9,7 +9,7 @@ import fr.outadoc.eidas.crypto.deserializedUncompressedEcPoint
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.i
-import fr.outadoc.eidas.nfc.Iso7816
+import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
@@ -47,9 +47,9 @@ class PaceKeyAgreementUseCase(
                 commandFactory.generalAuthenticate(
                     tlvList {
                         tlv(
-                            Iso7816.Tags.DynamicAuthenticationData,
+                            Icao9303.Tags.DynamicAuthenticationData,
                             tlvList {
-                                tlv(Iso7816.Tags.EphemeralPublicKey, terminalFinalPub)
+                                tlv(Icao9303.Tags.EphemeralPublicKey, terminalFinalPub)
                             },
                         )
                     },
@@ -58,7 +58,7 @@ class PaceKeyAgreementUseCase(
             .onSuccess { response ->
                 logger.d(TAG, "Step 3 raw response: ${response.toPrettyHex()}")
             }.flatMap { response -> response.parseDynamicAuthData() }
-            .flatMap { dynAuth -> dynAuth.firstWithTag(Iso7816.Tags.ChipPublicKey) }
+            .flatMap { dynAuth -> dynAuth.firstWithTag(Icao9303.Tags.ChipPublicKey) }
             .mapCatching { chipPublicKeyNode ->
                 val chipFinalPub: UByteArray = chipPublicKeyNode.value
 
