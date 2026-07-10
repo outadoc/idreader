@@ -30,20 +30,15 @@ class ReadCardDataUseCase(
     suspend operator fun invoke(nfcSession: NfcSession): Result<CardDump> {
         logger.i(TAG, "Select MRTD application")
 
-        nfcSession
-            .transceive(
-                commandFactory.selectAid(
-                    Iso7816.Aid.MRTD.hexToUByteArray(),
-                ),
-            ).flatMap { it.getData() }
-            .getOrElse { return Result.failure(it) }
-
         val comData: ComData =
-            readComFile(
-                nfcSession = nfcSession,
-            ).getOrElse {
-                return Result.failure(it)
-            }
+            nfcSession
+                .transceive(
+                    commandFactory.selectAid(
+                        Iso7816.Aid.MRTD.hexToUByteArray(),
+                    ),
+                ).flatMap { rApdu -> rApdu.getData() }
+                .flatMap { readComFile(nfcSession = nfcSession) }
+                .getOrElse { return Result.failure(it) }
 
         logger.i(TAG, "COM data: $comData")
 

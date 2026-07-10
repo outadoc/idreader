@@ -5,6 +5,7 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
+import fr.outadoc.eidas.utils.flatMap
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class ParseDG11UseCase(
@@ -12,21 +13,11 @@ class ParseDG11UseCase(
     private val parse8DigitDate: Parse8DigitDateUseCase,
 ) {
     operator fun invoke(rawData: UByteArray): Result<AdditionalPersonalDetails> {
-        val tagList: List<TlvNode> =
+        val info: List<TlvNode> =
             rawData
                 .parseTlv()
-                .getOrElse {
-                    return Result.failure(it)
-                }
-
-        val rootNode: TlvNode =
-            tagList
-                .firstWithTag(Iso7816.Tags.DG11)
-                .getOrElse { return Result.failure(it) }
-
-        val info: List<TlvNode> =
-            rootNode.value
-                .parseTlv()
+                .flatMap { tagList -> tagList.firstWithTag(Iso7816.Tags.DG11) }
+                .flatMap { rootNode -> rootNode.value.parseTlv() }
                 .getOrElse { return Result.failure(it) }
 
         return Result.success(

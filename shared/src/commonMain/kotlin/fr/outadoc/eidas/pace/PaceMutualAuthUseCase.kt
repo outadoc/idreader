@@ -10,7 +10,6 @@ import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
-import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.buildTlv
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.utils.flatMap
@@ -55,59 +54,45 @@ class PaceMutualAuthUseCase(
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 4: mutual authentication)")
 
-        val dynAuth: List<TlvNode> =
-            nfcSession
-                .transceive(
-                    commandFactory.generalAuthenticate(
-                        data =
-                            tlvList {
-                                tlv(
-                                    Iso7816.Tags.DynamicAuthenticationData,
-                                    tlvList {
-                                        tlv(
-                                            Iso7816.Tags.AuthenticationToken,
-                                            terminalToken,
-                                        )
-                                    },
-                                )
-                            },
-                        chained = false,
-                    ),
-                ).flatMap { it.getData() }
-                .flatMap { it.parseDynamicAuthData() }
-                .getOrElse { return Result.failure(it) }
-
-        val chipToken: UByteArray =
-            dynAuth
-                .firstWithTag(Iso7816.Tags.ChipAuthenticationToken)
-                .getOrElse { return Result.failure(it) }
-                .value
-
-        val expectedChipToken: UByteArray =
-            runCatching {
-                cryptoEngine
-                    .computeCmac(
-                        algorithm = algorithm,
-                        key = kMac,
-                        data =
-                            paceTokenInput(
-                                oid = algorithm.protocol.oidBytes,
-                                pubKey = terminalFinalPub,
-                            ),
-                    ).copyOfRange(0, 8)
-            }.getOrElse {
-                return Result.failure(it)
-            }
-
-        if (!chipToken.contentEquals(expectedChipToken)) {
-            return Result.failure(
-                IllegalStateException(
-                    "Chip authentication token mismatch: got ${chipToken.toPrettyHex()}, expected ${expectedChipToken.toPrettyHex()}",
+        return nfcSession
+            .transceive(
+                commandFactory.generalAuthenticate(
+                    data =
+                        tlvList {
+                            tlv(
+                                Iso7816.Tags.DynamicAuthenticationData,
+                                tlvList {
+                                    tlv(
+                                        Iso7816.Tags.AuthenticationToken,
+                                        terminalToken,
+                                    )
+                                },
+                            )
+                        },
+                    chained = false,
                 ),
-            )
-        }
+            ).flatMap { rApdu -> rApdu.getData() }
+            .flatMap { data -> data.parseDynamicAuthData() }
+            .flatMap { dynAuth -> dynAuth.firstWithTag(Iso7816.Tags.ChipAuthenticationToken) }
+            .mapCatching { chipTokenNode ->
+                val chipToken: UByteArray = chipTokenNode.value
 
-        return Result.success(Unit)
+                val expectedChipToken: UByteArray =
+                    cryptoEngine
+                        .computeCmac(
+                            algorithm = algorithm,
+                            key = kMac,
+                            data =
+                                paceTokenInput(
+                                    oid = algorithm.protocol.oidBytes,
+                                    pubKey = terminalFinalPub,
+                                ),
+                        ).copyOfRange(0, 8)
+
+                check(chipToken.contentEquals(expectedChipToken)) {
+                    "Chip authentication token mismatch: got ${chipToken.toPrettyHex()}, expected ${expectedChipToken.toPrettyHex()}"
+                }
+            }
     }
 
     private fun paceTokenInput(

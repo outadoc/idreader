@@ -2,36 +2,23 @@ package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.lds.model.DocumentPicture
 import fr.outadoc.eidas.nfc.Iso7816
-import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
 import fr.outadoc.eidas.utils.flatMap
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class ParseDG2UseCase {
-    operator fun invoke(rawData: UByteArray): Result<DocumentPicture> {
-        val tagList: List<TlvNode> =
-            rawData
-                .parseTlv()
-                .getOrElse { return Result.failure(it) }
-
-        val rootNode: TlvNode =
-            tagList
-                .firstWithTag(Iso7816.Tags.DG2)
-                .getOrElse { return Result.failure(it) }
-
-        val biometricData: TlvNode =
-            rootNode.value
-                .parseTlv()
-                .flatMap { nodes -> nodes.firstWithTag(0x7F61u) }
-                .flatMap { templateNode -> templateNode.value.parseTlv() }
-                .flatMap { nodes -> nodes.firstWithTag(0x7F60u) }
-                .flatMap { biometricInformation -> biometricInformation.value.parseTlv() }
-                .flatMap { nodes -> nodes.firstWithTag(0x5F2Eu) }
-                .getOrElse { return Result.failure(it) }
-
-        return parseFacialRecord(record = biometricData.value)
-    }
+    operator fun invoke(rawData: UByteArray): Result<DocumentPicture> =
+        rawData
+            .parseTlv()
+            .flatMap { tagList -> tagList.firstWithTag(Iso7816.Tags.DG2) }
+            .flatMap { rootNode -> rootNode.value.parseTlv() }
+            .flatMap { nodes -> nodes.firstWithTag(0x7F61u) }
+            .flatMap { templateNode -> templateNode.value.parseTlv() }
+            .flatMap { nodes -> nodes.firstWithTag(0x7F60u) }
+            .flatMap { biometricInformation -> biometricInformation.value.parseTlv() }
+            .flatMap { nodes -> nodes.firstWithTag(0x5F2Eu) }
+            .flatMap { biometricData -> parseFacialRecord(record = biometricData.value) }
 
     /**
      * Extracts the encoded image from an ISO/IEC 19794-5 facial record.

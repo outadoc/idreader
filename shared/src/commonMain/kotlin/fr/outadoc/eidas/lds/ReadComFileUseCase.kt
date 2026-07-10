@@ -6,7 +6,6 @@ import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.Iso7816
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
-import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
 import fr.outadoc.eidas.utils.flatMap
@@ -28,34 +27,24 @@ class ReadComFileUseCase(
 
         logger.i(TAG, "READ BINARY EF.COM")
 
-        val comBytes: UByteArray =
-            nfcSession
-                .transceive(commandFactory.readBinary())
-                .flatMap { it.getData() }
-                .getOrElse { return Result.failure(it) }
-
-        val rootNode: TlvNode =
-            comBytes
-                .parseTlv()
-                .getOrElse { return Result.failure(it) }
-                .firstOrNull()
-                ?: return Result.failure(IllegalStateException("EF.COM is empty"))
-
-        val dgList: UByteArray =
-            rootNode
-                .children()
-                .flatMap { nodes -> nodes.firstWithTag(0x5Cu) }
-                .getOrElse { return Result.failure(it) }
-                .value
-
-        return Result.success(
-            ComData(
-                dataGroupNumbers =
-                    dgList.mapNotNull { tag ->
-                        DG_TAG_TO_NUMBER[tag.toUInt()]
-                    },
-            ),
-        )
+        return nfcSession
+            .transceive(commandFactory.readBinary())
+            .flatMap { rApdu -> rApdu.getData() }
+            .flatMap { comBytes -> comBytes.parseTlv() }
+            .flatMap { nodes ->
+                nodes.firstOrNull()
+                    ?.let { rootNode -> Result.success(rootNode) }
+                    ?: Result.failure(IllegalStateException("EF.COM is empty"))
+            }.flatMap { rootNode -> rootNode.children() }
+            .flatMap { children -> children.firstWithTag(0x5Cu) }
+            .map { dgListNode ->
+                ComData(
+                    dataGroupNumbers =
+                        dgListNode.value.mapNotNull { tag ->
+                            DG_TAG_TO_NUMBER[tag.toUInt()]
+                        },
+                )
+            }
     }
 
     private companion object {

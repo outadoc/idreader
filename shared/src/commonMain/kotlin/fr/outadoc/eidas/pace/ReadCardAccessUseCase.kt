@@ -27,12 +27,9 @@ class ReadCardAccessUseCase(
 
         logger.i(TAG, "READ BINARY EF.CardAccess")
 
-        val data: UByteArray =
-            nfcSession
-                .transceive(commandFactory.readBinary())
-                .flatMap { it.getData() }
-                .getOrElse { return Result.failure(it) }
-
-        return securityInfosParser.parse(data)
+        return nfcSession
+            .transceive(commandFactory.readBinary())
+            .flatMap { rApdu -> rApdu.getData() }
+            .flatMap { data -> securityInfosParser.parse(data) }
     }
 }

@@ -130,14 +130,10 @@ class SecureMessagingSession(
     private fun decryptRApdu(response: RApdu): Result<RApdu> {
         incrementSsc()
 
-        val body: UByteArray =
+        val tlvs =
             response
                 .getData()
-                .getOrElse { return Result.failure(it) }
-
-        val tlvs =
-            body
-                .parseTlv()
+                .flatMap { body -> body.parseTlv() }
                 .getOrElse { return Result.failure(it) }
 
         val do87Value: UByteArray? =

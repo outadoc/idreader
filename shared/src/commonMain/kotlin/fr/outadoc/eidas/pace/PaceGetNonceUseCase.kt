@@ -11,7 +11,6 @@ import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.settings.model.AuthenticationMethod
-import fr.outadoc.eidas.tlv.TlvNode
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.utils.toPrettyHex
@@ -49,48 +48,32 @@ class PaceGetNonceUseCase(
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 1: encrypted nonce)")
 
-        val dynAuth: List<TlvNode> =
-            nfcSession
-                .transceive(
-                    commandFactory.generalAuthenticate(
-                        tlvList {
-                            tlv(
-                                Iso7816.Tags.DynamicAuthenticationData,
-                                ubyteArrayOf(),
-                            )
-                        },
-                    ),
-                ).flatMap { it.getData() }
-                .flatMap { it.parseDynamicAuthData() }
-                .getOrElse { return Result.failure(it) }
+        return nfcSession
+            .transceive(
+                commandFactory.generalAuthenticate(
+                    tlvList {
+                        tlv(
+                            Iso7816.Tags.DynamicAuthenticationData,
+                            ubyteArrayOf(),
+                        )
+                    },
+                ),
+            ).flatMap { rApdu -> rApdu.getData() }
+            .flatMap { data -> data.parseDynamicAuthData() }
+            .flatMap { dynAuth -> dynAuth.firstWithTag(Iso7816.Tags.Nonce) }
+            .mapCatching { nonceNode ->
+                val encryptedNonce: UByteArray = nonceNode.value
 
-        val encryptedNonce: UByteArray =
-            dynAuth
-                .firstWithTag(Iso7816.Tags.Nonce)
-                .getOrElse { return Result.failure(it) }
-                .value
+                logger.d(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
 
-        logger.d(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
+                val kPi: UByteArray =
+                    cryptoEngine.deriveKeyFromSecret(
+                        algorithm = algorithm,
+                        secret = password.encodeToByteArray().toUByteArray(),
+                        nonce = ubyteArrayOf(),
+                        counter = 3,
+                    )
 
-        val passwordBytes: UByteArray =
-            password
-                .encodeToByteArray()
-                .toUByteArray()
-
-        val kPi: UByteArray =
-            runCatching {
-                cryptoEngine.deriveKeyFromSecret(
-                    algorithm = algorithm,
-                    secret = passwordBytes,
-                    nonce = ubyteArrayOf(),
-                    counter = 3,
-                )
-            }.getOrElse {
-                return Result.failure(it)
-            }
-
-        val decryptedNonce: Result<UByteArray> =
-            runCatching {
                 cryptoEngine.decryptSymmetric(
                     algorithm = algorithm,
                     key = kPi,
@@ -99,7 +82,5 @@ class PaceGetNonceUseCase(
             }.onSuccess { decryptedNonce ->
                 logger.d(TAG, "Decrypted nonce: ${decryptedNonce.toPrettyHex()}")
             }
-
-        return decryptedNonce
     }
 }
