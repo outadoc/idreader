@@ -8,6 +8,9 @@ import fr.outadoc.eidas.utils.toNSData
 import fr.outadoc.eidas.utils.toPrettyHex
 import fr.outadoc.eidas.utils.toUByteArray
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.CoreNFC.NFCISO7816APDU
 import platform.CoreNFC.NFCISO7816TagProtocol
@@ -21,6 +24,10 @@ class IosNfcSession(
     private companion object {
         const val TAG = "IosNfcSession"
     }
+
+    private val _events = Channel<NfcSession.Event>(Channel.BUFFERED)
+    override val events: Flow<NfcSession.Event> =
+        _events.receiveAsFlow()
 
     override suspend fun transceive(command: CApdu): Result<RApdu> =
         runCatching {

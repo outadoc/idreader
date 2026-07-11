@@ -8,5 +8,7 @@ class NoopNfcTagReader :
     NfcSession {
     override val detectedTags: Flow<NfcSession> = emptyFlow()
 
+    override val events: Flow<NfcSession.Event> = emptyFlow()
+
     override suspend fun transceive(command: CApdu): Result<RApdu> = Result.failure(NfcException("Not supported"))
 }

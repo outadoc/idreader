@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import fr.outadoc.eidas.navigation.MainNavigationBar
 import fr.outadoc.eidas.navigation.Screen
+import fr.outadoc.eidas.navigation.Screen.ScanResult
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,10 +38,14 @@ fun ReaderScreen(
             when (event) {
                 is ReaderViewModel.Event.ScanResultsAvailable -> {
                     navigate(
-                        Screen.ScanResult(
+                        ScanResult(
                             cardInfo = event.cardInfo,
                         ),
                     )
+                }
+
+                ReaderViewModel.Event.Blip -> {
+                    // TODO show a blip on screen when a transaction is in progress
                 }
             }
         }

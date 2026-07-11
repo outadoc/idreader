@@ -6,6 +6,7 @@ import fr.outadoc.eidas.lds.ReadCardDataUseCase
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
+import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
 import fr.outadoc.eidas.presentation.CardInfoUiModel
@@ -21,6 +22,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -43,6 +46,8 @@ class ReaderViewModel(
     )
 
     sealed interface Event {
+        object Blip : Event
+
         data class ScanResultsAvailable(
             val cardInfo: CardInfoUiModel,
         ) : Event
@@ -63,6 +68,18 @@ class ReaderViewModel(
                     )
                 }
             }
+        }
+
+        viewModelScope.launch {
+            tagReader.detectedTags
+                .flatMapLatest { it.events }
+                .map { event ->
+                    when (event) {
+                        NfcSession.Event.Blip -> Event.Blip
+                    }
+                }.collect { event ->
+                    _events.send(event)
+                }
         }
     }
 
