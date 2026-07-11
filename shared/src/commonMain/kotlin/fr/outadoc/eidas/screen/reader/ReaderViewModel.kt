@@ -42,11 +42,17 @@ class ReaderViewModel(
         val settings: AppSettings = AppSettings(),
     )
 
+    sealed interface Event {
+        data class ScanResultsAvailable(
+            val cardInfo: CardInfoUiModel,
+        ) : Event
+    }
+
     private val _state = MutableStateFlow<State>(State())
     val state: StateFlow<State> = _state.asStateFlow()
 
-    private val _scanResults = Channel<CardInfoUiModel>(Channel.BUFFERED)
-    val scanResults: Flow<CardInfoUiModel> = _scanResults.receiveAsFlow()
+    private val _events = Channel<Event>(Channel.BUFFERED)
+    val events: Flow<Event> = _events.receiveAsFlow()
 
     init {
         viewModelScope.launch {
@@ -96,7 +102,11 @@ class ReaderViewModel(
                                 isReading = false,
                             )
                         }
-                        _scanResults.send(cardDump.toCardInfoUiModel())
+                        _events.send(
+                            Event.ScanResultsAvailable(
+                                cardInfo = cardDump.toCardInfoUiModel(),
+                            ),
+                        )
                     }.onFailure { e ->
                         logger.e(TAG, "Failed to read data", e)
                         _state.update { state ->

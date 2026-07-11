@@ -33,10 +33,16 @@ fun ReaderScreen(
     LaunchedEffect(viewModel) {
         viewModel.startListening()
 
-        viewModel.scanResults.collect { cardInfo ->
-            navigate(
-                Screen.ScanResult(cardInfo = cardInfo),
-            )
+        viewModel.events.collect { event ->
+            when (event) {
+                is ReaderViewModel.Event.ScanResultsAvailable -> {
+                    navigate(
+                        Screen.ScanResult(
+                            cardInfo = event.cardInfo,
+                        ),
+                    )
+                }
+            }
         }
     }
 
