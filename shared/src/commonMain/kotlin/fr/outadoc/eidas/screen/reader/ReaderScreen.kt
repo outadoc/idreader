@@ -51,6 +51,7 @@ fun ReaderScreen(
     ReaderScreenContent(
         modifier = modifier,
         state = state,
+        navigate = navigate,
     )
 }
 
