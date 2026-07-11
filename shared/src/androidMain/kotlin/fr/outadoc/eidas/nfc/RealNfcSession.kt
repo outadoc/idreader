@@ -5,12 +5,10 @@ import android.nfc.tech.IsoDep
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.w
-import fr.outadoc.eidas.nfc.NfcSession.Event
 import fr.outadoc.eidas.utils.toPrettyHex
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
@@ -24,9 +22,8 @@ class RealNfcSession(
         const val TAG = "RealNfcSession"
     }
 
-    private val _events = Channel<Event>(Channel.BUFFERED)
-    override val events: Flow<Event> =
-        _events.receiveAsFlow()
+    private val _commandCount = MutableStateFlow(0)
+    override val commandCount = _commandCount.asStateFlow()
 
     override suspend fun transceive(command: CApdu): Result<RApdu> =
         withContext(Dispatchers.IO) {
@@ -37,14 +34,14 @@ class RealNfcSession(
 
                     logger.d(TAG, "SEND > ${commandBytes.toPrettyHex()}")
 
-                    sendBlip()
+                    _commandCount.value += 1
 
                     val response: UByteArray =
                         isoDep
                             .transceive(commandBytes.toByteArray())
                             .toUByteArray()
 
-                    sendBlip()
+                    _commandCount.value += 1
 
                     logger.d(TAG, "RECV < ${response.toPrettyHex()}")
 
@@ -59,10 +56,6 @@ class RealNfcSession(
                 }
             }
         }
-
-    private suspend fun sendBlip() {
-        _events.send(Event.Blip)
-    }
 
     override fun close() {
         try {

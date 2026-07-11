@@ -43,10 +43,6 @@ fun ReaderScreen(
                         ),
                     )
                 }
-
-                ReaderViewModel.Event.Blip -> {
-                    // TODO show a blip on screen when a transaction is in progress
-                }
             }
         }
     }
@@ -74,7 +70,9 @@ fun ReaderScreen(
         ) {
             Column {
                 if (state.isReading) {
-                    ReadingReaderContent()
+                    ReadingReaderContent(
+                        commandCount = state.commandCount,
+                    )
                 } else {
                     IdleReaderContent(
                         settings = state.settings,

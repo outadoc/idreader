@@ -15,6 +15,7 @@ import fr.outadoc.eidas.tlv.parseTlv
 import fr.outadoc.eidas.utils.flatMap
 import fr.outadoc.eidas.utils.toPrettyHex
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 private const val TAG = "SecureSessionManager"
 
@@ -28,7 +29,7 @@ class SecureMessagingSession(
     private val algorithm: Algorithm
         get() = paceCredentials.algorithm
 
-    override val events: Flow<NfcSession.Event> = nfcSession.events
+    override val commandCount: StateFlow<Int> = nfcSession.commandCount
 
     // 128-bit Send Sequence Counter (big-endian), starts at 0 after PACE
     private var ssc = UByteArray(16)

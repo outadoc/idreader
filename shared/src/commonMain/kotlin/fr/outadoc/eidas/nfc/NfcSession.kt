@@ -1,13 +1,9 @@
 package fr.outadoc.eidas.nfc
 
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface NfcSession {
-    sealed interface Event {
-        object Blip : Event
-    }
-
-    val events: Flow<Event>
+    val commandCount: StateFlow<Int>
 
     /**
      * Sends a raw APDU command to the given tag and returns the response,

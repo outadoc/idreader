@@ -10,6 +10,7 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.logging.w
 import fr.outadoc.eidas.nfc.Icao9303
+import fr.outadoc.eidas.nfc.NfcException
 import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.utils.flatMap
@@ -51,7 +52,15 @@ class ReadCardDataUseCase(
                         dataGroup = dataGroup,
                     ).onFailure { e ->
                         logger.w(TAG, "Failed to read DG$dataGroup", e)
-                    }.getOrNull()
+                    }.recoverCatching { e ->
+                        if (e !is NfcException) {
+                            null
+                        } else {
+                            throw e
+                        }
+                    }.getOrElse { e ->
+                        return Result.failure(e)
+                    }
                 }
 
         val mrzInfo: MrzInfo? =
@@ -74,6 +83,7 @@ class ReadCardDataUseCase(
                     .onFailure { e -> logger.w(TAG, "Failed to parse DG11", e) }
                     .getOrNull()
             }
+
         val optionalDetails: OptionalDetails? =
             dataGroupContents[Icao9303.DataGroup.DG13]?.let { fileBytes ->
                 parseDG13(fileBytes)
