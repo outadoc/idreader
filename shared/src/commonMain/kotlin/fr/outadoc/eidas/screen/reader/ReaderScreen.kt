@@ -74,7 +74,6 @@ fun ReaderScreen(
         ) {
             Column {
                 if (state.isReading) {
-                    // TODO Display error on failure
                     // TODO Display graphics card -> phone with moving data on read
                     CircularProgressIndicator()
                 } else {
