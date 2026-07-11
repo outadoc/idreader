@@ -11,6 +11,7 @@ import fr.outadoc.eidas.lds.ParseMrzUseCase
 import fr.outadoc.eidas.lds.ReadCardDataUseCase
 import fr.outadoc.eidas.lds.ReadComFileUseCase
 import fr.outadoc.eidas.lds.ReadDataGroupUseCase
+import fr.outadoc.eidas.lds.ReadWholeFileUseCase
 import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
@@ -42,8 +43,9 @@ val sharedModule =
         single<SettingsRepository> { DataStoreSettingsRepository(get(), get(), get()) }
         factory { SecureSessionFactory(get(), get()) }
 
-        factory { ReadComFileUseCase(get(), get()) }
-        factory { ReadDataGroupUseCase(get(), get()) }
+        factory { ReadWholeFileUseCase(get(), get()) }
+        factory { ReadComFileUseCase(get()) }
+        factory { ReadDataGroupUseCase(get()) }
         factory { ReadCardDataUseCase(get(), get(), get(), get(), get(), get(), get(), get()) }
         factory { ReadCardAccessUseCase(get(), get(), get()) }
         factory { PaceGetNonceUseCase(get(), get(), get()) }
