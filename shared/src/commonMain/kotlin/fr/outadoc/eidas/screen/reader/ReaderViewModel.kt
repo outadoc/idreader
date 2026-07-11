@@ -8,7 +8,6 @@ import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
-import fr.outadoc.eidas.pace.model.PaceCredentials
 import fr.outadoc.eidas.presentation.CardInfoUiModel
 import fr.outadoc.eidas.presentation.toCardInfoUiModel
 import fr.outadoc.eidas.securemessaging.SecureMessagingSession
@@ -16,6 +15,7 @@ import fr.outadoc.eidas.securemessaging.SecureSessionFactory
 import fr.outadoc.eidas.settings.SettingsRepository
 import fr.outadoc.eidas.settings.model.AppSettings
 import fr.outadoc.eidas.settings.model.AuthenticationMethod
+import fr.outadoc.eidas.utils.flatMap
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +38,7 @@ class ReaderViewModel(
 ) : ViewModel() {
     data class State(
         val isReading: Boolean = false,
+        val exception: Throwable? = null,
         val settings: AppSettings = AppSettings(),
     )
 
@@ -66,24 +67,19 @@ class ReaderViewModel(
                     _state.update { state ->
                         state.copy(
                             isReading = true,
+                            exception = null,
                         )
                     }
 
-                    try {
-                        val settings: AppSettings = _state.value.settings
+                    val settings: AppSettings = _state.value.settings
 
-                        settingsRepository.saveSettings(settings)
+                    settingsRepository.saveSettings(settings)
 
-                        val credentials: PaceCredentials =
-                            paceAuthenticate(
-                                nfcSession = nfcSession,
-                                authenticationMethod = settings.authenticationMethod,
-                                password = settings.password,
-                            ).getOrElse { e ->
-                                logger.e(TAG, "Authentication failed", e)
-                                return@collect
-                            }
-
+                    paceAuthenticate(
+                        nfcSession = nfcSession,
+                        authenticationMethod = settings.authenticationMethod,
+                        password = settings.password,
+                    ).flatMap { credentials ->
                         val ssm: SecureMessagingSession =
                             secureSessionFactory.newInstance(
                                 nfcSession = nfcSession,
@@ -92,18 +88,21 @@ class ReaderViewModel(
 
                         readCardData(
                             nfcSession = ssm,
-                        ).onSuccess { cardDump ->
-                            logger.i(TAG, "Got data from card: $cardDump")
-                            _scanResults.send(cardDump.toCardInfoUiModel())
-                        }.onFailure { e ->
-                            logger.e(TAG, "Failed to read data", e)
-                        }
-
-                        logger.i(TAG, "Done reading")
-                    } finally {
+                        )
+                    }.onSuccess { cardDump ->
+                        logger.i(TAG, "Got data from card: $cardDump")
                         _state.update { state ->
                             state.copy(
                                 isReading = false,
+                            )
+                        }
+                        _scanResults.send(cardDump.toCardInfoUiModel())
+                    }.onFailure { e ->
+                        logger.e(TAG, "Failed to read data", e)
+                        _state.update { state ->
+                            state.copy(
+                                isReading = false,
+                                exception = e,
                             )
                         }
                     }
@@ -113,6 +112,7 @@ class ReaderViewModel(
                 _state.update { state ->
                     state.copy(
                         isReading = false,
+                        exception = e,
                     )
                 }
             }
