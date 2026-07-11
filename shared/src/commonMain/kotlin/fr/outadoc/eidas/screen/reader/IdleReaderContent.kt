@@ -1,7 +1,7 @@
 package fr.outadoc.eidas.screen.reader
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +29,7 @@ fun IdleReaderContent(
     settings: AppSettings,
     onAuthenticationMethodChanged: (AuthenticationMethod) -> Unit,
     onPasswordChanged: (String) -> Unit,
+    exception: Throwable? = null,
 ) {
     Column(
         modifier =
@@ -64,6 +66,22 @@ fun IdleReaderContent(
                         keyboardType = KeyboardType.Password,
                     ),
             )
+
+            exception?.let { e ->
+                Box(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        color = MaterialTheme.colorScheme.error,
+                        text =
+                            buildString {
+                                append(e::class.simpleName)
+                                e.message?.let { message ->
+                                    append(": ")
+                                    append(message)
+                                }
+                            },
+                    )
+                }
+            }
         }
     }
 }
