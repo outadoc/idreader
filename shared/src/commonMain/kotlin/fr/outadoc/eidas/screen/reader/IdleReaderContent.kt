@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +36,7 @@ fun IdleReaderContent(
                 .padding(16.dp),
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
-        Image(
+        Icon(
             modifier =
                 Modifier
                     .align(Alignment.CenterHorizontally)

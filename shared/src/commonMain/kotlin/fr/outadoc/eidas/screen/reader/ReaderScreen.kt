@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -16,10 +15,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import fr.outadoc.eidas.AppTheme
 import fr.outadoc.eidas.navigation.MainNavigationBar
 import fr.outadoc.eidas.navigation.Screen
 import fr.outadoc.eidas.navigation.Screen.ScanResult
+import fr.outadoc.eidas.settings.model.AppSettings
+import fr.outadoc.eidas.settings.model.AuthenticationMethod
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +50,20 @@ fun ReaderScreen(
         }
     }
 
+    ReaderScreenContent(
+        modifier = modifier,
+        state = state,
+    )
+}
+
+@Composable
+private fun ReaderScreenContent(
+    modifier: Modifier,
+    state: ReaderViewModel.State,
+    onAuthenticationMethodChanged: (AuthenticationMethod) -> Unit = {},
+    onPasswordChanged: (String) -> Unit = {},
+    navigate: (Screen) -> Unit = {},
+) {
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -76,14 +93,15 @@ fun ReaderScreen(
                 } else {
                     IdleReaderContent(
                         settings = state.settings,
-                        onAuthenticationMethodChanged = viewModel::onAuthenticationMethodChanged,
-                        onPasswordChanged = viewModel::onPasswordChanged,
+                        onAuthenticationMethodChanged = onAuthenticationMethodChanged,
+                        onPasswordChanged = onPasswordChanged,
                     )
                 }
 
                 state.exception?.let { e ->
                     Box(modifier = Modifier.padding(16.dp)) {
                         Text(
+                            color = MaterialTheme.colorScheme.error,
                             text =
                                 buildString {
                                     append(e::class.qualifiedName)
@@ -92,11 +110,55 @@ fun ReaderScreen(
                                         append(message)
                                     }
                                 },
-                            color = MaterialTheme.colorScheme.error,
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ReaderScreenIdlePreview() {
+    AppTheme {
+        ReaderScreenContent(
+            modifier = Modifier,
+            state =
+                ReaderViewModel.State(
+                    isReading = false,
+                    settings = AppSettings(),
+                ),
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ReaderScreenReadingPreview() {
+    AppTheme {
+        ReaderScreenContent(
+            modifier = Modifier,
+            state =
+                ReaderViewModel.State(
+                    isReading = true,
+                    commandCount = 3,
+                ),
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ReaderScreenErrorPreview() {
+    AppTheme {
+        ReaderScreenContent(
+            modifier = Modifier,
+            state =
+                ReaderViewModel.State(
+                    isReading = false,
+                    exception = IllegalStateException("Failed to read card"),
+                ),
+        )
     }
 }
