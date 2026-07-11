@@ -74,8 +74,7 @@ fun ReaderScreen(
         ) {
             Column {
                 if (state.isReading) {
-                    // TODO Display graphics card -> phone with moving data on read
-                    CircularProgressIndicator()
+                    ReadingReaderContent()
                 } else {
                     IdleReaderContent(
                         settings = state.settings,
