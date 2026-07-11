@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -16,7 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import fr.outadoc.eidas.AppTheme
-import fr.outadoc.eidas.navigation.MainNavigationBar
+import fr.outadoc.eidas.icons.AppIcons
+import fr.outadoc.eidas.icons.terminal
 import fr.outadoc.eidas.navigation.Screen
 import fr.outadoc.eidas.navigation.Screen.ScanResult
 import fr.outadoc.eidas.settings.model.AppSettings
@@ -68,12 +71,14 @@ private fun ReaderScreenContent(
         topBar = {
             TopAppBar(
                 title = { Text("eIDAS Reader") },
-            )
-        },
-        bottomBar = {
-            MainNavigationBar(
-                selected = Screen.Reader,
-                navigate = navigate,
+                actions = {
+                    IconButton(onClick = { navigate(Screen.Logs) }) {
+                        Icon(
+                            imageVector = AppIcons.terminal,
+                            contentDescription = "Logs",
+                        )
+                    }
+                },
             )
         },
     ) { insets ->
@@ -113,6 +118,7 @@ private fun ReaderScreenIdlePreview() {
                     isReading = false,
                     settings = AppSettings(),
                 ),
+            navigate = {},
         )
     }
 }
@@ -128,6 +134,7 @@ private fun ReaderScreenReadingPreview() {
                     isReading = true,
                     commandCount = 3,
                 ),
+            navigate = {},
         )
     }
 }
@@ -143,6 +150,7 @@ private fun ReaderScreenErrorPreview() {
                     isReading = false,
                     exception = IllegalStateException("Failed to read card"),
                 ),
+            navigate = {},
         )
     }
 }
