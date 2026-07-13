@@ -15,16 +15,15 @@ import fr.outadoc.eidas.media.CoilLogger
 import fr.outadoc.eidas.media.DocumentPictureFetcher
 import fr.outadoc.eidas.media.DocumentPictureKeyer
 import fr.outadoc.eidas.media.Jpeg2000Decoder
-import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import org.koin.compose.module.rememberKoinModules
+import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.koinConfiguration
 
+@OptIn(KoinExperimentalAPI::class)
 class MainActivity : ComponentActivity() {
-    private val logger: Logger by inject()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)

@@ -4,6 +4,7 @@ import fr.outadoc.eidas.nfc.CApdu
 import fr.outadoc.eidas.nfc.Icao9303
 import fr.outadoc.eidas.nfc.tlvList
 
+@OptIn(ExperimentalUnsignedTypes::class)
 class CommandFactory {
     fun generalAuthenticate(
         data: UByteArray,
