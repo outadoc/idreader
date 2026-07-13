@@ -1,32 +1,31 @@
 [versions]
 agp = "9.2.1"
-coil = "3.1.0"
+coil = "3.5.0"
 android-compileSdk = "37"
 android-minSdk = "31"
 android-targetSdk = "37"
 androidx-activity = "1.13.0"
-androidx-datastore = "1.1.4"
+androidx-datastore = "1.2.1"
 androidx-appcompat = "1.7.1"
 androidx-core = "1.19.0"
-androidx-lifecycle = "2.11.0-beta01"
+androidx-lifecycle = "2.11.0-rc01"
 composeMultiplatform = "1.11.1"
 junit = "4.13.2"
 koin = "4.2.2"
-koinAnnotations = "2.3.1"
 kotlin = "2.4.0"
-kotlinxCollectionsImmutable = "0.4.0"
-kotlinxCoroutines = "1.10.2"
-kotlinxIo = "0.7.0"
+kotlinx-collections-immutable = "0.5.1"
+kotlinx-coroutines = "1.11.0"
+kotlinx-io = "0.9.1"
 ksp = "2.3.9"
 material3 = "1.11.0-alpha07"
 navigation3 = "1.1.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
-kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinxIo" }
+kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
@@ -45,8 +44,8 @@ koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
-koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koinAnnotations" }
-koin-ksp-compiler = { module = "io.insert-koin:koin-ksp-compiler", version.ref = "koinAnnotations" }
+koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin" }
+koin-ksp-compiler = { module = "io.insert-koin:koin-ksp-compiler", version = "2.3.1" }
 signum-indispensable = { module = "at.asitplus.signum:indispensable", version = "3.24.0" }
 zoomable = { module = "net.engawapg.lib:zoomable", version = "2.13.0"}
 
