@@ -1,0 +1,57 @@
+name: Release - Create tag
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 1 * * 1"
+
+jobs:
+  create-release:
+    name: Create release and tag
+    runs-on: ubuntu-latest
+    environment: release
+
+    concurrency:
+      group: create-release
+      cancel-in-progress: true
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Check if last commit is tagged
+        id: check-tagged-commit
+        continue-on-error: true
+        run: |
+          if [[ $(git tag --points-at HEAD) ]]; then
+            echo "Last commit is tagged"
+            echo "tagged=yes" >> $GITHUB_OUTPUT
+          else
+            echo "Last commit is not tagged"
+            echo "tagged=no" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y.%m')" >> $GITHUB_OUTPUT
+
+      - name: Compute unique version code
+        id: version
+        run: echo "version=$(git rev-list HEAD --count)" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release
+        uses: ncipollo/release-action@v1.21.0
+        # If latest commit is not tagged yet, create a new release
+        if: steps.check-tagged-commit.outputs.tagged == 'no'
+        with:
+          tag: "v${{ steps.date.outputs.date }}.${{ steps.version.outputs.version }}"
+          commit: main
+          makeLatest: true
+          generateReleaseNotes: true
+          draft: false
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
