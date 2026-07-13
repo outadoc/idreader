@@ -12,6 +12,18 @@ as a reference in some places.
 
 Download the APK from the [latest release](https://github.com/outadoc/idreader/releases/latest).
 
+## Privacy policy
+
+- The app does **not** have access to any biometrics data deemed sensitive by the issuer of your
+  document, such as your fingerprints.
+- The app does **not** extract any data to any server; in fact, it doesn't even have permission to 
+connect to the Internet.
+- The app does **not** store any of the data from your document on your device.
+- All data exchanges with your document use standard and public communication described in the 
+referenced documents; it doesn't do any weird magic, just (admittedly weird) math.
+- The password of your document (e.g. the CAN) is stored at rest **encrypted** by the Android 
+Keystore with a strong encryption key.
+
 ## Compatibility
 
 ### Known compatible documents
