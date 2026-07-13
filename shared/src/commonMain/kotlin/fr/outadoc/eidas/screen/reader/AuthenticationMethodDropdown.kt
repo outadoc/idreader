@@ -49,7 +49,7 @@ fun AuthenticationMethodDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
-            AuthenticationMethod.entries.forEach { method ->
+            AuthenticationMethod.ENABLED.forEach { method ->
                 DropdownMenuItem(
                     text = { Text(method.label) },
                     onClick = {

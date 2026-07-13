@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import fr.outadoc.eidas.icons.AppIcons
+import fr.outadoc.eidas.icons.cancel
 import fr.outadoc.eidas.icons.contactless
 import fr.outadoc.eidas.settings.model.AppSettings
 import fr.outadoc.eidas.settings.model.AuthenticationMethod
@@ -61,6 +63,14 @@ fun IdleReaderContent(
                 label = { Text("Password for the selected method") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { onPasswordChanged("") }) {
+                        Icon(
+                            imageVector = AppIcons.cancel,
+                            contentDescription = "Clear"
+                        )
+                    }
+                },
                 keyboardOptions =
                     KeyboardOptions(
                         keyboardType = KeyboardType.Password,

@@ -5,4 +5,9 @@ enum class AuthenticationMethod {
     MRZ,
     PIN,
     PUK,
+    ;
+
+    companion object {
+        val ENABLED = listOf(CAN, PIN, PUK)
+    }
 }

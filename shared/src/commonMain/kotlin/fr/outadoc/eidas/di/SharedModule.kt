@@ -16,6 +16,7 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.nfc.asn1.SecurityInfosParser
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.pace.EncodePasswordUseCase
 import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
 import fr.outadoc.eidas.pace.PaceGetNonceUseCase
 import fr.outadoc.eidas.pace.PaceKeyAgreementUseCase
@@ -53,7 +54,7 @@ val sharedModule =
         factory { PaceMapNonceUseCase(get(), get(), get(), get()) }
         factory { PaceKeyAgreementUseCase(get(), get(), get(), get()) }
         factory { PaceMutualAuthUseCase(get(), get(), get()) }
-        factory { PaceAuthenticateUseCase(get(), get(), get(), get(), get(), get()) }
+        factory { PaceAuthenticateUseCase(get(), get(), get(), get(), get(), get(), get()) }
         factory { ParseMrzUseCase() }
         factory { ParseMrzNameUseCase() }
         factory { ParseDG1UseCase(get()) }
@@ -63,6 +64,7 @@ val sharedModule =
         factory { Parse6DigitDateUseCase(get(), get()) }
         factory { Parse8DigitDateUseCase() }
         factory { MapCardDumpToCardInfoUseCase(get(), get()) }
+        factory { EncodePasswordUseCase(get()) }
         factory<Clock> { Clock.System }
         factory<TimeZone> { TimeZone.UTC }
 

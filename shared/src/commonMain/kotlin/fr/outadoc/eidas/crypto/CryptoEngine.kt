@@ -1,5 +1,6 @@
 package fr.outadoc.eidas.crypto
 
+@OptIn(ExperimentalUnsignedTypes::class)
 interface CryptoEngine {
     fun computeMappedGenerator(
         algorithm: Algorithm,
@@ -46,4 +47,6 @@ interface CryptoEngine {
         iv: UByteArray,
         data: UByteArray,
     ): UByteArray
+
+    fun computeSha1(message: UByteArray): UByteArray
 }

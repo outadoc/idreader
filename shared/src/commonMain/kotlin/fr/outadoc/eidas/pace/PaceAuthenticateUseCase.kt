@@ -22,6 +22,7 @@ class PaceAuthenticateUseCase(
     private val mapNonce: PaceMapNonceUseCase,
     private val keyAgreement: PaceKeyAgreementUseCase,
     private val mutualAuth: PaceMutualAuthUseCase,
+    private val encodePassword: EncodePasswordUseCase,
     private val logger: Logger,
 ) {
     suspend operator fun invoke(
@@ -63,12 +64,18 @@ class PaceAuthenticateUseCase(
 
         logger.i(TAG, "Selected algorithm: $selectedAlgorithm")
 
+        val encodedPassword: UByteArray =
+            encodePassword(
+                authenticationMethod = authenticationMethod,
+                password = password,
+            )
+
         val nonce: UByteArray =
             getNonce(
                 nfcSession = nfcSession,
                 algorithm = selectedAlgorithm,
                 authenticationMethod = authenticationMethod,
-                password = password,
+                password = encodedPassword,
             ).getOrElse {
                 return Result.failure(it)
             }

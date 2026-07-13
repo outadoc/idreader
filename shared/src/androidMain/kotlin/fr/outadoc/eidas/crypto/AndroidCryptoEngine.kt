@@ -218,6 +218,13 @@ class AndroidCryptoEngine : CryptoEngine {
         return output
     }
 
+    override fun computeSha1(message: UByteArray): UByteArray =
+        MessageDigest
+            .getInstance("SHA-1")
+            .apply { update(message.toByteArray()) }
+            .digest()
+            .toUByteArray()
+
     private fun Protocol.getHashFunctionName(): String =
         when (this) {
             Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> "SHA-256"

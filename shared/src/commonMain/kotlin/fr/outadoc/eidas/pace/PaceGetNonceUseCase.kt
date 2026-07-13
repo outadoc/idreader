@@ -27,7 +27,7 @@ class PaceGetNonceUseCase(
         nfcSession: NfcSession,
         algorithm: Algorithm,
         authenticationMethod: AuthenticationMethod,
-        password: String,
+        password: UByteArray,
     ): Result<UByteArray> {
         logger.i(TAG, "MSE:Set AT")
 
@@ -69,7 +69,7 @@ class PaceGetNonceUseCase(
                 val kPi: UByteArray =
                     cryptoEngine.deriveKeyFromSecret(
                         algorithm = algorithm,
-                        secret = password.encodeToByteArray().toUByteArray(),
+                        secret = password,
                         nonce = ubyteArrayOf(),
                         counter = 3,
                     )
