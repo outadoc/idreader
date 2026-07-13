@@ -9,8 +9,7 @@ plugins {
 }
 
 kotlin {
-
-    androidLibrary {
+    android {
         namespace = "fr.outadoc.eidas.shared"
         compileSdk =
             libs.versions.android.compileSdk
