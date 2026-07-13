@@ -46,7 +46,7 @@ jobs:
           "-PenableLogging=false"
 
       - name: List available Android build tools
-        run: ls -l /usr/local/lib/android/sdk/build-tools/*
+        run: ls -l /usr/local/lib/android/sdk/build-tools/
 
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
