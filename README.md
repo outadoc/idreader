@@ -5,6 +5,13 @@
 This project contains an application capable of reading an EU ID card via NFC using a
 smartphone.
 
+The project was inspired by [hufon/cnie-python-tools][cnie-python-tools] and its code was used 
+as a reference in some places.
+
+## Download
+
+Download the APK from the [latest release](https://github.com/outadoc/idreader/releases/latest).
+
 ## Compatibility
 
 ### Known compatible documents
@@ -19,7 +26,6 @@ smartphone.
 
 - [ICAO Doc 9303][icao-9303]
 - [BSI TR-03110][bsi-tr-03110]
-- [hufon/cnie-python-tools][cnie-python-tools]
 
 ## Structure
 
@@ -31,10 +37,6 @@ Multiplatform.
 
 - Android ✅
 - iOS: ❌ WIP
-
-## Download
-
-Download the APK from the [latest release](https://github.com/outadoc/idreader/releases/latest).
 
 ## AI Disclosure
 
