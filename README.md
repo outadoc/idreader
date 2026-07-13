@@ -36,6 +36,13 @@ Multiplatform.
 
 Download the APK from the [latest release](https://github.com/outadoc/idreader/releases/latest).
 
+## AI Disclosure
+
+An AI agent was used here and there to perform some grunt work or help me when I was stuck, e.g. for
+the last exchanges of the PACE algorithm. The architectural decisions, implementation details,
+research work, and the rest of the actual implementation were performed by me. Some code
+documentation was auto-generated as well.
+
 [icao-9303]: https://www.icao.int/publications/doc-series/doc-9303
 
 [bsi-tr-03110]: https://www.bsi.bund.de/EN/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/Technische-Richtlinien/TR-nach-Thema-sortiert/tr03110/tr-03110.html
