@@ -1,20 +1,10 @@
 package fr.outadoc.eidas.lds
 
-import fr.outadoc.eidas.lds.model.CardHolderName
-import fr.outadoc.eidas.lds.model.Date
 import fr.outadoc.eidas.lds.model.MrzInfo
-import kotlinx.collections.immutable.persistentListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Clock
-import kotlin.time.Instant
 
 class ParseMrzUseCaseTest {
-    private val fixedClock =
-        object : Clock {
-            override fun now(): Instant = Instant.parse("2010-01-01T00:00:00Z")
-        }
-
     private val parseMrz =
         ParseMrzUseCase()
 
@@ -33,29 +23,10 @@ class ParseMrzUseCaseTest {
                     documentNumber = "X4RTBPFW4",
                     issuingState = "FRA",
                     nationality = "FRA",
-                    cardHolderName =
-                        CardHolderName(
-                            surname = "MARTIN",
-                            givenNames =
-                                persistentListOf(
-                                    "MAELYS",
-                                    "GAELLE",
-                                    "MARIE",
-                                ),
-                        ),
-                    birthDate =
-                        Date.from(
-                            year = 1990,
-                            month = 7,
-                            day = 13,
-                        ),
+                    cardHolderName = "MARTIN<<MAELYS<GAELLE<MARIE<<<",
+                    birthDate = "900713",
                     sex = "F",
-                    expiryDate =
-                        Date.from(
-                            year = 2030,
-                            month = 2,
-                            day = 11,
-                        ),
+                    expiryDate = "300211",
                     optionalData1 = null,
                     optionalData2 = null,
                 ),
@@ -78,28 +49,10 @@ class ParseMrzUseCaseTest {
                     documentNumber = "XI85935F8",
                     issuingState = "NLD",
                     nationality = "NLD",
-                    cardHolderName =
-                        CardHolderName(
-                            surname = "VAN DER STEEN",
-                            givenNames =
-                                persistentListOf(
-                                    "MARIANNE",
-                                    "LOUISE",
-                                ),
-                        ),
-                    birthDate =
-                        Date.from(
-                            year = 1972,
-                            month = 8,
-                            day = 14,
-                        ),
+                    cardHolderName = "VAN<DER<STEEN<<MARIANNE<LOUISE",
+                    birthDate = "720814",
                     sex = "F",
-                    expiryDate =
-                        Date.from(
-                            year = 2011,
-                            month = 8,
-                            day = 26,
-                        ),
+                    expiryDate = "110826",
                     optionalData1 = "999999990",
                     optionalData2 = null,
                 ),
