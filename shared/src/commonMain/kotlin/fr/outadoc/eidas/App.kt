@@ -7,9 +7,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import fr.outadoc.eidas.navigation.Screen
+import fr.outadoc.eidas.screen.logs.LogsScreen
+import fr.outadoc.eidas.screen.picture.FullScreenPictureScreen
 import fr.outadoc.eidas.screen.reader.ReaderScreen
 import fr.outadoc.eidas.screen.result.ScanResultScreen
-import fr.outadoc.eidas.screen.logs.LogsScreen
 
 @Composable
 fun App() {
@@ -28,7 +29,6 @@ fun App() {
 
         NavDisplay(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
             entryProvider =
                 entryProvider {
                     entry<Screen.Reader> {
@@ -46,6 +46,14 @@ fun App() {
                     entry<Screen.ScanResult> { screen ->
                         ScanResultScreen(
                             cardInfo = screen.cardInfo,
+                            navigate = navigate,
+                            onBack = { backStack.removeLastOrNull() },
+                        )
+                    }
+
+                    entry<Screen.FullScreenPicture> { screen ->
+                        FullScreenPictureScreen(
+                            documentPicture = screen.documentPicture,
                             onBack = { backStack.removeLastOrNull() },
                         )
                     }

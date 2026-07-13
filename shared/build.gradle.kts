@@ -52,6 +52,7 @@ kotlin {
             implementation(libs.kotlinx.collections.immutable)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.io.core)
+            implementation(libs.coil.compose)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -68,7 +69,7 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.annotations)
             implementation(libs.signum.indispensable)
-            implementation(libs.coil.compose)
+            implementation(libs.zoomable)
         }
 
         commonTest.dependencies {

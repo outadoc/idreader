@@ -16,13 +16,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import fr.outadoc.eidas.icons.AppIcons
 import fr.outadoc.eidas.icons.arrowBack
+import fr.outadoc.eidas.navigation.Screen
 import fr.outadoc.eidas.presentation.CardInfo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanResultScreen(
     cardInfo: CardInfo,
-    onBack: () -> Unit,
+    onBack: () -> Unit = {},
+    navigate: (Screen) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -36,7 +38,7 @@ fun ScanResultScreen(
                     ) {
                         Icon(
                             imageVector = AppIcons.arrowBack,
-                            contentDescription = "Back",
+                            contentDescription = "Go back",
                         )
                     }
                 },
@@ -52,6 +54,15 @@ fun ScanResultScreen(
                         .padding(insets)
                         .padding(16.dp),
                 cardInfo = cardInfo,
+                onPictureClicked = {
+                    cardInfo.picture?.let {
+                        navigate(
+                            Screen.FullScreenPicture(
+                                documentPicture = cardInfo.picture,
+                            ),
+                        )
+                    }
+                },
             )
         }
     }

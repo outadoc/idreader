@@ -36,7 +36,7 @@ fun LogsScreen(
                     IconButton(onClick = { navigate(Screen.Reader) }) {
                         Icon(
                             imageVector = AppIcons.arrowBack,
-                            contentDescription = "Back",
+                            contentDescription = "Go back",
                         )
                     }
                 },

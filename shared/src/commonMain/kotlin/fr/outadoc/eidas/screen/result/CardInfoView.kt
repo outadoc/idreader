@@ -1,5 +1,6 @@
 package fr.outadoc.eidas.screen.result
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,19 +15,27 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import fr.outadoc.eidas.lds.model.Date
+import fr.outadoc.eidas.lds.model.DocumentPicture
 import fr.outadoc.eidas.presentation.CardInfo
 
 @Composable
 fun CardInfo(
     modifier: Modifier = Modifier,
     cardInfo: CardInfo,
+    onPictureClicked: () -> Unit = {},
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         AsyncImage(
-            modifier = Modifier.height(160.dp),
+            modifier =
+                Modifier
+                    .clickable(
+                        enabled = cardInfo.picture != null,
+                        onClick = onPictureClicked,
+                        onClickLabel = "Open the picture in full screen",
+                    ).height(160.dp),
             model = cardInfo.picture,
             contentDescription = "Photo of document holder",
         )
