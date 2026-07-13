@@ -72,7 +72,7 @@ private fun ReaderScreenContent(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text("eIDAS Reader") },
+                title = { Text("ID Reader") },
                 actions = {
                     IconButton(onClick = { navigate(Screen.Logs) }) {
                         Icon(
