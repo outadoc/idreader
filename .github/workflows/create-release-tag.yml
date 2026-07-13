@@ -9,7 +9,6 @@ jobs:
   create-release:
     name: Create release and tag
     runs-on: ubuntu-latest
-    environment: release
 
     concurrency:
       group: create-release
