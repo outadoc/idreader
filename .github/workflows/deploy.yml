@@ -67,8 +67,11 @@ jobs:
           path: ${{steps.sign_app.outputs.signedReleaseFile}}
 
       - name: Update release
-        uses: johnwbyrd/update-release@v1.0.0
+        uses: mini-bomba/create-github-release@v1.2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: ${{steps.sign_app.outputs.signedReleaseFile}}
-          release: ${{ github.event.release.name }}
+          tag: ${{ github.event.release.name }}
+          name: ${{ github.event.release.name }}
+          fail_on_no_files: true
+          skip_tag_creation: true
