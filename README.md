@@ -1,6 +1,6 @@
 # Mobile ID Reader
 
-![App icon](assets/ic_launcher.png)
+<img src="assets/ic_launcher.png" alt="App icon" width="200">
 
 This project contains an application capable of reading an EU ID card via NFC using a
 smartphone.
