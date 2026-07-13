@@ -80,5 +80,5 @@ kotlin {
 
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
-    ksp(libs.koin.ksp.compiler)
+    kspAndroidMain(libs.koin.ksp.compiler)
 }
