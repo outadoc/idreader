@@ -1,6 +1,6 @@
 package fr.outadoc.eidas.navigation
 
-import fr.outadoc.eidas.presentation.CardInfoUiModel
+import fr.outadoc.eidas.presentation.CardInfo
 
 sealed class Screen {
     data object Reader : Screen()
@@ -8,7 +8,7 @@ sealed class Screen {
     data object Logs : Screen()
 
     data class ScanResult(
-        val cardInfo: CardInfoUiModel,
+        val cardInfo: CardInfo,
     ) : Screen()
 
     companion object {

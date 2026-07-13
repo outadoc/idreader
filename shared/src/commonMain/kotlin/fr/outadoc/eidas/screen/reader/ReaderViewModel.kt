@@ -8,8 +8,8 @@ import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
-import fr.outadoc.eidas.presentation.CardInfoUiModel
-import fr.outadoc.eidas.presentation.toCardInfoUiModel
+import fr.outadoc.eidas.presentation.CardInfo
+import fr.outadoc.eidas.presentation.MapCardDumpToCardInfoUseCase
 import fr.outadoc.eidas.securemessaging.SecureMessagingSession
 import fr.outadoc.eidas.securemessaging.SecureSessionFactory
 import fr.outadoc.eidas.settings.SettingsRepository
@@ -35,6 +35,7 @@ class ReaderViewModel(
     private val settingsRepository: SettingsRepository,
     private val secureSessionFactory: SecureSessionFactory,
     private val readCardData: ReadCardDataUseCase,
+    private val mapCardDumpToCardInfo: MapCardDumpToCardInfoUseCase,
 ) : ViewModel() {
     data class State(
         val isReading: Boolean = false,
@@ -45,7 +46,7 @@ class ReaderViewModel(
 
     sealed interface Event {
         data class ScanResultsAvailable(
-            val cardInfo: CardInfoUiModel,
+            val cardInfo: CardInfo,
         ) : Event
     }
 
@@ -115,7 +116,7 @@ class ReaderViewModel(
                         }
                         _events.send(
                             Event.ScanResultsAvailable(
-                                cardInfo = cardDump.toCardInfoUiModel(),
+                                cardInfo = mapCardDumpToCardInfo(cardDump),
                             ),
                         )
                     }.onFailure { e ->

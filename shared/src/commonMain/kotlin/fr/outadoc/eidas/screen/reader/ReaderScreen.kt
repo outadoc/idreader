@@ -55,6 +55,8 @@ fun ReaderScreen(
         modifier = modifier,
         state = state,
         navigate = navigate,
+        onAuthenticationMethodChanged = viewModel::onAuthenticationMethodChanged,
+        onPasswordChanged = viewModel::onPasswordChanged,
     )
 }
 

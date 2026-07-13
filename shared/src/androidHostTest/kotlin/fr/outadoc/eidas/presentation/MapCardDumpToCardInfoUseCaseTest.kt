@@ -12,7 +12,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class CardInfoUiModelTest {
+class MapCardDumpToCardInfoUseCaseTest {
     private val mrzInfo =
         MrzInfo(
             format = "TD1",
@@ -194,7 +194,7 @@ class CardInfoUiModelTest {
         val uiModel = cardDump.toCardInfoUiModel()
 
         assertNull(uiModel.picture)
-        assertNull(uiModel.format)
+        assertNull(uiModel.documentFormat)
         assertNull(uiModel.documentCode)
         assertNull(uiModel.documentNumber)
         assertNull(uiModel.issuingState)

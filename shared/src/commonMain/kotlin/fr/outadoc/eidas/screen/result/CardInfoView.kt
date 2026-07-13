@@ -13,12 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import fr.outadoc.eidas.presentation.CardInfoUiModel
+import fr.outadoc.eidas.presentation.CardInfo
 
 @Composable
 fun CardInfo(
     modifier: Modifier = Modifier,
-    cardInfo: CardInfoUiModel,
+    cardInfo: CardInfo,
 ) {
     Column(
         modifier = modifier,
@@ -34,7 +34,7 @@ fun CardInfo(
             title = "Document",
             fields =
                 listOf(
-                    "Format" to cardInfo.format,
+                    "Format" to cardInfo.documentFormat,
                     "Document code" to cardInfo.documentCode,
                     "Document number" to cardInfo.documentNumber,
                     "Issuing state" to cardInfo.issuingState,
@@ -125,9 +125,9 @@ private fun CardInfoPreview() {
         CardInfo(
             modifier = Modifier.padding(16.dp),
             cardInfo =
-                CardInfoUiModel(
+                CardInfo(
                     picture = null,
-                    format = "TD1",
+                    documentFormat = "TD1",
                     documentCode = "ID",
                     documentNumber = "X4RTBPFW4",
                     issuingState = "FRA",

@@ -16,12 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import fr.outadoc.eidas.icons.AppIcons
 import fr.outadoc.eidas.icons.arrowBack
-import fr.outadoc.eidas.presentation.CardInfoUiModel
+import fr.outadoc.eidas.presentation.CardInfo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanResultScreen(
-    cardInfo: CardInfoUiModel,
+    cardInfo: CardInfo,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
