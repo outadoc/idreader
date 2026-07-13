@@ -22,6 +22,7 @@ import fr.outadoc.eidas.pace.PaceKeyAgreementUseCase
 import fr.outadoc.eidas.pace.PaceMapNonceUseCase
 import fr.outadoc.eidas.pace.PaceMutualAuthUseCase
 import fr.outadoc.eidas.pace.ReadCardAccessUseCase
+import fr.outadoc.eidas.presentation.MapCardDumpToCardInfoUseCase
 import fr.outadoc.eidas.screen.reader.ReaderViewModel
 import fr.outadoc.eidas.securemessaging.SecureSessionFactory
 import fr.outadoc.eidas.settings.DataStoreSettingsRepository
@@ -53,7 +54,7 @@ val sharedModule =
         factory { PaceKeyAgreementUseCase(get(), get(), get(), get()) }
         factory { PaceMutualAuthUseCase(get(), get(), get()) }
         factory { PaceAuthenticateUseCase(get(), get(), get(), get(), get(), get()) }
-        factory { ParseMrzUseCase(get(), get()) }
+        factory { ParseMrzUseCase() }
         factory { ParseMrzNameUseCase() }
         factory { ParseDG1UseCase(get()) }
         factory { ParseDG2UseCase() }
@@ -61,8 +62,9 @@ val sharedModule =
         factory { ParseDG13UseCase() }
         factory { Parse6DigitDateUseCase(get(), get()) }
         factory { Parse8DigitDateUseCase() }
+        factory { MapCardDumpToCardInfoUseCase(get(), get()) }
         factory<Clock> { Clock.System }
         factory<TimeZone> { TimeZone.UTC }
 
-        viewModel { ReaderViewModel(get(), get(), get(), get(), get(), get()) }
+        viewModel { ReaderViewModel(get(), get(), get(), get(), get(), get(), get()) }
     }

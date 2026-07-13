@@ -2,6 +2,7 @@ package fr.outadoc.eidas.presentation
 
 import androidx.compose.runtime.Immutable
 import fr.outadoc.eidas.lds.model.CardDump
+import fr.outadoc.eidas.lds.model.Date
 import fr.outadoc.eidas.lds.model.DocumentPicture
 
 /**
@@ -18,7 +19,7 @@ data class CardInfo(
     val documentCode: String?,
     val documentNumber: String?,
     val issuingState: String?,
-    val expiryDate: String?,
+    val expiryDate: Date?,
     val optionalData1: String?,
     val optionalData2: String?,
     // Holder
@@ -26,7 +27,7 @@ data class CardInfo(
     val surname: String?,
     val givenNames: String?,
     val nationality: String?,
-    val birthDate: String?,
+    val birthDate: Date?,
     val placeOfBirth: String?,
     val sex: String?,
     val height: String?,

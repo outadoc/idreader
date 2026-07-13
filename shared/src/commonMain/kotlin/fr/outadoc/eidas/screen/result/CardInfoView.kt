@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import fr.outadoc.eidas.lds.model.Date
 import fr.outadoc.eidas.presentation.CardInfo
 
 @Composable
@@ -38,7 +39,7 @@ fun CardInfo(
                     "Document code" to cardInfo.documentCode,
                     "Document number" to cardInfo.documentNumber,
                     "Issuing state" to cardInfo.issuingState,
-                    "Expiry date" to cardInfo.expiryDate,
+                    "Expiry date" to cardInfo.expiryDate?.toString(),
                     "Optional data 1" to cardInfo.optionalData1,
                     "Optional data 2" to cardInfo.optionalData2,
                 ),
@@ -52,7 +53,7 @@ fun CardInfo(
                     "Surname" to cardInfo.surname,
                     "Given Names" to cardInfo.givenNames,
                     "Nationality" to cardInfo.nationality,
-                    "Date of birth" to cardInfo.birthDate,
+                    "Date of birth" to cardInfo.birthDate?.toString(),
                     "Place of birth" to cardInfo.placeOfBirth,
                     "Sex" to cardInfo.sex,
                     "Height" to cardInfo.height,
@@ -131,14 +132,14 @@ private fun CardInfoPreview() {
                     documentCode = "ID",
                     documentNumber = "X4RTBPFW4",
                     issuingState = "FRA",
-                    expiryDate = "2030-02-11",
+                    expiryDate = Date.from(2030, 2, 11),
                     optionalData1 = null,
                     optionalData2 = null,
                     title = null,
                     surname = "Martin",
                     givenNames = "Maëlys, Gaëlle, Marie",
                     nationality = "FRA",
-                    birthDate = "1990-07-13",
+                    birthDate = Date.from(1990, 7, 13),
                     placeOfBirth = "Paris",
                     sex = "F",
                     height = "182 cm",

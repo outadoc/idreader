@@ -4,7 +4,6 @@ import fr.outadoc.eidas.lds.model.CardHolderName
 import fr.outadoc.eidas.lds.model.Date
 import fr.outadoc.eidas.lds.model.MrzInfo
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.datetime.TimeZone
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Clock
@@ -17,14 +16,7 @@ class ParseMrzUseCaseTest {
         }
 
     private val parseMrz =
-        ParseMrzUseCase(
-            parseMrzName = ParseMrzNameUseCase(),
-            parse6DigitDate =
-                Parse6DigitDateUseCase(
-                    clock = fixedClock,
-                    timeZone = TimeZone.UTC,
-                ),
-        )
+        ParseMrzUseCase()
 
     @Test
     fun `Parse TD1 MRZ from FR specimen`() {

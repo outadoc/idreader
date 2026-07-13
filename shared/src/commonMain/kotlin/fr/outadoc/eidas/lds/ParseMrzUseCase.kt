@@ -2,10 +2,7 @@ package fr.outadoc.eidas.lds
 
 import fr.outadoc.eidas.lds.model.MrzInfo
 
-class ParseMrzUseCase(
-    private val parseMrzName: ParseMrzNameUseCase,
-    private val parse6DigitDate: Parse6DigitDateUseCase,
-) {
+class ParseMrzUseCase {
     operator fun invoke(mrz: String): Result<MrzInfo> {
         val format: String =
             when (mrz.length) {
@@ -41,7 +38,7 @@ class ParseMrzUseCase(
                 .trim('<')
                 .takeIf { it.isNotEmpty() }
 
-        val cardHolderName = parseMrzName(mrz.substring(60, 90))
+        val cardHolderName = mrz.substring(60, 90)
 
         return Result.success(
             MrzInfo(
@@ -51,21 +48,9 @@ class ParseMrzUseCase(
                 issuingState = issuingState,
                 nationality = nationality,
                 cardHolderName = cardHolderName,
-                birthDate =
-                    parse6DigitDate(
-                        birthDateRaw,
-                        Parse6DigitDateUseCase.DateIsIn.PAST,
-                    ).getOrElse {
-                        return Result.failure(it)
-                    },
+                birthDate = birthDateRaw,
                 sex = sex,
-                expiryDate =
-                    parse6DigitDate(
-                        expiryDateRaw,
-                        Parse6DigitDateUseCase.DateIsIn.FUTURE,
-                    ).getOrElse {
-                        return Result.failure(it)
-                    },
+                expiryDate = expiryDateRaw,
                 optionalData1 = optionalData1,
                 optionalData2 = optionalData2,
             ),

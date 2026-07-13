@@ -9,10 +9,10 @@ data class MrzInfo(
     val documentNumber: String,
     val issuingState: String,
     val nationality: String,
-    val cardHolderName: CardHolderName,
-    val birthDate: Date,
+    val cardHolderName: String,
+    val birthDate: String,
     val sex: String,
-    val expiryDate: Date,
+    val expiryDate: String,
     val optionalData1: String?,
     val optionalData2: String?,
 )
