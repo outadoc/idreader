@@ -73,7 +73,7 @@ fun IdleReaderContent(
                 },
                 keyboardOptions =
                     KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
+                        keyboardType = KeyboardType.NumberPassword,
                     ),
             )
 
