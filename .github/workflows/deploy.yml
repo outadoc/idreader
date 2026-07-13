@@ -75,3 +75,14 @@ jobs:
           name: ${{ github.event.release.name }}
           fail_on_no_files: true
           skip_tag_creation: true
+
+      - name: Update GitHub release
+        uses: ncipollo/release-action@v1.21.0
+        with:
+          tag: ${{ github.event.release.name }}
+          allowUpdates: true
+          draft: false
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          replacesArtifacts: false
