@@ -1,0 +1,11 @@
+An Android application that lets you read EU ID cards via NFC directly from your smartphone.
+
+Built with privacy and security as core principles, this app gives you access to your electronic identity document without compromising your personal data:
+
+- No Internet access, no data is extracted or sent to any server
+- No document data is stored on your device after reading
+- Your document password (CAN) is stored encrypted using Android Keystore with strong encryption keys
+
+The app uses standard, public communication protocols defined in ICAO Doc 9303 and BSI TR-03110 to securely communicate with your ID card.
+
+Currently tested and working with French CNIe cards. More documents and devices may be compatible.
