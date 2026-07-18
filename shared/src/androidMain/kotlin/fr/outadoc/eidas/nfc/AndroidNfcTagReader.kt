@@ -24,7 +24,7 @@ class AndroidNfcTagReader(
     private val activity: Activity,
     private val logger: Logger,
 ) : NfcTagReader {
-    private var currentConnection: RealNfcSession? = null
+    private var currentConnection: AndroidNfcSession? = null
 
     override val detectedTags: Flow<NfcSession> =
         callbackFlow {
@@ -64,7 +64,7 @@ class AndroidNfcTagReader(
                     )
 
                     val session =
-                        RealNfcSession(
+                        AndroidNfcSession(
                             isoDep = isoDep,
                             logger = logger,
                         )

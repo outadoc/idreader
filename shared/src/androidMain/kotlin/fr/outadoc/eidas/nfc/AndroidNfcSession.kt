@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 import java.io.IOException
 
 @OptIn(ExperimentalUnsignedTypes::class)
-class RealNfcSession(
+class AndroidNfcSession(
     private val isoDep: IsoDep,
     private val logger: Logger,
 ) : NfcSession,
