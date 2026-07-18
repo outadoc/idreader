@@ -60,4 +60,8 @@ class IosCryptoEngine : CryptoEngine {
     ): UByteArray {
         TODO("Not yet implemented")
     }
+
+    override fun computeSha1(message: UByteArray): UByteArray {
+        TODO("Not yet implemented")
+    }
 }
