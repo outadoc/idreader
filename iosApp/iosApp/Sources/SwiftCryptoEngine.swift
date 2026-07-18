@@ -5,6 +5,7 @@
 //  Created by Baptiste CANDELLIER on 18/07/2026.
 //
 
+import BigInt
 import CommonCrypto
 import CryptoKit
 import Foundation
