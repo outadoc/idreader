@@ -48,7 +48,7 @@ Multiplatform.
 ### Supported targets
 
 - Android ✅
-- iOS: ❌ WIP
+- iOS ✅ (not published for now)
 
 ## AI Disclosure
 
