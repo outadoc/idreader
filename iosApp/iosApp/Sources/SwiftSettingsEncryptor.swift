@@ -25,9 +25,11 @@ class SwiftSettingsEncryptor: SettingsEncryptor {
                 throw SettingsEncryptorError.sealedBoxMissingCombinedRepresentation
             }
             let cipherText = combined.base64EncodedString() as NSString
-            return KmpResult.companion.success(value: cipherText)
+            let result: KmpResult<NSString> = KmpResult.companion.success(value: cipherText)
+            return result
         } catch {
-            return KmpResult.companion.failure(exception: KotlinThrowable(message: "\(error)"))
+            let result: KmpResult<NSString> = KmpResult.companion.failure(exception: KotlinThrowable(message: "\(error)"))
+            return result
         }
     }
 
@@ -42,9 +44,11 @@ class SwiftSettingsEncryptor: SettingsEncryptor {
             guard let clearText = String(data: decrypted, encoding: .utf8) else {
                 throw SettingsEncryptorError.decryptedDataNotUtf8
             }
-            return KmpResult.companion.success(value: clearText as NSString)
+            let result: KmpResult<NSString> = KmpResult.companion.success(value: clearText as NSString)
+            return result
         } catch {
-            return KmpResult.companion.failure(exception: KotlinThrowable(message: "\(error)"))
+            let result: KmpResult<NSString> = KmpResult.companion.failure(exception: KotlinThrowable(message: "\(error)"))
+            return result
         }
     }
 
