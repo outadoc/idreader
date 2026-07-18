@@ -18,7 +18,6 @@ import fr.outadoc.eidas.settings.SettingsRepository
 import fr.outadoc.eidas.settings.model.AppSettings
 import fr.outadoc.eidas.settings.model.AuthenticationMethod
 import fr.outadoc.eidas.utils.flatMap
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -55,7 +54,7 @@ class ReaderViewModel(
             override val settings: AppSettings,
         ) : State
 
-        data class Listening(
+        data class WaitingForDocument(
             override val settings: AppSettings,
         ) : State
 
@@ -86,7 +85,7 @@ class ReaderViewModel(
                 _state.update { state ->
                     when (state) {
                         is State.Idle -> state.copy(settings = settings)
-                        is State.Listening -> state.copy(settings = settings)
+                        is State.WaitingForDocument -> state.copy(settings = settings)
                         is State.Reading -> state.copy(settings = settings)
                     }
                 }
@@ -130,7 +129,7 @@ class ReaderViewModel(
             settingsRepository.saveSettings(_state.value.settings)
 
             _state.update { state ->
-                State.Listening(
+                State.WaitingForDocument(
                     settings = state.settings,
                 )
             }

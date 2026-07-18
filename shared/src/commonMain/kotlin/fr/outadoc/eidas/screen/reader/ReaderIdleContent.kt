@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -23,9 +24,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import eidas.shared.generated.resources.Res
 import eidas.shared.generated.resources.cnie_fr_can
+import fr.outadoc.eidas.AppTheme
 import fr.outadoc.eidas.icons.AppIcons
 import fr.outadoc.eidas.icons.cancel
 import fr.outadoc.eidas.settings.model.AppSettings
@@ -33,12 +36,12 @@ import fr.outadoc.eidas.settings.model.AuthenticationMethod
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun IdleReaderContent(
+fun ReaderIdleContent(
     modifier: Modifier = Modifier,
     settings: AppSettings,
-    onAuthenticationMethodChanged: (AuthenticationMethod) -> Unit,
-    onPasswordChanged: (String) -> Unit,
-    onStartListeningClicked: () -> Unit,
+    onAuthenticationMethodChanged: (AuthenticationMethod) -> Unit = {},
+    onPasswordChanged: (String) -> Unit = {},
+    onStartListeningClicked: () -> Unit = {},
     exception: Throwable? = null,
 ) {
     val showDialog = remember { mutableStateOf(false) }
@@ -123,6 +126,31 @@ fun IdleReaderContent(
 
         Button(onClick = onStartListeningClicked) {
             Text("Read document")
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ReaderIdlePreview() {
+    AppTheme {
+        Surface {
+            ReaderIdleContent(
+                settings = AppSettings(),
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ReaderIdleErrorPreview() {
+    AppTheme {
+        Surface {
+            ReaderIdleContent(
+                settings = AppSettings(),
+                exception = IllegalStateException("Failed to read card"),
+            )
         }
     }
 }

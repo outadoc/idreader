@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -18,10 +17,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
 import fr.outadoc.eidas.AppTheme
 import fr.outadoc.eidas.icons.AppIcons
-import fr.outadoc.eidas.icons.contactless
 import fr.outadoc.eidas.icons.terminal
 import fr.outadoc.eidas.navigation.Screen
 import fr.outadoc.eidas.navigation.Screen.ScanResult
@@ -64,11 +61,12 @@ fun ReaderScreen(
 
 @Composable
 private fun ReaderScreenContent(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     state: ReaderViewModel.State,
     onAuthenticationMethodChanged: (AuthenticationMethod) -> Unit = {},
     onPasswordChanged: (String) -> Unit = {},
     onStartListeningClicked: () -> Unit = {},
+    onStopListeningClicked: () -> Unit = {},
     navigate: (Screen) -> Unit = {},
 ) {
     Scaffold(
@@ -97,7 +95,7 @@ private fun ReaderScreenContent(
             Column {
                 when (state) {
                     is ReaderViewModel.State.Idle -> {
-                        IdleReaderContent(
+                        ReaderIdleContent(
                             settings = state.settings,
                             exception = state.exception,
                             onAuthenticationMethodChanged = onAuthenticationMethodChanged,
@@ -106,23 +104,14 @@ private fun ReaderScreenContent(
                         )
                     }
 
-                    is ReaderViewModel.State.Listening -> {
-                        Column {
-                            Icon(
-                                modifier =
-                                    Modifier
-                                        .align(Alignment.CenterHorizontally)
-                                        .size(128.dp),
-                                imageVector = AppIcons.contactless,
-                                contentDescription = "Tap your card",
-                            )
-
-                            Text("Waiting for document…")
-                        }
+                    is ReaderViewModel.State.WaitingForDocument -> {
+                        ReaderWaitingContent(
+                            onStopListeningClicked = onStopListeningClicked,
+                        )
                     }
 
                     is ReaderViewModel.State.Reading -> {
-                        ReadingReaderContent(
+                        ReaderReadingContent(
                             commandCount = state.commandCount,
                         )
                     }
@@ -137,44 +126,10 @@ private fun ReaderScreenContent(
 private fun ReaderScreenIdlePreview() {
     AppTheme {
         ReaderScreenContent(
-            modifier = Modifier,
             state =
                 ReaderViewModel.State.Idle(
                     settings = AppSettings(),
                 ),
-            navigate = {},
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun ReaderScreenReadingPreview() {
-    AppTheme {
-        ReaderScreenContent(
-            modifier = Modifier,
-            state =
-                ReaderViewModel.State.Reading(
-                    settings = AppSettings(),
-                    commandCount = 3,
-                ),
-            navigate = {},
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun ReaderScreenErrorPreview() {
-    AppTheme {
-        ReaderScreenContent(
-            modifier = Modifier,
-            state =
-                ReaderViewModel.State.Idle(
-                    settings = AppSettings(),
-                    exception = IllegalStateException("Failed to read card"),
-                ),
-            navigate = {},
         )
     }
 }
