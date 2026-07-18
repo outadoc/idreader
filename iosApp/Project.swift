@@ -10,6 +10,8 @@ let project = Project(
             bundleId: "fr.outadoc.idreader",
             infoPlist: .extendingDefault(
                 with: [
+                    "CFBundleDisplayName": "ID Reader",
+                    "CFBundleName": "ID Reader",
                     "UILaunchScreen": [
                         "UIColorName": "",
                         "UIImageName": "",
