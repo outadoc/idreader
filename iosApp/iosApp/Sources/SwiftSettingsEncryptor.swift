@@ -8,11 +8,11 @@
 import Shared
 
 class SwiftSettingsEncryptor : SettingsEncryptor {
-    func decrypt(cipherText: String) -> Any? {
+    func decrypt(cipherText: String) -> KmmresultKmmResult<NSString> {
         fatalError()
     }
     
-    func encrypt(clearText: String) -> Any? {
+    func encrypt(clearText: String) -> KmmresultKmmResult<NSString> {
         fatalError()
     }
 }

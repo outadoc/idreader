@@ -29,7 +29,7 @@ class DataStoreSettingsRepository(
                             settingsEncryptor
                                 .decrypt(cipherText)
                                 .onFailure { e -> logger.e(TAG, "Decryption failure", e) }
-                                .getOrDefault("")
+                                .getOrElse { "" }
                         }.orEmpty(),
             )
         }
@@ -41,7 +41,7 @@ class DataStoreSettingsRepository(
                 settingsEncryptor
                     .encrypt(settings.password)
                     .onFailure { e -> logger.e(TAG, "Encryption failure", e) }
-                    .getOrDefault("")
+                    .getOrElse { "" }
         }
     }
 
