@@ -11,7 +11,6 @@ import coil3.fetch.SourceFetchResult
 import coil3.request.Options
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.cValue
 import kotlinx.cinterop.refTo
 import kotlinx.cinterop.usePinned
 import okio.BufferedSource
@@ -29,12 +28,12 @@ import platform.CoreGraphics.CGColorSpaceCreateDeviceRGB
 import platform.CoreGraphics.CGColorSpaceRelease
 import platform.CoreGraphics.CGContextDrawImage
 import platform.CoreGraphics.CGContextRelease
+import platform.CoreGraphics.CGImageAlphaInfo
 import platform.CoreGraphics.CGImageGetHeight
 import platform.CoreGraphics.CGImageGetWidth
 import platform.CoreGraphics.CGImageRef
 import platform.CoreGraphics.CGImageRelease
-import platform.CoreGraphics.CGRect
-import platform.CoreGraphics.kCGImageAlphaPremultipliedLast
+import platform.CoreGraphics.CGRectMake
 import platform.ImageIO.CGImageSourceCreateImageAtIndex
 import platform.ImageIO.CGImageSourceCreateWithData
 
@@ -93,17 +92,12 @@ class Jpeg2000Decoder(
                         bitsPerComponent = 8uL,
                         bytesPerRow = bytesPerRow,
                         space = colorSpace,
-                        bitmapInfo = kCGImageAlphaPremultipliedLast,
+                        bitmapInfo = CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value,
                     ) ?: error("Failed to create bitmap context")
                 try {
                     CGContextDrawImage(
                         context,
-                        cValue<CGRect> {
-                            origin.x = 0.0
-                            origin.y = 0.0
-                            size.width = width.toDouble()
-                            size.height = height.toDouble()
-                        },
+                        CGRectMake(0.0, 0.0, width.toDouble(), height.toDouble()),
                         image,
                     )
                 } finally {
