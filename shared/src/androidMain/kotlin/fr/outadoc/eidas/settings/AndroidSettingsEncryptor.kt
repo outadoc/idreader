@@ -2,6 +2,7 @@ package fr.outadoc.eidas.settings
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import at.asitplus.KmmResult.Companion.wrap
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -13,15 +14,15 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 @OptIn(ExperimentalEncodingApi::class)
 class AndroidSettingsEncryptor : SettingsEncryptor {
 
-    override fun encrypt(clearText: String): Result<String> = runCatching {
+    override fun encrypt(clearText: String) = runCatching {
         val cipher = Cipher.getInstance(CIPHER_TRANSFORMATION)
         cipher.init(Cipher.ENCRYPT_MODE, getOrCreateKey())
         val iv = cipher.iv
         val encryptedBytes = cipher.doFinal(clearText.encodeToByteArray())
         Base64.encode(iv + encryptedBytes)
-    }
+    }.wrap()
 
-    override fun decrypt(cipherText: String): Result<String> = runCatching {
+    override fun decrypt(cipherText: String) = runCatching {
         val combined = Base64.decode(cipherText)
         val iv = combined.copyOfRange(0, GCM_IV_LENGTH)
         val encryptedBytes = combined.copyOfRange(GCM_IV_LENGTH, combined.size)
@@ -37,7 +38,7 @@ class AndroidSettingsEncryptor : SettingsEncryptor {
             }
             .doFinal(encryptedBytes)
             .decodeToString()
-    }
+    }.wrap()
 
     private fun getOrCreateKey(): SecretKey {
         val keyStore = KeyStore

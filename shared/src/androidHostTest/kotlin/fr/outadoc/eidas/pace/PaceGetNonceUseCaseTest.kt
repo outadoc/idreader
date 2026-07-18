@@ -68,7 +68,7 @@ class PaceGetNonceUseCaseTest {
                     logger = MemoryLogger(),
                 )
 
-            val result = useCase(nfcSession, algorithm, AuthenticationMethod.CAN, testCan).getOrThrow()
+            val result = useCase(nfcSession, algorithm, AuthenticationMethod.CAN, canBytes).getOrThrow()
             assertContentEquals(plainNonce.toUByteArray(), result)
         }
 
