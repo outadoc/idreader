@@ -49,6 +49,7 @@ let project = Project(
                 // The static Shared framework doesn't autolink CoreNFC;
                 // link it explicitly at the app level.
                 .sdk(name: "CoreNFC", type: .framework, status: .required),
+                .external(name: "SwiftECC"),
             ],
             settings: .settings(
                 base: [
