@@ -20,7 +20,7 @@ class SwiftCryptoEngine: CryptoEngine {
         requireSupportedProtocol(algorithm)
 
         let domain = algorithm.parameter.ecDomain
-        let fieldSize = fieldByteSize(domain)
+        let fieldSize = domain.fieldByteSize
 
         let d = BInt(magnitude: mappingPrivateKey.encoded.bytes)
         let chipPub = Point(
@@ -34,8 +34,8 @@ class SwiftCryptoEngine: CryptoEngine {
         let gPrime = try! domain.addPoints(h, sG)
 
         return EcPoint(
-            x: KmpBytes(bytes: encodeFieldElement(gPrime.x, fieldSize: fieldSize)),
-            y: KmpBytes(bytes: encodeFieldElement(gPrime.y, fieldSize: fieldSize))
+            x: KmpBytes(bytes: gPrime.x.fieldEncoded(fieldSize: fieldSize)),
+            y: KmpBytes(bytes: gPrime.y.fieldEncoded(fieldSize: fieldSize))
         )
     }
 
@@ -43,7 +43,7 @@ class SwiftCryptoEngine: CryptoEngine {
         requireSupportedProtocol(algorithm)
 
         let domain = algorithm.parameter.ecDomain
-        let fieldSize = fieldByteSize(domain)
+        let fieldSize = domain.fieldByteSize
 
         let d = BInt(magnitude: privateKey.encoded.bytes)
         let chipPub = Point(
@@ -52,7 +52,7 @@ class SwiftCryptoEngine: CryptoEngine {
         )
 
         let shared = try! domain.multiplyPoint(chipPub, d)
-        return KmpBytes(bytes: encodeFieldElement(shared.x, fieldSize: fieldSize))
+        return KmpBytes(bytes: shared.x.fieldEncoded(fieldSize: fieldSize))
     }
 
     func computeCmac(algorithm: Algorithm, key: KmpBytes, data: KmpBytes) -> KmpBytes {
@@ -96,18 +96,6 @@ class SwiftCryptoEngine: CryptoEngine {
         guard algorithm.protocol.oid == supportedProtocolOid else {
             fatalError("Unsupported protocol: \(algorithm.protocol.oid)")
         }
-    }
-
-    private func fieldByteSize(_ domain: Domain) -> Int {
-        (domain.p.bitWidth + 7) / 8
-    }
-
-    private func encodeFieldElement(_ value: BInt, fieldSize: Int) -> [UInt8] {
-        let bytes = value.asMagnitudeBytes()
-        if bytes.count < fieldSize {
-            return [UInt8](repeating: 0, count: fieldSize - bytes.count) + bytes
-        }
-        return bytes
     }
 
     private func counterBytesBe(_ counter: Int32) -> [UInt8] {
