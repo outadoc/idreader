@@ -1,5 +1,7 @@
 package fr.outadoc.eidas.crypto
 
+import fr.outadoc.eidas.utils.KmpBytes
+import fr.outadoc.eidas.utils.toKmpBytes
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.math.BigInteger
 import java.security.KeyPairGenerator
@@ -30,8 +32,14 @@ class AndroidKeyGenerator(
             publicKey =
                 AndroidPublicKey(
                     EcPoint(
-                        x = ecPub.w.affineX.toUByteArrayStripped(),
-                        y = ecPub.w.affineY.toUByteArrayStripped(),
+                        x =
+                            ecPub.w.affineX
+                                .toUByteArrayStripped()
+                                .toKmpBytes(),
+                        y =
+                            ecPub.w.affineY
+                                .toUByteArrayStripped()
+                                .toKmpBytes(),
                     ),
                 ),
         )
@@ -48,8 +56,8 @@ class AndroidKeyGenerator(
 
         val gPrime =
             params.curve.createPoint(
-                BigInteger(1, generator.x.toByteArray()),
-                BigInteger(1, generator.y.toByteArray()),
+                BigInteger(1, generator.x.raw),
+                BigInteger(1, generator.y.raw),
             )
 
         val pub = gPrime.multiply(d).normalize()
@@ -59,8 +67,8 @@ class AndroidKeyGenerator(
             publicKey =
                 AndroidPublicKey(
                     EcPoint(
-                        x = pub.xCoord.encoded.toUByteArray(),
-                        y = pub.yCoord.encoded.toUByteArray(),
+                        x = KmpBytes(pub.xCoord.encoded),
+                        y = KmpBytes(pub.yCoord.encoded),
                     ),
                 ),
         )

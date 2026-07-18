@@ -13,6 +13,7 @@ import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.tlv.buildTlv
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.utils.flatMap
+import fr.outadoc.eidas.utils.toKmpBytes
 import fr.outadoc.eidas.utils.toPrettyHex
 
 private const val TAG = "PaceMutualAuthUseCase"
@@ -43,9 +44,10 @@ class PaceMutualAuthUseCase(
                 cryptoEngine
                     .computeCmac(
                         algorithm = algorithm,
-                        key = kMac,
-                        data = tokenInput,
-                    ).copyOfRange(0, 8)
+                        key = kMac.toKmpBytes(),
+                        data = tokenInput.toKmpBytes(),
+                    ).toUByteArray()
+                    .copyOfRange(0, 8)
             }.getOrElse {
                 return Result.failure(it)
             }
@@ -81,13 +83,14 @@ class PaceMutualAuthUseCase(
                     cryptoEngine
                         .computeCmac(
                             algorithm = algorithm,
-                            key = kMac,
+                            key = kMac.toKmpBytes(),
                             data =
                                 paceTokenInput(
                                     oid = algorithm.protocol.oidBytes,
                                     pubKey = terminalFinalPub,
-                                ),
-                        ).copyOfRange(0, 8)
+                                ).toKmpBytes(),
+                        ).toUByteArray()
+                        .copyOfRange(0, 8)
 
                 check(chipToken.contentEquals(expectedChipToken)) {
                     "Chip authentication token mismatch: got ${chipToken.toPrettyHex()}, expected ${expectedChipToken.toPrettyHex()}"

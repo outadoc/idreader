@@ -1,5 +1,6 @@
 package fr.outadoc.eidas.crypto
 
+import fr.outadoc.eidas.utils.toKmpBytes
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 
@@ -31,21 +32,37 @@ class AndroidCryptoEngineTest {
 
     @Test
     fun kdfWithCounter1ProducesKEnc() {
-        val kEnc = cryptoEngine.deriveKeyFromSecret(algorithm, sharedSecret, ubyteArrayOf(), 1)
-        assertContentEquals(expectedKEnc, kEnc)
+        val kEnc =
+            cryptoEngine.deriveKeyFromSecret(
+                algorithm,
+                sharedSecret.toKmpBytes(),
+                ubyteArrayOf().toKmpBytes(),
+                1,
+            )
+        assertContentEquals(expectedKEnc, kEnc.toUByteArray())
     }
 
     @Test
     fun kdfWithCounter2ProducesKMac() {
-        val kMac = cryptoEngine.deriveKeyFromSecret(algorithm, sharedSecret, ubyteArrayOf(), 2)
-        assertContentEquals(expectedKMac, kMac)
+        val kMac =
+            cryptoEngine.deriveKeyFromSecret(
+                algorithm,
+                sharedSecret.toKmpBytes(),
+                ubyteArrayOf().toKmpBytes(),
+                2,
+            )
+        assertContentEquals(expectedKMac, kMac.toUByteArray())
     }
 
     @Test
     fun cmacOfChipPubUnderKMacMatchesLoggedTerminalToken() {
         val oid = algorithm.protocol.oidBytes
         val tokenInput = paceTokenInput(oid, chipFinalPub)
-        val token = cryptoEngine.computeCmac(algorithm, expectedKMac, tokenInput).copyOfRange(0, 8)
+        val token =
+            cryptoEngine
+                .computeCmac(algorithm, expectedKMac.toKmpBytes(), tokenInput.toKmpBytes())
+                .toUByteArray()
+                .copyOfRange(0, 8)
         assertContentEquals(expectedTerminalToken, token)
     }
 

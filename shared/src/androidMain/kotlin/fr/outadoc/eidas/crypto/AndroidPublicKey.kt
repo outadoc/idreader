@@ -1,10 +1,15 @@
 package fr.outadoc.eidas.crypto
 
-@OptIn(ExperimentalUnsignedTypes::class)
-class AndroidPublicKey(private val point: EcPoint) : PublicKey {
-    override val encoded: UByteArray
-        get() = point.serializeUncompressed()
+import fr.outadoc.eidas.utils.KmpBytes
+import fr.outadoc.eidas.utils.toKmpBytes
 
-    override val uncompressedPublicPoint: UByteArray
-        get() = point.serializeUncompressed()
+@OptIn(ExperimentalUnsignedTypes::class)
+class AndroidPublicKey(
+    private val point: EcPoint,
+) : PublicKey {
+    override val encoded: KmpBytes
+        get() = point.serializeUncompressed().toKmpBytes()
+
+    override val uncompressedPublicPoint: KmpBytes
+        get() = point.serializeUncompressed().toKmpBytes()
 }

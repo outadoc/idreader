@@ -8,6 +8,7 @@ import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.settings.model.AuthenticationMethod
+import fr.outadoc.eidas.utils.toKmpBytes
 import kotlinx.coroutines.test.runTest
 import org.bouncycastle.crypto.engines.AESEngine
 import org.bouncycastle.crypto.modes.CBCBlockCipher
@@ -37,14 +38,14 @@ class PaceGetNonceUseCaseTest {
             val kPi =
                 cryptoEngine.deriveKeyFromSecret(
                     algorithm = algorithm,
-                    secret = canBytes,
-                    nonce = ubyteArrayOf(),
+                    secret = canBytes.toKmpBytes(),
+                    nonce = ubyteArrayOf().toKmpBytes(),
                     counter = 3,
                 )
 
             val encryptedNonce =
                 encryptAesCbc(
-                    key = kPi.toByteArray(),
+                    key = kPi.raw,
                     data = plainNonce,
                 )
 

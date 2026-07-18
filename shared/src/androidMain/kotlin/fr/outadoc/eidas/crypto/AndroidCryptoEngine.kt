@@ -2,6 +2,7 @@
 
 package fr.outadoc.eidas.crypto
 
+import fr.outadoc.eidas.utils.KmpBytes
 import fr.outadoc.eidas.utils.toByteArrayBe
 import org.bouncycastle.crypto.engines.AESEngine
 import org.bouncycastle.crypto.macs.CMac
@@ -16,7 +17,7 @@ class AndroidCryptoEngine : CryptoEngine {
         algorithm: Algorithm,
         mappingPrivateKey: PrivateKey,
         chipMappingPublicPoint: EcPoint,
-        decryptedNonce: UByteArray,
+        decryptedNonce: KmpBytes,
     ): EcPoint =
         when (algorithm.protocol) {
             Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
@@ -37,23 +38,23 @@ class AndroidCryptoEngine : CryptoEngine {
         algorithm: Algorithm,
         mappingPrivateKey: PrivateKey,
         chipMappingPublicPoint: EcPoint,
-        decryptedNonce: UByteArray,
+        decryptedNonce: KmpBytes,
     ): EcPoint {
         val params = algorithm.parameter.ecParams()
         val d = (mappingPrivateKey as AndroidPrivateKey).scalar
         val chipPub =
             params.curve.createPoint(
-                BigInteger(1, chipMappingPublicPoint.x.toByteArray()),
-                BigInteger(1, chipMappingPublicPoint.y.toByteArray()),
+                BigInteger(1, chipMappingPublicPoint.x.raw),
+                BigInteger(1, chipMappingPublicPoint.y.raw),
             )
 
         val h = chipPub.multiply(d).normalize()
-        val s = BigInteger(1, decryptedNonce.toByteArray()).mod(params.n)
+        val s = BigInteger(1, decryptedNonce.raw).mod(params.n)
         val gPrime = h.add(params.g.multiply(s)).normalize()
 
         return EcPoint(
-            x = gPrime.xCoord.encoded.toUByteArray(),
-            y = gPrime.yCoord.encoded.toUByteArray(),
+            x = KmpBytes(gPrime.xCoord.encoded),
+            y = KmpBytes(gPrime.yCoord.encoded),
         )
     }
 
@@ -61,7 +62,7 @@ class AndroidCryptoEngine : CryptoEngine {
         algorithm: Algorithm,
         privateKey: PrivateKey,
         chipPublicPoint: EcPoint,
-    ): UByteArray =
+    ): KmpBytes =
         when (algorithm.protocol) {
             Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
                 computeSharedSecretEc(
@@ -80,24 +81,24 @@ class AndroidCryptoEngine : CryptoEngine {
         algorithm: Algorithm,
         privateKey: PrivateKey,
         chipPublicPoint: EcPoint,
-    ): UByteArray {
+    ): KmpBytes {
         val params = algorithm.parameter.ecParams()
         val d = (privateKey as AndroidPrivateKey).scalar
         val chipPub =
             params.curve.createPoint(
-                BigInteger(1, chipPublicPoint.x.toByteArray()),
-                BigInteger(1, chipPublicPoint.y.toByteArray()),
+                BigInteger(1, chipPublicPoint.x.raw),
+                BigInteger(1, chipPublicPoint.y.raw),
             )
 
         val shared = chipPub.multiply(d).normalize()
-        return shared.xCoord.encoded.toUByteArray()
+        return KmpBytes(shared.xCoord.encoded)
     }
 
     override fun computeCmac(
         algorithm: Algorithm,
-        key: UByteArray,
-        data: UByteArray,
-    ): UByteArray =
+        key: KmpBytes,
+        data: KmpBytes,
+    ): KmpBytes =
         when (algorithm.protocol) {
             Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
                 computeCmacAes(key, data)
@@ -109,51 +110,49 @@ class AndroidCryptoEngine : CryptoEngine {
         }
 
     private fun computeCmacAes(
-        key: UByteArray,
-        data: UByteArray,
-    ): UByteArray {
+        key: KmpBytes,
+        data: KmpBytes,
+    ): KmpBytes {
         val mac = CMac(AESEngine.newInstance())
-        mac.init(KeyParameter(key.toByteArray()))
-        mac.update(data.toByteArray(), 0, data.size)
+        mac.init(KeyParameter(key.raw))
+        mac.update(data.raw, 0, data.raw.size)
         val out = ByteArray(mac.macSize)
         mac.doFinal(out, 0)
-        return out.toUByteArray()
+        return KmpBytes(out)
     }
 
     override fun deriveKeyFromSecret(
         algorithm: Algorithm,
-        secret: UByteArray,
-        nonce: UByteArray,
+        secret: KmpBytes,
+        nonce: KmpBytes,
         counter: Int,
-    ): UByteArray {
-        val message =
-            ubyteArrayOf(
-                *secret,
-                *nonce,
-                *counter.toByteArrayBe(),
-            )
+    ): KmpBytes {
+        val message: ByteArray = secret.raw + nonce.raw + counter.toByteArrayBe().toByteArray()
 
-        return MessageDigest
-            .getInstance(algorithm.protocol.getHashFunctionName())
-            .apply { update(message.toByteArray()) }
-            .digest()
-            .toUByteArray()
+        return KmpBytes(
+            MessageDigest
+                .getInstance(algorithm.protocol.getHashFunctionName())
+                .apply { update(message) }
+                .digest(),
+        )
     }
 
     override fun encryptSymmetric(
         algorithm: Algorithm,
-        key: UByteArray,
-        iv: UByteArray,
-        data: UByteArray,
-    ): UByteArray =
+        key: KmpBytes,
+        iv: KmpBytes,
+        data: KmpBytes,
+    ): KmpBytes =
         when (algorithm.protocol) {
             Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
-                aesCbc(
-                    encrypt = true,
-                    key = key.toByteArray(),
-                    iv = iv.toByteArray(),
-                    data = data.toByteArray(),
-                ).toUByteArray()
+                KmpBytes(
+                    aesCbc(
+                        encrypt = true,
+                        key = key.raw,
+                        iv = iv.raw,
+                        data = data.raw,
+                    ),
+                )
             }
 
             else -> {
@@ -163,17 +162,19 @@ class AndroidCryptoEngine : CryptoEngine {
 
     override fun decryptSymmetric(
         algorithm: Algorithm,
-        key: UByteArray,
-        data: UByteArray,
-    ): UByteArray =
+        key: KmpBytes,
+        data: KmpBytes,
+    ): KmpBytes =
         when (algorithm.protocol) {
             Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
-                aesCbc(
-                    encrypt = false,
-                    key = key.toByteArray(),
-                    iv = ByteArray(16),
-                    data = data.toByteArray(),
-                ).toUByteArray()
+                KmpBytes(
+                    aesCbc(
+                        encrypt = false,
+                        key = key.raw,
+                        iv = ByteArray(16),
+                        data = data.raw,
+                    ),
+                )
             }
 
             else -> {
@@ -183,18 +184,20 @@ class AndroidCryptoEngine : CryptoEngine {
 
     override fun decryptSymmetricWithIv(
         algorithm: Algorithm,
-        key: UByteArray,
-        iv: UByteArray,
-        data: UByteArray,
-    ): UByteArray =
+        key: KmpBytes,
+        iv: KmpBytes,
+        data: KmpBytes,
+    ): KmpBytes =
         when (algorithm.protocol) {
             Protocol.PACE_ECDH_GM_AES_CBC_CMAC_256 -> {
-                aesCbc(
-                    encrypt = false,
-                    key = key.toByteArray(),
-                    iv = iv.toByteArray(),
-                    data = data.toByteArray(),
-                ).toUByteArray()
+                KmpBytes(
+                    aesCbc(
+                        encrypt = false,
+                        key = key.raw,
+                        iv = iv.raw,
+                        data = data.raw,
+                    ),
+                )
             }
 
             else -> {
@@ -218,12 +221,13 @@ class AndroidCryptoEngine : CryptoEngine {
         return output
     }
 
-    override fun computeSha1(message: UByteArray): UByteArray =
-        MessageDigest
-            .getInstance("SHA-1")
-            .apply { update(message.toByteArray()) }
-            .digest()
-            .toUByteArray()
+    override fun computeSha1(message: KmpBytes): KmpBytes =
+        KmpBytes(
+            MessageDigest
+                .getInstance("SHA-1")
+                .apply { update(message.raw) }
+                .digest(),
+        )
 
     private fun Protocol.getHashFunctionName(): String =
         when (this) {

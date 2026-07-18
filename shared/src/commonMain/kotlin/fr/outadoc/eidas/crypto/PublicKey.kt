@@ -1,7 +1,8 @@
 package fr.outadoc.eidas.crypto
 
-@OptIn(ExperimentalUnsignedTypes::class)
+import fr.outadoc.eidas.utils.KmpBytes
+
 interface PublicKey {
-    val encoded: UByteArray
-    val uncompressedPublicPoint: UByteArray
+    val encoded: KmpBytes
+    val uncompressedPublicPoint: KmpBytes
 }

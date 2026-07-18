@@ -16,6 +16,7 @@ import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.utils.flatMap
+import fr.outadoc.eidas.utils.toKmpBytes
 import fr.outadoc.eidas.utils.toPrettyHex
 
 private const val TAG = "PaceMapNonceUseCase"
@@ -47,7 +48,7 @@ class PaceMapNonceUseCase(
                             tlvList {
                                 tlv(
                                     Icao9303.Tags.MappingData,
-                                    mappingKeyPair.publicKey.uncompressedPublicPoint,
+                                    mappingKeyPair.publicKey.uncompressedPublicPoint.toUByteArray(),
                                 )
                             },
                         )
@@ -65,7 +66,7 @@ class PaceMapNonceUseCase(
                     algorithm = algorithm,
                     mappingPrivateKey = mappingKeyPair.privateKey,
                     chipMappingPublicPoint = deserializedUncompressedEcPoint(chipMappingData),
-                    decryptedNonce = nonce,
+                    decryptedNonce = nonce.toKmpBytes(),
                 )
             }.onSuccess { mappedGenerator ->
                 logger.d(

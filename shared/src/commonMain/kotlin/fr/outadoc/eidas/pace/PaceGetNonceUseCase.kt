@@ -12,7 +12,9 @@ import fr.outadoc.eidas.nfc.commands.CommandFactory
 import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.settings.model.AuthenticationMethod
 import fr.outadoc.eidas.tlv.firstWithTag
+import fr.outadoc.eidas.utils.KmpBytes
 import fr.outadoc.eidas.utils.flatMap
+import fr.outadoc.eidas.utils.toKmpBytes
 import fr.outadoc.eidas.utils.toPrettyHex
 
 private const val TAG = "PaceGetNonceUseCase"
@@ -66,19 +68,20 @@ class PaceGetNonceUseCase(
 
                 logger.d(TAG, "Encrypted nonce: ${encryptedNonce.toPrettyHex()}")
 
-                val kPi: UByteArray =
+                val kPi: KmpBytes =
                     cryptoEngine.deriveKeyFromSecret(
                         algorithm = algorithm,
-                        secret = password,
-                        nonce = ubyteArrayOf(),
+                        secret = password.toKmpBytes(),
+                        nonce = ubyteArrayOf().toKmpBytes(),
                         counter = 3,
                     )
 
-                cryptoEngine.decryptSymmetric(
-                    algorithm = algorithm,
-                    key = kPi,
-                    data = encryptedNonce,
-                )
+                cryptoEngine
+                    .decryptSymmetric(
+                        algorithm = algorithm,
+                        key = kPi,
+                        data = encryptedNonce.toKmpBytes(),
+                    ).toUByteArray()
             }.onSuccess { decryptedNonce ->
                 logger.d(TAG, "Decrypted nonce: ${decryptedNonce.toPrettyHex()}")
             }

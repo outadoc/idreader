@@ -13,8 +13,8 @@ import fr.outadoc.eidas.pace.model.PaceCredentials
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.tlv.parseTlv
 import fr.outadoc.eidas.utils.flatMap
+import fr.outadoc.eidas.utils.toKmpBytes
 import fr.outadoc.eidas.utils.toPrettyHex
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 private const val TAG = "SecureSessionManager"
@@ -60,21 +60,22 @@ class SecureMessagingSession(
 
                 // IV = E(K_enc, SSC): single-block AES-CBC with zero IV equals AES-ECB of the block
                 val iv: UByteArray =
-                    cryptoEngine.encryptSymmetric(
-                        algorithm = algorithm,
-                        key = paceCredentials.kEnc,
-                        iv = UByteArray(16),
-                        data = ssc,
-                    )
+                    cryptoEngine
+                        .encryptSymmetric(
+                            algorithm = algorithm,
+                            key = paceCredentials.kEnc.toKmpBytes(),
+                            iv = UByteArray(16).toKmpBytes(),
+                            data = ssc.toKmpBytes(),
+                        ).toUByteArray()
 
                 val ciphertext: UByteArray =
                     cryptoEngine
                         .encryptSymmetric(
                             algorithm = algorithm,
-                            key = paceCredentials.kEnc,
-                            iv = iv,
-                            data = padded,
-                        )
+                            key = paceCredentials.kEnc.toKmpBytes(),
+                            iv = iv.toKmpBytes(),
+                            data = padded.toKmpBytes(),
+                        ).toUByteArray()
 
                 tlvList {
                     tlv(
@@ -112,9 +113,10 @@ class SecureMessagingSession(
             cryptoEngine
                 .computeCmac(
                     algorithm = algorithm,
-                    key = paceCredentials.kMac,
-                    data = macInput,
-                ).copyOfRange(0, 8)
+                    key = paceCredentials.kMac.toKmpBytes(),
+                    data = macInput.toKmpBytes(),
+                ).toUByteArray()
+                .copyOfRange(0, 8)
 
         val do8eBytes =
             tlvList {
@@ -183,9 +185,10 @@ class SecureMessagingSession(
             cryptoEngine
                 .computeCmac(
                     algorithm = algorithm,
-                    key = paceCredentials.kMac,
-                    data = macInput,
-                ).copyOfRange(0, 8)
+                    key = paceCredentials.kMac.toKmpBytes(),
+                    data = macInput.toKmpBytes(),
+                ).toUByteArray()
+                .copyOfRange(0, 8)
 
         if (!expectedMac.contentEquals(do8eValue)) {
             return Result.failure(IllegalStateException("SM response MAC verification failed"))
@@ -201,20 +204,22 @@ class SecureMessagingSession(
                 val encrypted = do87Value.copyOfRange(1, do87Value.size)
 
                 val iv: UByteArray =
-                    cryptoEngine.encryptSymmetric(
-                        algorithm,
-                        paceCredentials.kEnc,
-                        UByteArray(16),
-                        ssc,
-                    )
+                    cryptoEngine
+                        .encryptSymmetric(
+                            algorithm,
+                            paceCredentials.kEnc.toKmpBytes(),
+                            UByteArray(16).toKmpBytes(),
+                            ssc.toKmpBytes(),
+                        ).toUByteArray()
 
                 val padded: UByteArray =
-                    cryptoEngine.decryptSymmetricWithIv(
-                        algorithm = algorithm,
-                        key = paceCredentials.kEnc,
-                        iv = iv,
-                        data = encrypted,
-                    )
+                    cryptoEngine
+                        .decryptSymmetricWithIv(
+                            algorithm = algorithm,
+                            key = paceCredentials.kEnc.toKmpBytes(),
+                            iv = iv.toKmpBytes(),
+                            data = encrypted.toKmpBytes(),
+                        ).toUByteArray()
                 removeIsoPad(padded).getOrElse { return Result.failure(it) }
             } else {
                 ubyteArrayOf()

@@ -9,6 +9,8 @@ import fr.outadoc.eidas.crypto.Protocol
 import fr.outadoc.eidas.crypto.ecParams
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.utils.KmpBytes
+import fr.outadoc.eidas.utils.toKmpBytes
 import kotlinx.coroutines.test.runTest
 import java.math.BigInteger
 import kotlin.test.Test
@@ -29,8 +31,8 @@ class PaceKeyAgreementUseCaseTest {
     // Mapped generator G' from real card run
     private val mappedGenerator =
         EcPoint(
-            x = "0F0D69FDE03A7A7DCEDD84190CCB6E466A97BFD20CA79B2B556C5A22487FFD9A".hexToUByteArray(),
-            y = "7E7B907FDD4ADAD3F57B70E3A34631EFEC15A984BD5B4589EC73C57E144BBCC0".hexToUByteArray(),
+            x = "0F0D69FDE03A7A7DCEDD84190CCB6E466A97BFD20CA79B2B556C5A22487FFD9A".hexToUByteArray().toKmpBytes(),
+            y = "7E7B907FDD4ADAD3F57B70E3A34631EFEC15A984BD5B4589EC73C57E144BBCC0".hexToUByteArray().toKmpBytes(),
         )
 
     // Chip final public key from real card run
@@ -69,12 +71,12 @@ class PaceKeyAgreementUseCaseTest {
             val sharedSecret = sharedPoint.xCoord.encoded.toUByteArray()
 
             val expectedKEnc =
-                cryptoEngine.deriveKeyFromSecret(algorithm, sharedSecret, ubyteArrayOf(), 1)
+                cryptoEngine.deriveKeyFromSecret(algorithm, sharedSecret.toKmpBytes(), ubyteArrayOf().toKmpBytes(), 1)
             val expectedKMac =
-                cryptoEngine.deriveKeyFromSecret(algorithm, sharedSecret, ubyteArrayOf(), 2)
+                cryptoEngine.deriveKeyFromSecret(algorithm, sharedSecret.toKmpBytes(), ubyteArrayOf().toKmpBytes(), 2)
 
-            assertContentEquals(expectedKEnc, result.kEnc)
-            assertContentEquals(expectedKMac, result.kMac)
+            assertContentEquals(expectedKEnc.toUByteArray(), result.kEnc)
+            assertContentEquals(expectedKMac.toUByteArray(), result.kMac)
             assertContentEquals(chipFinalPub, result.chipFinalPub)
         }
 
@@ -88,21 +90,21 @@ class PaceKeyAgreementUseCaseTest {
 
         val gPrime =
             params.curve.createPoint(
-                BigInteger(1, mappedGenerator.x.toByteArray()),
-                BigInteger(1, mappedGenerator.y.toByteArray()),
+                BigInteger(1, mappedGenerator.x.raw),
+                BigInteger(1, mappedGenerator.y.raw),
             )
         val pubA = gPrime.multiply(scalarA).normalize()
         val pubB = gPrime.multiply(scalarB).normalize()
 
         val pubAPoint =
             EcPoint(
-                x = pubA.xCoord.encoded.toUByteArray(),
-                y = pubA.yCoord.encoded.toUByteArray(),
+                x = KmpBytes(pubA.xCoord.encoded),
+                y = KmpBytes(pubA.yCoord.encoded),
             )
         val pubBPoint =
             EcPoint(
-                x = pubB.xCoord.encoded.toUByteArray(),
-                y = pubB.yCoord.encoded.toUByteArray(),
+                x = KmpBytes(pubB.xCoord.encoded),
+                y = KmpBytes(pubB.yCoord.encoded),
             )
 
         val secretAB =
@@ -110,7 +112,7 @@ class PaceKeyAgreementUseCaseTest {
         val secretBA =
             cryptoEngine.computeSharedSecret(algorithm, AndroidPrivateKey(scalarB), pubAPoint)
 
-        assertContentEquals(secretAB, secretBA)
+        assertContentEquals(secretAB.toUByteArray(), secretBA.toUByteArray())
     }
 }
 

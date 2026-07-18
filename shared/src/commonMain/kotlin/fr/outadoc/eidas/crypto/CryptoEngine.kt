@@ -1,52 +1,53 @@
 package fr.outadoc.eidas.crypto
 
-@OptIn(ExperimentalUnsignedTypes::class)
+import fr.outadoc.eidas.utils.KmpBytes
+
 interface CryptoEngine {
     fun computeMappedGenerator(
         algorithm: Algorithm,
         mappingPrivateKey: PrivateKey,
         chipMappingPublicPoint: EcPoint,
-        decryptedNonce: UByteArray,
+        decryptedNonce: KmpBytes,
     ): EcPoint
 
     fun computeSharedSecret(
         algorithm: Algorithm,
         privateKey: PrivateKey,
         chipPublicPoint: EcPoint,
-    ): UByteArray
+    ): KmpBytes
 
     fun computeCmac(
         algorithm: Algorithm,
-        key: UByteArray,
-        data: UByteArray,
-    ): UByteArray
+        key: KmpBytes,
+        data: KmpBytes,
+    ): KmpBytes
 
     fun deriveKeyFromSecret(
         algorithm: Algorithm,
-        secret: UByteArray,
-        nonce: UByteArray,
+        secret: KmpBytes,
+        nonce: KmpBytes,
         counter: Int,
-    ): UByteArray
+    ): KmpBytes
 
     fun encryptSymmetric(
         algorithm: Algorithm,
-        key: UByteArray,
-        iv: UByteArray,
-        data: UByteArray,
-    ): UByteArray
+        key: KmpBytes,
+        iv: KmpBytes,
+        data: KmpBytes,
+    ): KmpBytes
 
     fun decryptSymmetric(
         algorithm: Algorithm,
-        key: UByteArray,
-        data: UByteArray,
-    ): UByteArray
+        key: KmpBytes,
+        data: KmpBytes,
+    ): KmpBytes
 
     fun decryptSymmetricWithIv(
         algorithm: Algorithm,
-        key: UByteArray,
-        iv: UByteArray,
-        data: UByteArray,
-    ): UByteArray
+        key: KmpBytes,
+        iv: KmpBytes,
+        data: KmpBytes,
+    ): KmpBytes
 
-    fun computeSha1(message: UByteArray): UByteArray
+    fun computeSha1(message: KmpBytes): KmpBytes
 }

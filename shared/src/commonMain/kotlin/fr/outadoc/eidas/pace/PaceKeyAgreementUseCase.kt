@@ -16,6 +16,7 @@ import fr.outadoc.eidas.nfc.tlvList
 import fr.outadoc.eidas.pace.model.PaceKeyAgreementResult
 import fr.outadoc.eidas.tlv.firstWithTag
 import fr.outadoc.eidas.utils.flatMap
+import fr.outadoc.eidas.utils.toKmpBytes
 import fr.outadoc.eidas.utils.toPrettyHex
 
 private const val TAG = "PaceKeyAgreementUseCase"
@@ -38,7 +39,7 @@ class PaceKeyAgreementUseCase(
                     return Result.failure(it)
                 }
 
-        val terminalFinalPub: UByteArray = finalKeyPair.publicKey.uncompressedPublicPoint
+        val terminalFinalPub: UByteArray = finalKeyPair.publicKey.uncompressedPublicPoint.toUByteArray()
 
         logger.i(TAG, "GENERAL AUTHENTICATE (step 3: final key exchange)")
 
@@ -66,29 +67,32 @@ class PaceKeyAgreementUseCase(
                 logger.d(TAG, "Chip final pub: ${chipFinalPub.toPrettyHex()}")
 
                 val sharedSecret: UByteArray =
-                    cryptoEngine.computeSharedSecret(
-                        algorithm = algorithm,
-                        privateKey = finalKeyPair.privateKey,
-                        chipPublicPoint = deserializedUncompressedEcPoint(chipFinalPub),
-                    )
+                    cryptoEngine
+                        .computeSharedSecret(
+                            algorithm = algorithm,
+                            privateKey = finalKeyPair.privateKey,
+                            chipPublicPoint = deserializedUncompressedEcPoint(chipFinalPub),
+                        ).toUByteArray()
 
                 logger.d(TAG, "Shared secret K: ${sharedSecret.toPrettyHex()}")
 
                 val kEnc: UByteArray =
-                    cryptoEngine.deriveKeyFromSecret(
-                        algorithm = algorithm,
-                        secret = sharedSecret,
-                        nonce = ubyteArrayOf(),
-                        counter = 1,
-                    )
+                    cryptoEngine
+                        .deriveKeyFromSecret(
+                            algorithm = algorithm,
+                            secret = sharedSecret.toKmpBytes(),
+                            nonce = ubyteArrayOf().toKmpBytes(),
+                            counter = 1,
+                        ).toUByteArray()
 
                 val kMac: UByteArray =
-                    cryptoEngine.deriveKeyFromSecret(
-                        algorithm = algorithm,
-                        secret = sharedSecret,
-                        nonce = ubyteArrayOf(),
-                        counter = 2,
-                    )
+                    cryptoEngine
+                        .deriveKeyFromSecret(
+                            algorithm = algorithm,
+                            secret = sharedSecret.toKmpBytes(),
+                            nonce = ubyteArrayOf().toKmpBytes(),
+                            counter = 2,
+                        ).toUByteArray()
 
                 logger.d(TAG, "K_enc: ${kEnc.toPrettyHex()}")
                 logger.d(TAG, "K_mac: ${kMac.toPrettyHex()}")

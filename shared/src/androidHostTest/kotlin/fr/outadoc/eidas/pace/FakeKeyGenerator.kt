@@ -7,9 +7,9 @@ import fr.outadoc.eidas.crypto.EcPoint
 import fr.outadoc.eidas.crypto.KeyGenerator
 import fr.outadoc.eidas.crypto.KeyPair
 import fr.outadoc.eidas.crypto.ecParams
+import fr.outadoc.eidas.utils.KmpBytes
 import java.math.BigInteger
 
-@OptIn(ExperimentalUnsignedTypes::class)
 class FakeKeyGenerator(
     private val scalar: BigInteger,
 ) : KeyGenerator {
@@ -17,12 +17,8 @@ class FakeKeyGenerator(
         val params = algorithm.parameter.ecParams()
         val baseG =
             EcPoint(
-                x =
-                    params.g.xCoord.encoded
-                        .toUByteArray(),
-                y =
-                    params.g.yCoord.encoded
-                        .toUByteArray(),
+                x = KmpBytes(params.g.xCoord.encoded),
+                y = KmpBytes(params.g.yCoord.encoded),
             )
         return generateKeyPairOnGenerator(algorithm, baseG)
     }
@@ -34,8 +30,8 @@ class FakeKeyGenerator(
         val params = algorithm.parameter.ecParams()
         val g =
             params.curve.createPoint(
-                BigInteger(1, generator.x.toByteArray()),
-                BigInteger(1, generator.y.toByteArray()),
+                BigInteger(1, generator.x.raw),
+                BigInteger(1, generator.y.raw),
             )
         val pub = g.multiply(scalar).normalize()
         return KeyPair(
@@ -43,8 +39,8 @@ class FakeKeyGenerator(
             publicKey =
                 AndroidPublicKey(
                     EcPoint(
-                        x = pub.xCoord.encoded.toUByteArray(),
-                        y = pub.yCoord.encoded.toUByteArray(),
+                        x = KmpBytes(pub.xCoord.encoded),
+                        y = KmpBytes(pub.yCoord.encoded),
                     ),
                 ),
         )

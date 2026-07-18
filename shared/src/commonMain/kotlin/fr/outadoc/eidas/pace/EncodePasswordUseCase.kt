@@ -2,6 +2,7 @@ package fr.outadoc.eidas.pace
 
 import fr.outadoc.eidas.crypto.CryptoEngine
 import fr.outadoc.eidas.settings.model.AuthenticationMethod
+import fr.outadoc.eidas.utils.toKmpBytes
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class EncodePasswordUseCase(
@@ -18,7 +19,7 @@ class EncodePasswordUseCase(
 
         return when (authenticationMethod) {
             AuthenticationMethod.MRZ -> {
-                cryptoEngine.computeSha1(bytes)
+                cryptoEngine.computeSha1(bytes.toKmpBytes()).toUByteArray()
             }
 
             AuthenticationMethod.CAN,

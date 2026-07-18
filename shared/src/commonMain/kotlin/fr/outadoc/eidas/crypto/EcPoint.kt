@@ -1,7 +1,8 @@
 package fr.outadoc.eidas.crypto
 
-@OptIn(ExperimentalUnsignedTypes::class)
+import fr.outadoc.eidas.utils.KmpBytes
+
 data class EcPoint(
-    val x: UByteArray,
-    val y: UByteArray,
+    val x: KmpBytes,
+    val y: KmpBytes,
 )

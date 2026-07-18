@@ -30,3 +30,7 @@ fun NSData.toUByteArray(): UByteArray {
     }
     return result
 }
+
+fun KmpBytes.toNSData(): NSData = toUByteArray().toNSData()
+
+fun NSData.toCryptoBytes(): KmpBytes = toUByteArray().toKmpBytes()

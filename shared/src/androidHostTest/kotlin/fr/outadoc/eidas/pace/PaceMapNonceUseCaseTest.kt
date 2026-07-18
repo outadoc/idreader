@@ -10,10 +10,11 @@ import fr.outadoc.eidas.crypto.ecParams
 import fr.outadoc.eidas.logging.MemoryLogger
 import fr.outadoc.eidas.nfc.NfcTag
 import fr.outadoc.eidas.nfc.commands.CommandFactory
+import fr.outadoc.eidas.utils.KmpBytes
 import kotlinx.coroutines.test.runTest
 import java.math.BigInteger
 import kotlin.test.Test
-import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class PaceMapNonceUseCaseTest {
@@ -64,8 +65,8 @@ class PaceMapNonceUseCaseTest {
                     nonce = decryptedNonce,
                 )
 
-            assertContentEquals(expectedGPrime.x, gPrime.x)
-            assertContentEquals(expectedGPrime.y, gPrime.y)
+            assertEquals(expectedGPrime.x, gPrime.x)
+            assertEquals(expectedGPrime.y, gPrime.y)
         }
 
     private fun computeExpectedMappedGenerator(
@@ -76,15 +77,15 @@ class PaceMapNonceUseCaseTest {
         val params = algorithm.parameter.ecParams()
         val chipPub =
             params.curve.createPoint(
-                BigInteger(1, chipMappingPub.x.toByteArray()),
-                BigInteger(1, chipMappingPub.y.toByteArray()),
+                BigInteger(1, chipMappingPub.x.raw),
+                BigInteger(1, chipMappingPub.y.raw),
             )
         val h = chipPub.multiply(scalar).normalize()
         val s = BigInteger(1, nonce.toByteArray()).mod(params.n)
         val gPrime = h.add(params.g.multiply(s)).normalize()
         return EcPoint(
-            x = gPrime.xCoord.encoded.toUByteArray(),
-            y = gPrime.yCoord.encoded.toUByteArray(),
+            x = KmpBytes(gPrime.xCoord.encoded),
+            y = KmpBytes(gPrime.yCoord.encoded),
         )
     }
 }
