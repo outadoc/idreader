@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,7 +28,6 @@ import eidas.shared.generated.resources.Res
 import eidas.shared.generated.resources.cnie_fr_can
 import fr.outadoc.eidas.icons.AppIcons
 import fr.outadoc.eidas.icons.cancel
-import fr.outadoc.eidas.icons.contactless
 import fr.outadoc.eidas.settings.model.AppSettings
 import fr.outadoc.eidas.settings.model.AuthenticationMethod
 import org.jetbrains.compose.resources.painterResource
@@ -39,6 +38,7 @@ fun IdleReaderContent(
     settings: AppSettings,
     onAuthenticationMethodChanged: (AuthenticationMethod) -> Unit,
     onPasswordChanged: (String) -> Unit,
+    onStartListeningClicked: () -> Unit,
     exception: Throwable? = null,
 ) {
     val showDialog = remember { mutableStateOf(false) }
@@ -68,14 +68,9 @@ fun IdleReaderContent(
                 .padding(16.dp),
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
-        Icon(
-            modifier =
-                Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .size(128.dp),
-            imageVector = AppIcons.contactless,
-            contentDescription = "Tap your card",
-        )
+        Button(onClick = onStartListeningClicked) {
+            Text("Read document")
+        }
 
         Column {
             AuthenticationMethodDropdown(

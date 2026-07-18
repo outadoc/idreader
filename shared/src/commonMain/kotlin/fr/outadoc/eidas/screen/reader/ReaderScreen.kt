@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,8 +18,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.dp
 import fr.outadoc.eidas.AppTheme
 import fr.outadoc.eidas.icons.AppIcons
+import fr.outadoc.eidas.icons.contactless
 import fr.outadoc.eidas.icons.terminal
 import fr.outadoc.eidas.navigation.Screen
 import fr.outadoc.eidas.navigation.Screen.ScanResult
@@ -36,8 +39,6 @@ fun ReaderScreen(
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(viewModel) {
-        viewModel.startListening()
-
         viewModel.events.collect { event ->
             when (event) {
                 is ReaderViewModel.Event.ScanResultsAvailable -> {
@@ -57,6 +58,7 @@ fun ReaderScreen(
         navigate = navigate,
         onAuthenticationMethodChanged = viewModel::onAuthenticationMethodChanged,
         onPasswordChanged = viewModel::onPasswordChanged,
+        onStartListeningClicked = viewModel::onStartListeningClicked,
     )
 }
 
@@ -66,6 +68,7 @@ private fun ReaderScreenContent(
     state: ReaderViewModel.State,
     onAuthenticationMethodChanged: (AuthenticationMethod) -> Unit = {},
     onPasswordChanged: (String) -> Unit = {},
+    onStartListeningClicked: () -> Unit = {},
     navigate: (Screen) -> Unit = {},
 ) {
     Scaffold(
@@ -92,17 +95,37 @@ private fun ReaderScreenContent(
             contentAlignment = Alignment.Center,
         ) {
             Column {
-                if (state.isReading) {
-                    ReadingReaderContent(
-                        commandCount = state.commandCount,
-                    )
-                } else {
-                    IdleReaderContent(
-                        settings = state.settings,
-                        exception = state.exception,
-                        onAuthenticationMethodChanged = onAuthenticationMethodChanged,
-                        onPasswordChanged = onPasswordChanged,
-                    )
+                when (state) {
+                    is ReaderViewModel.State.Idle -> {
+                        IdleReaderContent(
+                            settings = state.settings,
+                            exception = state.exception,
+                            onAuthenticationMethodChanged = onAuthenticationMethodChanged,
+                            onPasswordChanged = onPasswordChanged,
+                            onStartListeningClicked = onStartListeningClicked,
+                        )
+                    }
+
+                    is ReaderViewModel.State.Listening -> {
+                        Column {
+                            Icon(
+                                modifier =
+                                    Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .size(128.dp),
+                                imageVector = AppIcons.contactless,
+                                contentDescription = "Tap your card",
+                            )
+
+                            Text("Waiting for document…")
+                        }
+                    }
+
+                    is ReaderViewModel.State.Reading -> {
+                        ReadingReaderContent(
+                            commandCount = state.commandCount,
+                        )
+                    }
                 }
             }
         }
@@ -116,8 +139,7 @@ private fun ReaderScreenIdlePreview() {
         ReaderScreenContent(
             modifier = Modifier,
             state =
-                ReaderViewModel.State(
-                    isReading = false,
+                ReaderViewModel.State.Idle(
                     settings = AppSettings(),
                 ),
             navigate = {},
@@ -132,8 +154,8 @@ private fun ReaderScreenReadingPreview() {
         ReaderScreenContent(
             modifier = Modifier,
             state =
-                ReaderViewModel.State(
-                    isReading = true,
+                ReaderViewModel.State.Reading(
+                    settings = AppSettings(),
                     commandCount = 3,
                 ),
             navigate = {},
@@ -148,8 +170,8 @@ private fun ReaderScreenErrorPreview() {
         ReaderScreenContent(
             modifier = Modifier,
             state =
-                ReaderViewModel.State(
-                    isReading = false,
+                ReaderViewModel.State.Idle(
+                    settings = AppSettings(),
                     exception = IllegalStateException("Failed to read card"),
                 ),
             navigate = {},
