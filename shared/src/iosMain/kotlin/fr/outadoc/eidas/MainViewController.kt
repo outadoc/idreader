@@ -13,7 +13,7 @@ import fr.outadoc.eidas.logging.Logger
 import fr.outadoc.eidas.media.CoilLogger
 import fr.outadoc.eidas.media.DocumentPictureFetcher
 import fr.outadoc.eidas.media.DocumentPictureKeyer
-import fr.outadoc.eidas.media.Jpeg2000Decoder
+import fr.outadoc.eidas.media.Jpeg2000Factory
 import fr.outadoc.eidas.settings.SettingsEncryptor
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
@@ -48,7 +48,7 @@ fun MainViewController(
                     .components {
                         add(DocumentPictureKeyer())
                         add(DocumentPictureFetcher.Factory())
-                        add(Jpeg2000Decoder.Factory())
+                        add(Jpeg2000Factory())
                     }.build()
             }
 
