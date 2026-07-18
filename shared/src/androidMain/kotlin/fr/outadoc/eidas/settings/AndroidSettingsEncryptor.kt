@@ -2,7 +2,7 @@ package fr.outadoc.eidas.settings
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import at.asitplus.KmmResult.Companion.wrap
+import fr.outadoc.eidas.utils.KmpResult.Companion.wrap
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator

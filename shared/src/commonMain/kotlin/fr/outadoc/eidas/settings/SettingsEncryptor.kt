@@ -1,9 +1,9 @@
 package fr.outadoc.eidas.settings
 
-import at.asitplus.KmmResult
+import fr.outadoc.eidas.utils.KmpResult
 
 interface SettingsEncryptor {
-    fun encrypt(clearText: String): KmmResult<String>
+    fun encrypt(clearText: String): KmpResult<String>
 
-    fun decrypt(cipherText: String): KmmResult<String>
+    fun decrypt(cipherText: String): KmpResult<String>
 }
