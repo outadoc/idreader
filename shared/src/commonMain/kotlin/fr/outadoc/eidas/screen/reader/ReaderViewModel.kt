@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.outadoc.eidas.lds.ReadCardDataUseCase
 import fr.outadoc.eidas.logging.Logger
+import fr.outadoc.eidas.logging.d
 import fr.outadoc.eidas.logging.e
 import fr.outadoc.eidas.logging.i
+import fr.outadoc.eidas.nfc.NfcSession
 import fr.outadoc.eidas.nfc.NfcTagReader
 import fr.outadoc.eidas.pace.PaceAuthenticateUseCase
 import fr.outadoc.eidas.presentation.CardInfo
@@ -16,12 +18,16 @@ import fr.outadoc.eidas.settings.SettingsRepository
 import fr.outadoc.eidas.settings.model.AppSettings
 import fr.outadoc.eidas.settings.model.AuthenticationMethod
 import fr.outadoc.eidas.utils.flatMap
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -71,8 +77,6 @@ class ReaderViewModel(
     private val _events = Channel<Event>(Channel.BUFFERED)
     val events: Flow<Event> = _events.receiveAsFlow()
 
-    private var listeningJob: Job? = null
-
     init {
         viewModelScope.launch {
             settingsRepository.settings.collect { settings ->
@@ -85,88 +89,17 @@ class ReaderViewModel(
                 }
             }
         }
-    }
 
-    fun onStartListeningClicked() {
-        if (_state.value !is State.Idle) {
-            return
-        }
-
-        listeningJob?.cancel()
-        listeningJob =
-            viewModelScope.launch {
-                // Save current settings
-                settingsRepository.saveSettings(_state.value.settings)
-
-                _state.update { state ->
-                    State.Listening(
-                        settings = state.settings,
-                    )
-                }
-
-                try {
-                    tagReader.detectedTags.collect { nfcSession ->
-                        _state.update { state ->
-                            State.Reading(
-                                settings = state.settings,
-                            )
-                        }
-
-                        launch {
-                            nfcSession.commandCount.collect {
-                                _state.update { state ->
-                                    if (state is State.Reading) {
-                                        state.copy(
-                                            commandCount = it,
-                                        )
-                                    } else {
-                                        state
-                                    }
-                                }
-                            }
-                        }
-
-                        val settings: AppSettings = _state.value.settings
-
-                        paceAuthenticate(
-                            nfcSession = nfcSession,
-                            authenticationMethod = settings.authenticationMethod,
-                            password = settings.password,
-                        ).flatMap { credentials ->
-                            val ssm: SecureMessagingSession =
-                                secureSessionFactory.newInstance(
-                                    nfcSession = nfcSession,
-                                    paceCredentials = credentials,
-                                )
-
-                            readCardData(
-                                nfcSession = ssm,
-                            )
-                        }.onSuccess { cardDump ->
-                            logger.i(TAG, "Got data from card: $cardDump")
-
-                            _state.update { state ->
-                                State.Idle(
-                                    settings = state.settings,
-                                )
-                            }
-
-                            _events.send(
-                                Event.ScanResultsAvailable(
-                                    cardInfo = mapCardDumpToCardInfo(cardDump),
-                                ),
-                            )
-                        }.onFailure { e ->
-                            logger.e(TAG, "Failed to read data", e)
-                            _state.update { state ->
-                                State.Idle(
-                                    settings = state.settings,
-                                    exception = e,
-                                )
-                            }
-                        }
+        viewModelScope.launch {
+            state
+                .onEach { logger.d(TAG, "New state: $it") }
+                .flatMapLatest { state ->
+                    when (state) {
+                        is State.Idle -> flowOf()
+                        is State.Listening -> tagReader.detectedTags
+                        is State.Reading -> flowOf()
                     }
-                } catch (e: Exception) {
+                }.catch { e ->
                     logger.e(TAG, "NFC error", e)
                     _state.update { state ->
                         State.Idle(
@@ -174,18 +107,26 @@ class ReaderViewModel(
                             exception = e,
                         )
                     }
+                }.collect { nfcSession ->
+                    readDocument(nfcSession)
                 }
-            }
-        listeningJob = null
+        }
     }
 
-    fun stopListening() {
-        listeningJob?.cancel()
-        listeningJob = null
-        _state.update { state ->
-            State.Idle(
-                settings = state.settings,
-            )
+    fun onStartListeningClicked() {
+        if (_state.value !is State.Idle) {
+            return
+        }
+
+        viewModelScope.launch {
+            // Save current settings
+            settingsRepository.saveSettings(_state.value.settings)
+
+            _state.update { state ->
+                State.Listening(
+                    settings = state.settings,
+                )
+            }
         }
     }
 
@@ -218,4 +159,67 @@ class ReaderViewModel(
             }
         }
     }
+
+    private suspend fun readDocument(nfcSession: NfcSession) =
+        coroutineScope {
+            _state.update { state ->
+                State.Reading(
+                    settings = state.settings,
+                )
+            }
+
+            launch {
+                nfcSession.commandCount.collect {
+                    _state.update { state ->
+                        if (state is State.Reading) {
+                            state.copy(
+                                commandCount = it,
+                            )
+                        } else {
+                            state
+                        }
+                    }
+                }
+            }
+
+            val settings: AppSettings = _state.value.settings
+
+            paceAuthenticate(
+                nfcSession = nfcSession,
+                authenticationMethod = settings.authenticationMethod,
+                password = settings.password,
+            ).flatMap { credentials ->
+                val ssm: SecureMessagingSession =
+                    secureSessionFactory.newInstance(
+                        nfcSession = nfcSession,
+                        paceCredentials = credentials,
+                    )
+
+                readCardData(
+                    nfcSession = ssm,
+                )
+            }.onSuccess { cardDump ->
+                logger.i(TAG, "Got data from card: $cardDump")
+
+                _state.update { state ->
+                    State.Idle(
+                        settings = state.settings,
+                    )
+                }
+
+                _events.send(
+                    Event.ScanResultsAvailable(
+                        cardInfo = mapCardDumpToCardInfo(cardDump),
+                    ),
+                )
+            }.onFailure { e ->
+                logger.e(TAG, "Failed to read data", e)
+                _state.update { state ->
+                    State.Idle(
+                        settings = state.settings,
+                        exception = e,
+                    )
+                }
+            }
+        }
 }

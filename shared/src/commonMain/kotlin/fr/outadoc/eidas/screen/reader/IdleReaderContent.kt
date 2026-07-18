@@ -67,11 +67,8 @@ fun IdleReaderContent(
                 .fillMaxSize()
                 .padding(16.dp),
         verticalArrangement = Arrangement.SpaceEvenly,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Button(onClick = onStartListeningClicked) {
-            Text("Read document")
-        }
-
         Column {
             AuthenticationMethodDropdown(
                 modifier = Modifier.fillMaxWidth(),
@@ -122,6 +119,10 @@ fun IdleReaderContent(
                     )
                 }
             }
+        }
+
+        Button(onClick = onStartListeningClicked) {
+            Text("Read document")
         }
     }
 }

@@ -84,9 +84,10 @@ class AndroidNfcTagReader(
                 null,
             )
 
-            logger.d(TAG, "Waiting for tags…")
+            logger.d(TAG, "Waiting for document…")
 
             awaitClose {
+                logger.d(TAG, "Disabling reader mode")
                 adapter.disableReaderMode(activity)
                 currentConnection?.close()
                 currentConnection = null
