@@ -10,7 +10,7 @@ import kotlinx.cinterop.ObjCSignatureOverride
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import platform.CoreNFC.NFCPollingISO14443
+import platform.CoreNFC.NFCPollingPACE
 import platform.CoreNFC.NFCTagProtocol
 import platform.CoreNFC.NFCTagReaderSession
 import platform.CoreNFC.NFCTagReaderSessionDelegateProtocol
@@ -50,7 +50,7 @@ class IosNfcTagReader(
 
             val session =
                 NFCTagReaderSession(
-                    pollingOption = NFCPollingISO14443,
+                    pollingOption = NFCPollingPACE,
                     delegate = delegate,
                     queue = null,
                 )
@@ -58,7 +58,7 @@ class IosNfcTagReader(
             session.alertMessage = "Hold your document near the top of the phone."
             session.beginSession()
 
-            logger.d(TAG, "Waiting for tags…")
+            logger.d(TAG, "Waiting for document…")
 
             awaitClose {
                 // Triggers didInvalidateWithError; close() on an already
