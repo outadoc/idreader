@@ -56,6 +56,7 @@ fun ReaderScreen(
         onAuthenticationMethodChanged = viewModel::onAuthenticationMethodChanged,
         onPasswordChanged = viewModel::onPasswordChanged,
         onStartListeningClicked = viewModel::onStartListeningClicked,
+        onStopListeningClicked = viewModel::onStopListeningClicked,
     )
 }
 
