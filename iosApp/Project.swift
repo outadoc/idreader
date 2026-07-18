@@ -52,7 +52,9 @@ let project = Project(
             ],
             settings: .settings(
                 base: [
-                    "ENABLE_USER_SCRIPT_SANDBOXING": "NO"
+                    "ENABLE_USER_SCRIPT_SANDBOXING": "NO",
+                    "CODE_SIGN_STYLE": "Automatic",
+                    "DEVELOPMENT_TEAM": "C38RDC5QNT"
                 ]
             )
         ),
