@@ -15,5 +15,5 @@ interface NfcTagReader {
      *
      * @throws NfcException if NFC is not available on this device.
      */
-    val detectedTags: Flow<NfcSession>
+    fun waitForTag(): Flow<NfcSession>
 }

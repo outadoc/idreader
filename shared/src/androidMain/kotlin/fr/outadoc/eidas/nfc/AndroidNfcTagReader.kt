@@ -26,14 +26,20 @@ class AndroidNfcTagReader(
 ) : NfcTagReader {
     private var currentConnection: AndroidNfcSession? = null
 
-    override val detectedTags: Flow<NfcSession> =
+    override fun waitForTag(): Flow<NfcSession> =
         callbackFlow {
             val adapter =
                 NfcAdapter.getDefaultAdapter(activity)
                     ?: throw NfcException("NFC is not available on this device")
 
+            if (!adapter.isEnabled) {
+                throw NfcException("NFC is currently disabled. Enable NFC in system settings to continue.")
+            }
+
             val callback =
                 NfcAdapter.ReaderCallback { tag ->
+                    currentConnection?.close()
+
                     val isoDep =
                         IsoDep.get(tag)
                             ?: return@ReaderCallback
@@ -69,7 +75,6 @@ class AndroidNfcTagReader(
                             logger = logger,
                         )
 
-                    currentConnection?.close()
                     currentConnection = session
 
                     trySend(session)

@@ -33,7 +33,7 @@ private const val TAG = "IosNfcTagReader"
 class IosNfcTagReader(
     private val logger: Logger,
 ) : NfcTagReader {
-    override val detectedTags: Flow<NfcSession> =
+    override fun waitForTag(): Flow<NfcSession> =
         callbackFlow {
             if (!NFCTagReaderSession.readingAvailable) {
                 throw NfcException("NFC is not available on this device")

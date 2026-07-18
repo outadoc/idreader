@@ -18,6 +18,7 @@ import fr.outadoc.eidas.settings.SettingsRepository
 import fr.outadoc.eidas.settings.model.AppSettings
 import fr.outadoc.eidas.settings.model.AuthenticationMethod
 import fr.outadoc.eidas.utils.flatMap
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -25,8 +26,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -93,11 +96,15 @@ class ReaderViewModel(
         viewModelScope.launch {
             state
                 .onEach { logger.d(TAG, "New state: $it") }
-                .flatMapLatest { state ->
-                    when (state) {
-                        is State.Idle -> flowOf()
-                        is State.Listening -> tagReader.detectedTags
-                        is State.Reading -> flowOf()
+                .map { state ->
+                    // Only listen for tags if we're not in idle state
+                    state !is State.Idle
+                }.distinctUntilChanged()
+                .flatMapLatest { enableReader ->
+                    if (enableReader) {
+                        tagReader.waitForTag()
+                    } else {
+                        flowOf()
                     }
                 }.catch { e ->
                     logger.e(TAG, "NFC error", e)
@@ -127,6 +134,14 @@ class ReaderViewModel(
                     settings = state.settings,
                 )
             }
+        }
+    }
+
+    fun onStopListeningClicked() {
+        _state.update { state ->
+            State.Idle(
+                settings = state.settings,
+            )
         }
     }
 

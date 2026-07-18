@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.emptyFlow
 class NoopNfcTagReader :
     NfcTagReader,
     NfcSession {
-    override val detectedTags: Flow<NfcSession> = emptyFlow()
+    override fun waitForTag(): Flow<NfcSession> = emptyFlow()
 
     override val commandCount: StateFlow<Int> = MutableStateFlow(0)
 
