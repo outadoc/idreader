@@ -16,6 +16,7 @@ import fr.outadoc.eidas.settings.SettingsRepository
 import fr.outadoc.eidas.settings.model.AppSettings
 import fr.outadoc.eidas.settings.model.AuthenticationMethod
 import fr.outadoc.eidas.utils.flatMap
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +40,7 @@ class ReaderViewModel(
 ) : ViewModel() {
     data class State(
         val isReading: Boolean = false,
+        val isListening: Boolean = false,
         val exception: Throwable? = null,
         val settings: AppSettings = AppSettings(),
         val commandCount: Int = 0,
@@ -56,6 +58,8 @@ class ReaderViewModel(
     private val _events = Channel<Event>(Channel.BUFFERED)
     val events: Flow<Event> = _events.receiveAsFlow()
 
+    private var listeningJob: Job? = null
+
     init {
         viewModelScope.launch {
             settingsRepository.settings.collect { settings ->
@@ -69,12 +73,20 @@ class ReaderViewModel(
     }
 
     fun startListening() {
-        viewModelScope.launch {
+        listeningJob?.cancel()
+        listeningJob = viewModelScope.launch {
+            _state.update { state ->
+                state.copy(
+                    isListening = true,
+                    exception = null,
+                )
+            }
             try {
                 tagReader.detectedTags.collect { nfcSession ->
                     _state.update { state ->
                         state.copy(
                             isReading = true,
+                            isListening = true,
                             exception = null,
                         )
                     }
@@ -112,6 +124,7 @@ class ReaderViewModel(
                         _state.update { state ->
                             state.copy(
                                 isReading = false,
+                                isListening = false,
                             )
                         }
                         _events.send(
@@ -124,6 +137,7 @@ class ReaderViewModel(
                         _state.update { state ->
                             state.copy(
                                 isReading = false,
+                                isListening = false,
                                 exception = e,
                             )
                         }
@@ -134,10 +148,23 @@ class ReaderViewModel(
                 _state.update { state ->
                     state.copy(
                         isReading = false,
+                        isListening = false,
                         exception = e,
                     )
                 }
             }
+        }
+        listeningJob = null
+    }
+
+    fun stopListening() {
+        listeningJob?.cancel()
+        listeningJob = null
+        _state.update { state ->
+            state.copy(
+                isReading = false,
+                isListening = false,
+            )
         }
     }
 
