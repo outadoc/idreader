@@ -7,7 +7,7 @@ let project = Project(
             name: "iosApp",
             destinations: .iOS,
             product: .app,
-            bundleId: "fr.outadoc.idreader",
+            bundleId: "fr.outadoc.eidas",
             infoPlist: .extendingDefault(
                 with: [
                     "CFBundleDisplayName": "ID Reader",

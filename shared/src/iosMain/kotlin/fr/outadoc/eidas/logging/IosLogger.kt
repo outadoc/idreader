@@ -23,8 +23,8 @@ class IosLogger : Logger {
 
         val osLog: os_log_t =
             os_log_create(
-                subsystem = "fr.outadoc.idreader",
-                category = "trx/$tag",
+                subsystem = "fr.outadoc.eidas",
+                category = tag,
             )
 
         _os_log_internal(
