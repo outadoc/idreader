@@ -12,6 +12,14 @@ let project = Project(
                 with: [
                     "CFBundleDisplayName": "ID Reader",
                     "CFBundleName": "ID Reader",
+                    // Set short version string, dynamically read from TUIST_VERSION_NAME
+                    "CFBundleShortVersionString": Plist.Value.string(
+                        Environment.versionName.getString(default: "0.1.0")
+                    ),
+                    // Set bundle version, dynamically read from TUIST_VERSION_CODE
+                    "CFBundleVersion": Plist.Value.string(
+                        Environment.versionCode.getString(default: "1")
+                    ),
                     "UILaunchScreen": [
                         "UIColorName": "",
                         "UIImageName": "",
@@ -24,6 +32,7 @@ let project = Project(
                     "com.apple.developer.nfc.readersession.iso7816.select-identifiers": [
                         "A0000002471001",
                     ],
+                    "LSApplicationCategoryType": "public.app-category.travel",
                 ]
             ),
             buildableFolders: [
